@@ -5,6 +5,8 @@ import {TrackingComponent} from "../components/tracking-component";
 import {getAminoContract} from "../utils";
 import '../css/start-page.css'
 import {RegisterComponent} from "../components/register-component";
+import {WelcomePage} from "./welcom-page";
+import {injected} from "../index";
 
 export function StartPage({secret}) {
     const [walletConnecting, setWalletConnecting] = React.useState(false)
@@ -12,6 +14,11 @@ export function StartPage({secret}) {
     const { active, account, library, connector, activate, setError, deactivate } = useWeb3React()
 
     useEffect(() => {
+        activate(injected, async (error) => {
+            if (error) {
+                // setWalletConnecting(true)
+            }
+        })
         if (account) {
             getAminoContract(library).then(async (contract) => {
                 setRegistered(false) // contract...
@@ -25,10 +32,14 @@ export function StartPage({secret}) {
 
     return (
         <div className='start-page'>
-            { !account && <>
-                <WalletConnect/>
+            {/*account: {account}*/}
+            { !account && !walletConnecting && <>
+                <WelcomePage setConnect={setWalletConnecting}/>
             </>}
-            { account && <>
+            { !account && walletConnecting && <>
+                <WalletConnect setConnected={() => setWalletConnecting(false)}/>
+            </>}
+            { account && !walletConnecting && <>
                 <div className='logo'></div>
                 <h1 className='name'>AminoChain</h1>
                 { !account && <>

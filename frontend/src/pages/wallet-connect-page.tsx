@@ -9,6 +9,7 @@ import {NoEthereumProviderError, UserRejectedRequestError} from "@web3-react/inj
 import Web3 from "web3";
 import {injected} from "../index";
 import {bscChainId, currentChainId, goerliChainId} from "../utils";
+import {Simulate} from "react-dom/test-utils";
 
 
 interface AddEthereumChainParameter {
@@ -24,14 +25,18 @@ interface AddEthereumChainParameter {
     iconUrls?: string[]; // Currently ignored.
 }
 
-export function WalletConnect() {
+export function WalletConnect({setConnected}) {
 
-    const { active, account, library, connector, activate, setError, deactivate } = useWeb3React()
+    const { active, account, library, connector, activate, deactivate } = useWeb3React()
     const [noWallet, setNoWallet] = useState<boolean>()
+    const [error, setError] = useState<string>()
+    const [update, setUpdate] = useState<number>()
 
-    if (active && typeof account === 'string') {
-        localStorage.setItem('connected', '1');
-    //     onConnected(account)
+    if (connector) {
+        // fixme: no connector instance
+        connector.on("session_update", () => setUpdate(Math.random));
+        connector.on("Web3ReactDeactivate", () => setUpdate(Math.random));
+        connector.on("Web3ReactUpdate", () => setUpdate(Math.random));
     }
 
     const changeNetwork = async () => {
@@ -88,7 +93,8 @@ export function WalletConnect() {
     }
 
     const activateWallet = async () => {
-        activate(injected,async (error) => {
+        // setConnected(true)
+        await activate(injected,async (error) => {
             if (error instanceof NoEthereumProviderError) {
                 setNoWallet(true)
             }
@@ -99,7 +105,8 @@ export function WalletConnect() {
             else if (error instanceof UserRejectedRequestError) {
                 // ignore user rejected error
             } else {
-                setError(error)
+                setError(error.message)
+                // setConnected(false)
             }
         }, false)
     }
@@ -112,56 +119,33 @@ export function WalletConnect() {
     }, [])
 
 
-    return (
-        <section className={'wallet-connect'} >
-            <div className={'container'}>
-                <div className="w-c-content">
-                    <div className={'w-c-content-container'}>
-                        <h2 className={'w-c-content-title'}>{'Connect your wallet'}</h2>
-                        { noWallet === true && <>
-                            <div className='no-wallet'>
-                                <div className='logo'>
-                                    <img src="https://wallet.polygon.technology/_nuxt/img/metamask.78010a9.svg" alt="Connecting to metamask"/>
-                                </div>
-                                <div className='text'>
-                                    Metamask not installed. Please visit the
-                                    &nbsp;<a href="https://docs.polygon.technology/docs/develop/metamask/hello"
-                                       target="_blank">docs</a>&nbsp;
-                                    for guidance in installing and creating a Metamask wallet. If
-                                    metamask is already installed, please ensure plugin is
-                                    enabled.
-                                </div>
-                                <div className='download'>
-                                    <p>Don't have wallet?</p>
-                                    <a href="https://metamask.io/download.html" target="_blank">Download here</a>
-                                </div>
-                            </div>
-                        </>}
-                        { noWallet !== true && <>
-                            <ul className="w-c-content-list">
-                                <li className="w-c-content-list-item metamask-item" onClick={activateWallet}>
-                                    <img className={'w-c-content-list-item-img'} src={metamaskIcon} alt="Metamask icon"/>
-                                    <a className={'w-c-content-list-item-link'}>Metamask</a>
-                                </li>
-                                <li className="w-c-content-list-item coinbase-item">
-                                    <div className={'w-c-content-list-item-container'}>
-                                        <img className={'w-c-content-list-item-img'} src={coinbaseIcon} alt="Coinbase icon"/>
-                                        <a className={'w-c-content-list-item-link not-working-text'}>Coinbase</a>
-                                    </div>
-                                    <div className={'not-working-div'}><p className={'not-working-div-text'}>{'coming soon'}</p></div>
-                                </li>
-                                <li className="w-c-content-list-item wallet-connect-item">
-                                    <div className={'w-c-content-list-item-container'}>
-                                        <img className={'w-c-content-list-item-img'} src={walletConnectIcon} alt="Coinbase icon"/>
-                                        <a className={'w-c-content-list-item-link not-working-text'}>WalletConnect</a>
-                                    </div>
-                                    <div className={'not-working-div'}><p className={'not-working-div-text'}>{'coming soon'}</p></div>
-                                </li>
-                            </ul>
-                        </>}
-                    </div>
+    return <>
+        <h3 className={'w-c-content-title'}>{'Connect your wallet'}</h3>
+        <div>{error}</div>
+        { noWallet === true && <>
+            <div className='no-wallet'>
+                <div className='logo'>
+                    <img src="https://wallet.polygon.technology/_nuxt/img/metamask.78010a9.svg" alt="Connecting to metamask"/>
+                </div>
+                <div className='text'>
+                    Metamask not installed. Please visit the
+                    &nbsp;<a href="https://docs.polygon.technology/docs/develop/metamask/hello"
+                       target="_blank">docs</a>&nbsp;
+                    for guidance in installing and creating a Metamask wallet. If
+                    metamask is already installed, please ensure plugin is
+                    enabled.
+                </div>
+                <div className='download'>
+                    <p>Don't have wallet?</p>
+                    <a href="https://metamask.io/download.html" target="_blank">Download here</a>
                 </div>
             </div>
-        </section>
-    )
+        </>}
+        { noWallet !== true && <>
+            <button onClick={activateWallet}>
+                <img src={metamaskIcon} alt="Metamask icon"/>
+                <a> MetaMask</a>
+            </button>
+        </>}
+    </>
 }

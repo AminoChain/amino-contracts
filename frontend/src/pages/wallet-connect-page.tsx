@@ -25,6 +25,7 @@ interface AddEthereumChainParameter {
 }
 
 export function WalletConnect() {
+
     const { active, account, library, connector, activate, setError, deactivate } = useWeb3React()
     const [noWallet, setNoWallet] = useState<boolean>()
 

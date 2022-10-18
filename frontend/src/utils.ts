@@ -3,7 +3,6 @@ import ERC20ABI from "./artifacts/@openzeppelin/contracts/token/ERC20/ERC20.sol/
 import {Web3Provider} from "@ethersproject/providers";
 import Amino from './artifacts/contracts/Amino.sol/Amino.json'
 import {ERC20} from "./contracts/erc20";
-import {PhenomCampaign} from "./contracts/PhenomCampaign";
 import {BigNumber, ContractTransaction, ethers, Overrides} from "ethers";
 
 export const goerliChainId = 5

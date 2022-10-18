@@ -1,0 +1,21 @@
+.start-page {
+    text-align: center;
+    padding: 10px 30px;
+}
+
+.secret {
+    padding-top: 50px;
+}
+
+button {
+    padding: 10px 30px;
+    margin: 100px 0;
+}
+.address {
+    font-size: 75%;
+}
+
+h1 {
+    color: gray;
+    padding-bottom: 30px;
+}

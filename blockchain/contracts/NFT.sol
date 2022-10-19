@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-contract NFT is ERC721, Pausable, Ownable {
+contract Donation is ERC721, Pausable, Ownable {
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdCounter;
@@ -38,7 +38,7 @@ contract NFT is ERC721, Pausable, Ownable {
         _unpause();
     }
 
-    function mint(address to, string calldata domain) public onlyOwner whenNotPaused returns(uint) {
+    function mint(address to) public onlyOwner whenNotPaused returns(uint) {
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _safeMint(to, tokenId);

@@ -1,13 +1,13 @@
 import {useWeb3React} from "@web3-react/core";
 import {useEffect} from "react";
-import {getAminoContract} from "../utils";
+import {getAuthenticatorContract} from "../utils";
 
 export function TrackingComponent() {
     const { active, account, library, connector, activate, setError, deactivate } = useWeb3React()
 
     useEffect(() => {
         if (account) {
-            getAminoContract(library).then(async (contract) => {
+            getAuthenticatorContract(library).then(async (contract) => {
 
             })
         }

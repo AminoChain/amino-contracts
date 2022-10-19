@@ -3,5 +3,7 @@
 /* eslint-disable */
 import type * as fuzzing from "./fuzzing";
 export type { fuzzing };
+export type { MockAminoChainMarketplace } from "./MockAminoChainMarketplace";
+export type { MockNFT } from "./MockNFT";
 export type { MockOracle } from "./MockOracle";
 export type { Token } from "./Token";

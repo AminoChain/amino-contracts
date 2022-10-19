@@ -3,7 +3,8 @@ import ERC20ABI from "./artifacts/@openzeppelin/contracts/token/ERC20/ERC20.sol/
 import {Web3Provider} from "@ethersproject/providers";
 import Amino from './artifacts/contracts/Amino.sol/Amino.json'
 import {ERC20} from "./contracts/erc20";
-import {BigNumber, ContractTransaction, ethers, Overrides} from "ethers";
+import {BigNumber, BigNumberish, ContractTransaction, ethers, Overrides} from "ethers";
+import {PromiseOrValue} from "./contracts/common";
 
 export const goerliChainId = 5
 export const bscChainId = 56
@@ -19,15 +20,25 @@ const busdContractAddress = {
     [goerliChainId]: '0x'
 }
 
-interface AminoContract {
+export type BioDataStruct = {
+    A: PromiseOrValue<BigNumberish>[];
+    B: PromiseOrValue<BigNumberish>[];
+    C: PromiseOrValue<BigNumberish>[];
+    DPB: PromiseOrValue<BigNumberish>[];
+    DRB: PromiseOrValue<BigNumberish>[];
+};
+
+interface AuthenticatorContract {
     registerUser(
-        overrides?: Overrides & { from?: string }
-    ): Promise<ContractTransaction>
+        bioData: BioDataStruct,
+        biobankAddress: PromiseOrValue<string>,
+        overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 }
 
-let _aminoContract: AminoContract
+let _aminoContract: AuthenticatorContract
 
-export async function getAminoContract(library: Web3Provider): Promise<AminoContract> {
+export async function getAuthenticatorContract(library: Web3Provider): Promise<AuthenticatorContract> {
     if (!_aminoContract) {
         const contract = new Contract(
             aminoAddress[currentChainId],
@@ -35,7 +46,7 @@ export async function getAminoContract(library: Web3Provider): Promise<AminoCont
             library.getSigner()
         )
         await contract.deployed()
-        _aminoContract = contract as unknown as AminoContract
+        _aminoContract = contract as unknown as AuthenticatorContract
     }
     return _aminoContract
 }

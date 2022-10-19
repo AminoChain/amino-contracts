@@ -4,6 +4,7 @@
 import type {
   BaseContract,
   BigNumber,
+  BigNumberish,
   BytesLike,
   CallOverrides,
   ContractTransaction,
@@ -26,16 +27,34 @@ import type {
   PromiseOrValue,
 } from "../common";
 
-export interface AminoInterface extends utils.Interface {
+export declare namespace AminoChainLibrary {
+  export type BioDataStruct = {
+    A: PromiseOrValue<BigNumberish>[];
+    B: PromiseOrValue<BigNumberish>[];
+    C: PromiseOrValue<BigNumberish>[];
+    DPB: PromiseOrValue<BigNumberish>[];
+    DRB: PromiseOrValue<BigNumberish>[];
+  };
+
+  export type BioDataStructOutput = [
+    number[],
+    number[],
+    number[],
+    number[],
+    number[]
+  ] & { A: number[]; B: number[]; C: number[]; DPB: number[]; DRB: number[] };
+}
+
+export interface IAminoChainAuthenticatorInterface extends utils.Interface {
   functions: {
-    "registerUser()": FunctionFragment;
+    "registerUser((uint8[],uint8[],uint8[],uint8[],uint8[]),address)": FunctionFragment;
   };
 
   getFunction(nameOrSignatureOrTopic: "registerUser"): FunctionFragment;
 
   encodeFunctionData(
     functionFragment: "registerUser",
-    values?: undefined
+    values: [AminoChainLibrary.BioDataStruct, PromiseOrValue<string>]
   ): string;
 
   decodeFunctionResult(
@@ -60,12 +79,12 @@ export type UserRegisteredEvent = TypedEvent<
 
 export type UserRegisteredEventFilter = TypedEventFilter<UserRegisteredEvent>;
 
-export interface Amino extends BaseContract {
+export interface IAminoChainAuthenticator extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: AminoInterface;
+  interface: IAminoChainAuthenticatorInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -88,16 +107,24 @@ export interface Amino extends BaseContract {
 
   functions: {
     registerUser(
+      bioData: AminoChainLibrary.BioDataStruct,
+      biobankAddress: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
   };
 
   registerUser(
+    bioData: AminoChainLibrary.BioDataStruct,
+    biobankAddress: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    registerUser(overrides?: CallOverrides): Promise<void>;
+    registerUser(
+      bioData: AminoChainLibrary.BioDataStruct,
+      biobankAddress: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
   };
 
   filters: {
@@ -107,12 +134,16 @@ export interface Amino extends BaseContract {
 
   estimateGas: {
     registerUser(
+      bioData: AminoChainLibrary.BioDataStruct,
+      biobankAddress: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
     registerUser(
+      bioData: AminoChainLibrary.BioDataStruct,
+      biobankAddress: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };

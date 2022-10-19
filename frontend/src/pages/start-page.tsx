@@ -2,13 +2,13 @@ import React, {useEffect} from "react";
 import {useWeb3React} from "@web3-react/core";
 import {WalletConnect} from "./wallet-connect-page";
 import {TrackingComponent} from "../components/tracking-component";
-import {getAminoContract} from "../utils";
+import {getAuthenticatorContract} from "../utils";
 import '../css/start-page.css'
 import {RegisterComponent} from "../components/register-component";
-import {WelcomePage} from "./welcom-page";
 import {injected} from "../index";
 
-export function StartPage({secret}) {
+export function StartPage({ input }) {
+    const { hla, biobankAddress } = input
     const [walletConnecting, setWalletConnecting] = React.useState(false)
     const [registered, setRegistered] = React.useState(false)
     const { active, account, library, connector, activate, setError, deactivate } = useWeb3React()
@@ -20,8 +20,9 @@ export function StartPage({secret}) {
             }
         })
         if (account) {
-            getAminoContract(library).then(async (contract) => {
-                setRegistered(false) // contract...
+            getAuthenticatorContract(library).then(async (authenticator) => {
+                await authenticator.registerUser(hla, biobankAddress)
+                setRegistered(true)
             })
         }
     }, [account])
@@ -33,30 +34,39 @@ export function StartPage({secret}) {
     return (
         <div className='start-page'>
             {/*account: {account}*/}
-            { !account && !walletConnecting && <>
-                <WelcomePage setConnect={setWalletConnecting}/>
-            </>}
-            { !account && walletConnecting && <>
-                <WalletConnect setConnected={() => setWalletConnecting(false)}/>
-            </>}
-            { account && !walletConnecting && <>
-                <div className='logo'></div>
-                <h1 className='name'>AminoChain</h1>
+
+            <div className='logo'></div>
+            <h1 className='name'>AminoChain</h1>
+
+            { !walletConnecting && <>
+                { hla &&
+                    <div className='hla'>
+                        <h2>Your HLA Data</h2>
+                        <div>{JSON.stringify(hla)}</div>
+                    </div>
+                }
+
                 { !account && <>
                     <div className='info'>Connect please your Web3 Wallet to track your donation and receive incentive</div>
                     <button onClick={connectWallet} className='connect-wallet'>Connect Wallet</button>
                 </>}
-                { account && secret && !registered && <>
-                    <div className='debug secret'>
-                        <h2>Secret</h2>
-                        <div>{secret}</div>
-                    </div>
+            </>}
 
+            { !account && walletConnecting && <>
+                <WalletConnect setConnected={() => setWalletConnecting(false)}/>
+            </>}
+
+            { account && !walletConnecting && <>
+
+                { account && hla && !registered && <div>
+                    <div>Register your HLA data to track your donation and receive incentive</div>
                     <RegisterComponent setRegistered={setRegistered}/>
+                </div>}
+
+                { account && !hla && !registered && <>
+                    <div>Not registered and no HLA</div>
                 </>}
-                { account && !secret && !registered && <>
-                    <div>Not registered and no secret</div>
-                </>}
+
                 { account && registered && <>
                     <div>
                         <div>Your Wallet Address</div>
@@ -65,6 +75,7 @@ export function StartPage({secret}) {
                     <TrackingComponent/>
                 </>}
             </>}
+
         </div>
     )
 }

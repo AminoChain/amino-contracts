@@ -15,33 +15,34 @@ const deployFunction: DeployFunction = async () => {
 
         // const linkToken = await deploy(`ERC20`, { from: deployer, log: true, args: [DECIMALS, INITIAL_PRICE] })
 
-        const usdt = await deploy(`USDT`, {
+        const usdc = await deploy(`USDC`, {
             contract: `Token`,
             from: deployer,
             log: true,
-            args: [`USDT`, `USDT`, 1000000 ],
+            args: [`USDC`, `USDC`, 1000000 ],
         })
 
-        /*const consumer = await deploy(`Consumer`, {
-            contract: `MockConsumer`,
+        const nft = await deploy(`MockNFT`, {
+            contract: `MockNFT`,
             from: deployer,
             log: true,
-            args: [ usdt.address ],
-        })*/
-
-        const nft = await deploy(`NFT`, {
-            contract: `NFT`,
-            from: deployer,
-            log: true,
-            args: [ ],
+            args: [ 'AMINO', 'AMINO' ],
         })
 
-        /*await deploy(`Seller`, {
-            contract: `Seller`,
+        const donorIncentiveRate = 8
+        const marketplace = await deploy(`MockAminoChainMarketplace`, {
+            contract: `MockAminoChainMarketplace`,
             from: deployer,
             log: true,
-            args: [ consumer.address, nft.address ],
-        });*/
+            args: [ donorIncentiveRate, usdc.address, nft.address ],
+        })
+
+        const authenticator = await deploy(`AminoChainAuthenticator`, {
+            contract: `AminoChainAuthenticator`,
+            from: deployer,
+            log: true,
+            args: [ nft.address, marketplace.address, usdc.address ],
+        })
 
 
 

@@ -2,9 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 export { AggregatorV3Interface__factory } from "./AggregatorV3Interface__factory";
+export { AutomationCompatibleInterface__factory } from "./AutomationCompatibleInterface__factory";
 export { ChainlinkRequestInterface__factory } from "./ChainlinkRequestInterface__factory";
 export { ENSInterface__factory } from "./ENSInterface__factory";
-export { KeeperCompatibleInterface__factory } from "./KeeperCompatibleInterface__factory";
 export { LinkTokenInterface__factory } from "./LinkTokenInterface__factory";
 export { OperatorInterface__factory } from "./OperatorInterface__factory";
 export { OracleInterface__factory } from "./OracleInterface__factory";

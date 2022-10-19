@@ -30,7 +30,7 @@ const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY || "Your polygonscan
 const config: HardhatUserConfig = {
     defaultNetwork: "hardhat",
     paths: {
-        artifacts: '../frontend/src/artifacts',
+        // artifacts: '../frontend/src/artifacts',
     },
     networks: {
         hardhat: {
@@ -87,7 +87,7 @@ const config: HardhatUserConfig = {
     },
     contractSizer: {
         runOnCompile: false,
-        only: ["Seller"],
+        only: [""],
     },
     namedAccounts: {
         deployer: {
@@ -101,7 +101,7 @@ const config: HardhatUserConfig = {
     solidity: {
         compilers: [
             {
-                version: "0.8.7",
+                version: "0.8.17",
             },
             {
                 version: "0.6.6",

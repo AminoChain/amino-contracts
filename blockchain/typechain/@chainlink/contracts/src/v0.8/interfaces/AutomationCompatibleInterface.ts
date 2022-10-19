@@ -4,7 +4,6 @@
 import type {
   BaseContract,
   BigNumber,
-  BigNumberish,
   BytesLike,
   CallOverrides,
   ContractTransaction,
@@ -21,43 +20,46 @@ import type {
   TypedListener,
   OnEvent,
   PromiseOrValue,
-} from "../common";
+} from "../../../../../common";
 
-export interface IConsumerInterface extends utils.Interface {
+export interface AutomationCompatibleInterfaceInterface
+  extends utils.Interface {
   functions: {
-    "bonusToken()": FunctionFragment;
-    "buyOutside(address,uint256,uint256)": FunctionFragment;
+    "checkUpkeep(bytes)": FunctionFragment;
+    "performUpkeep(bytes)": FunctionFragment;
   };
 
   getFunction(
-    nameOrSignatureOrTopic: "bonusToken" | "buyOutside"
+    nameOrSignatureOrTopic: "checkUpkeep" | "performUpkeep"
   ): FunctionFragment;
 
   encodeFunctionData(
-    functionFragment: "bonusToken",
-    values?: undefined
+    functionFragment: "checkUpkeep",
+    values: [PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(
-    functionFragment: "buyOutside",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
-    ]
+    functionFragment: "performUpkeep",
+    values: [PromiseOrValue<BytesLike>]
   ): string;
 
-  decodeFunctionResult(functionFragment: "bonusToken", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "buyOutside", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "checkUpkeep",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "performUpkeep",
+    data: BytesLike
+  ): Result;
 
   events: {};
 }
 
-export interface IConsumer extends BaseContract {
+export interface AutomationCompatibleInterface extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: IConsumerInterface;
+  interface: AutomationCompatibleInterfaceInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -79,32 +81,37 @@ export interface IConsumer extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
-    bonusToken(overrides?: CallOverrides): Promise<[string]>;
+    checkUpkeep(
+      checkData: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
-    buyOutside(
-      user: PromiseOrValue<string>,
-      price: PromiseOrValue<BigNumberish>,
-      marketing: PromiseOrValue<BigNumberish>,
+    performUpkeep(
+      performData: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
   };
 
-  bonusToken(overrides?: CallOverrides): Promise<string>;
+  checkUpkeep(
+    checkData: PromiseOrValue<BytesLike>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
-  buyOutside(
-    user: PromiseOrValue<string>,
-    price: PromiseOrValue<BigNumberish>,
-    marketing: PromiseOrValue<BigNumberish>,
+  performUpkeep(
+    performData: PromiseOrValue<BytesLike>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    bonusToken(overrides?: CallOverrides): Promise<string>;
+    checkUpkeep(
+      checkData: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<
+      [boolean, string] & { upkeepNeeded: boolean; performData: string }
+    >;
 
-    buyOutside(
-      user: PromiseOrValue<string>,
-      price: PromiseOrValue<BigNumberish>,
-      marketing: PromiseOrValue<BigNumberish>,
+    performUpkeep(
+      performData: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<void>;
   };
@@ -112,23 +119,25 @@ export interface IConsumer extends BaseContract {
   filters: {};
 
   estimateGas: {
-    bonusToken(overrides?: CallOverrides): Promise<BigNumber>;
+    checkUpkeep(
+      checkData: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
 
-    buyOutside(
-      user: PromiseOrValue<string>,
-      price: PromiseOrValue<BigNumberish>,
-      marketing: PromiseOrValue<BigNumberish>,
+    performUpkeep(
+      performData: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    bonusToken(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    checkUpkeep(
+      checkData: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
 
-    buyOutside(
-      user: PromiseOrValue<string>,
-      price: PromiseOrValue<BigNumberish>,
-      marketing: PromiseOrValue<BigNumberish>,
+    performUpkeep(
+      performData: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };

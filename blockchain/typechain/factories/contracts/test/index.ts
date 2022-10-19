@@ -2,5 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export * as fuzzing from "./fuzzing";
+export { MockAminoChainMarketplace__factory } from "./MockAminoChainMarketplace__factory";
+export { MockNFT__factory } from "./MockNFT__factory";
 export { MockOracle__factory } from "./MockOracle__factory";
 export { Token__factory } from "./Token__factory";

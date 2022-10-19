@@ -4,8 +4,10 @@
 import type * as test from "./test";
 export type { test };
 export type { APIConsumer } from "./APIConsumer";
-export type { Amino } from "./Amino";
+export type { AminoChainAuthenticator } from "./AminoChainAuthenticator";
+export type { IAminoChainAuthenticator } from "./IAminoChainAuthenticator";
+export type { IAminoChainMarketplace } from "./IAminoChainMarketplace";
+export type { INFT } from "./INFT";
 export type { KeepersCounter } from "./KeepersCounter";
-export type { NFT } from "./NFT";
 export type { PriceConsumerV3 } from "./PriceConsumerV3";
 export type { RandomNumberConsumerV2 } from "./RandomNumberConsumerV2";

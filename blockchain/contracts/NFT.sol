@@ -14,7 +14,21 @@ contract NFT is ERC721, Pausable, Ownable {
 
     mapping(uint => string) public tokenIdToDomain;
 
-    constructor() ERC721("NFT", "NFT") {}
+    struct DonationData {
+        string HLA_A;
+        string randomString;
+        address wallet;
+    }
+
+    DonationData[] donations;
+    mapping(uint256 => DonationData) public tokenIdToDonationInfo;
+    
+
+    constructor(
+        string memory name,
+        string memory symbol
+    ) ERC721(name, symbol) {
+    }
 
     function pause() public onlyOwner {
         _pause();

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "./IDonationNFT.sol";
-import "./AminoChainLibrary.sol";
+import "./interfaces/IDonationNFT.sol";
+import "./libraries/AminoChainLibrary.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -14,26 +14,22 @@ contract DonationNFT is ERC721, Pausable, Ownable {
     Counters.Counter private _tokenIdCounter;
     mapping(uint256 => string) private _tokenURIs;
 
-    mapping(uint => string) public tokenIdToBioData;
+    mapping(uint256 => string) public tokenIdToBioData;
 
-    // Struct encapsulating BioData might be useful in case that we plan 
+    // Struct encapsulating BioData might be useful in case that we plan
     // to store additional data in the NFT
     struct DonationData {
         address donorAddress;
-        AminoChainLibrary.BioData bioData; 
+        AminoChainLibrary.BioData bioData;
     }
 
-    // Might also make sense to just use an array since tokenIds are sequencially 
+    // Might also make sense to just use an array since tokenIds are sequencially
     // assigned with the minted DonationNFTs
     //DonationData[] donations;
     mapping(uint256 => DonationData) public tokenIdToDonationData;
     mapping(address => uint256) public addressToTokenId;
-    
 
-    constructor(
-        string memory name,
-        string memory symbol
-    ) ERC721(name, symbol) {
+    constructor(string memory name, string memory symbol) ERC721(name, symbol) {
         _tokenIdCounter.increment();
     }
 
@@ -45,7 +41,12 @@ contract DonationNFT is ERC721, Pausable, Ownable {
         _unpause();
     }
 
-    function mint(address donor, AminoChainLibrary.BioData calldata bioData) public onlyOwner whenNotPaused returns(uint) {
+    function mint(address donor, AminoChainLibrary.BioData calldata bioData)
+        public
+        onlyOwner
+        whenNotPaused
+        returns (uint256)
+    {
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _safeMint(msg.sender, tokenId);
@@ -54,23 +55,23 @@ contract DonationNFT is ERC721, Pausable, Ownable {
         return tokenId;
     }
 
-    function getTokenIdByDonor(address donor) external view returns(uint){
+    function getTokenIdByDonor(address donor) external view returns (uint256) {
         return addressToTokenId[donor];
     }
 
-    function nextTokenId() public view returns(uint) {
+    function nextTokenId() public view returns (uint256) {
         return _tokenIdCounter.current() == 0 ? 1 : _tokenIdCounter.current(); // workaround for initial counter value
     }
 
-    function getBioData(uint256 tokenId) public view returns(AminoChainLibrary.BioData memory){
+    function getBioData(uint256 tokenId) public view returns (AminoChainLibrary.BioData memory) {
         return tokenIdToDonationData[tokenId].bioData;
     }
 
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId)
-        internal
-        whenNotPaused
-        override
-        {
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal override whenNotPaused {
         super._beforeTokenTransfer(from, to, tokenId);
     }
 
@@ -78,7 +79,7 @@ contract DonationNFT is ERC721, Pausable, Ownable {
         _tokenURIs[tokenId] = uri;
     }
 
-    function tokenURI(uint256 tokenId) public view override(ERC721) returns (string memory){
+    function tokenURI(uint256 tokenId) public view override(ERC721) returns (string memory) {
         return _tokenURIs[tokenId];
     }
 }

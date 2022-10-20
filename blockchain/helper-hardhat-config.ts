@@ -63,6 +63,10 @@ export const networkConfig: NetworkConfigMap = {
         fee: "100000000000000",
         fundAmount: BigNumber.from("100000000000000"),
     },
+    80001: {
+        name: "mumbai",
+        fundAmount: BigNumber.from("0"),
+    },
 }
 
 export const developmentChains: string[] = ["hardhat", "localhost"]

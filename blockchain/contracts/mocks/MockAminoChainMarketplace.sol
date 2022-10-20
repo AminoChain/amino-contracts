@@ -1,7 +1,9 @@
+// SPDX-License-Identifier: GPL-2.0
+
 pragma solidity ^0.8.17;
 
-import "../IAminoChainMarketplace.sol";
-import "../IDonationNFT.sol";
+import "../interfaces/IAminoChainMarketplace.sol";
+import "../interfaces/IDonationNFT.sol";
 
 contract MockAminoChainMarketplace is IAminoChainMarketplace {
     IDonationNFT nft;

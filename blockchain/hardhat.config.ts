@@ -46,6 +46,11 @@ const config: HardhatUserConfig = {
         localhost: {
             chainId: 31337,
         },
+        mumbai: {
+            chainId: 80001,
+            url: process.env.MUMBAI_URL || "",
+            accounts: PRIVATE_KEY !== undefined ? [PRIVATE_KEY] : [],
+        },
         goerli: {
             url: GOERLI_RPC_URL,
             accounts: PRIVATE_KEY !== undefined ? [PRIVATE_KEY] : [],
@@ -75,6 +80,7 @@ const config: HardhatUserConfig = {
         // yarn hardhat verify --network <NETWORK> <CONTRACT_ADDRESS> <CONSTRUCTOR_PARAMETERS>
         apiKey: {
             polygon: POLYGONSCAN_API_KEY,
+            mumbai: POLYGONSCAN_API_KEY,
             goerli: ETHERSCAN_API_KEY,
         },
     },
@@ -108,6 +114,9 @@ const config: HardhatUserConfig = {
             },
             {
                 version: "0.4.24",
+            },
+            {
+                version: "0.6.0",
             },
         ],
     },

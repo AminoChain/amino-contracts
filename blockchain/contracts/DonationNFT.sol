@@ -34,6 +34,7 @@ contract DonationNFT is ERC721, Pausable, Ownable {
         string memory name,
         string memory symbol
     ) ERC721(name, symbol) {
+        _tokenIdCounter.increment();
     }
 
     function pause() public onlyOwner {

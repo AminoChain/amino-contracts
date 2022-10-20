@@ -19,6 +19,7 @@ contract DonationNFT is ERC721, Pausable, Ownable {
     // Struct encapsulating BioData might be useful in case that we plan 
     // to store additional data in the NFT
     struct DonationData {
+        address donorAddress;
         AminoChainLibrary.BioData bioData; 
     }
 
@@ -26,6 +27,7 @@ contract DonationNFT is ERC721, Pausable, Ownable {
     // assigned with the minted DonationNFTs
     //DonationData[] donations;
     mapping(uint256 => DonationData) public tokenIdToDonationData;
+    mapping(address => uint256) public addressToTokenId;
     
 
     constructor(
@@ -46,8 +48,13 @@ contract DonationNFT is ERC721, Pausable, Ownable {
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _safeMint(msg.sender, tokenId);
-        tokenIdToDonationData[tokenId] = DonationData(bioData);
+        tokenIdToDonationData[tokenId] = DonationData(donor, bioData);
+        addressToTokenId[donor] = tokenId;
         return tokenId;
+    }
+
+    function getTokenIdByDonor(address donor) external view returns(uint){
+        return addressToTokenId[donor];
     }
 
     function nextTokenId() public view returns(uint) {

@@ -1,27 +1,31 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
+import "./IDonationNFT.sol";
+import "./AminoChainLibrary.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-contract Donation is ERC721, Pausable, Ownable {
+contract DonationNFT is ERC721, Pausable, Ownable {
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdCounter;
     mapping(uint256 => string) private _tokenURIs;
 
-    mapping(uint => string) public tokenIdToDomain;
+    mapping(uint => string) public tokenIdToBioData;
 
+    // Struct encapsulating BioData might be useful in case that we plan 
+    // to store additional data in the NFT
     struct DonationData {
-        string HLA_A;
-        string randomString;
-        address wallet;
+        AminoChainLibrary.BioData bioData; 
     }
 
-    DonationData[] donations;
-    mapping(uint256 => DonationData) public tokenIdToDonationInfo;
+    // Might also make sense to just use an array since tokenIds are sequencially 
+    // assigned with the minted DonationNFTs
+    //DonationData[] donations;
+    mapping(uint256 => DonationData) public tokenIdToDonationData;
     
 
     constructor(
@@ -38,16 +42,20 @@ contract Donation is ERC721, Pausable, Ownable {
         _unpause();
     }
 
-    function mint(address to) public onlyOwner whenNotPaused returns(uint) {
+    function mint(AminoChainLibrary.BioData calldata bioData) public onlyOwner whenNotPaused returns(uint) {
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
-        _safeMint(to, tokenId);
-        tokenIdToDomain[tokenId] = domain;
+        _safeMint(msg.sender, tokenId);
+        tokenIdToDonationData[tokenId] = DonationData(bioData);
         return tokenId;
     }
 
     function nextTokenId() public view returns(uint) {
         return _tokenIdCounter.current() == 0 ? 1 : _tokenIdCounter.current(); // workaround for initial counter value
+    }
+
+    function getBioData(uint256 tokenId) public view returns(AminoChainLibrary.BioData memory){
+        return tokenIdToDonationData[tokenId].bioData;
     }
 
     function _beforeTokenTransfer(address from, address to, uint256 tokenId)
@@ -62,12 +70,7 @@ contract Donation is ERC721, Pausable, Ownable {
         _tokenURIs[tokenId] = uri;
     }
 
-    /*function tokenURI(uint256 tokenId)
-        public
-        view
-//        override(ERC721)
-        returns (string memory){
-
+    function tokenURI(uint256 tokenId) public view override(ERC721) returns (string memory){
         return _tokenURIs[tokenId];
-    }*/
+    }
 }

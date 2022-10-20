@@ -1,7 +1,8 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
 import "./IAminoChainAuthenticator.sol";
-import "./INFT.sol";
+import "./DonationNFT.sol";
 import "./IAminoChainMarketplace.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
@@ -9,12 +10,13 @@ import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 contract AminoChainAuthenticator is IAminoChainAuthenticator, IERC721Receiver {
     uint DEFAULT_PRICE = 40000*10e18;
 
-    INFT immutable nft;
+    IDonationNFT immutable nft;
     IAminoChainMarketplace immutable marketplace;
     IERC20 immutable usdc;
 
     constructor(address nftAddress, address marketplaceAddress, address usdcAddress) {
-        nft = INFT(nftAddress);
+        nft = IDonationNFT(nftAddress);
+        nft.setApprovalForAll(marketplaceAddress, true);
         marketplace = IAminoChainMarketplace(marketplaceAddress);
         usdc = IERC20(usdcAddress);
     }

@@ -42,7 +42,7 @@ contract DonationNFT is ERC721, Pausable, Ownable {
         _unpause();
     }
 
-    function mint(AminoChainLibrary.BioData calldata bioData) public onlyOwner whenNotPaused returns(uint) {
+    function mint(address donor, AminoChainLibrary.BioData calldata bioData) public onlyOwner whenNotPaused returns(uint) {
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _safeMint(msg.sender, tokenId);

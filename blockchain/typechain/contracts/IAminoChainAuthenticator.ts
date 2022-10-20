@@ -47,16 +47,27 @@ export declare namespace AminoChainLibrary {
 
 export interface IAminoChainAuthenticatorInterface extends utils.Interface {
   functions: {
+    "isRegistered()": FunctionFragment;
     "registerUser((uint8[],uint8[],uint8[],uint8[],uint8[]),address)": FunctionFragment;
   };
 
-  getFunction(nameOrSignatureOrTopic: "registerUser"): FunctionFragment;
+  getFunction(
+    nameOrSignatureOrTopic: "isRegistered" | "registerUser"
+  ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: "isRegistered",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "registerUser",
     values: [AminoChainLibrary.BioDataStruct, PromiseOrValue<string>]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "isRegistered",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "registerUser",
     data: BytesLike
@@ -106,12 +117,16 @@ export interface IAminoChainAuthenticator extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    isRegistered(overrides?: CallOverrides): Promise<[boolean]>;
+
     registerUser(
       bioData: AminoChainLibrary.BioDataStruct,
       biobankAddress: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
   };
+
+  isRegistered(overrides?: CallOverrides): Promise<boolean>;
 
   registerUser(
     bioData: AminoChainLibrary.BioDataStruct,
@@ -120,6 +135,8 @@ export interface IAminoChainAuthenticator extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
+    isRegistered(overrides?: CallOverrides): Promise<boolean>;
+
     registerUser(
       bioData: AminoChainLibrary.BioDataStruct,
       biobankAddress: PromiseOrValue<string>,
@@ -133,6 +150,8 @@ export interface IAminoChainAuthenticator extends BaseContract {
   };
 
   estimateGas: {
+    isRegistered(overrides?: CallOverrides): Promise<BigNumber>;
+
     registerUser(
       bioData: AminoChainLibrary.BioDataStruct,
       biobankAddress: PromiseOrValue<string>,
@@ -141,6 +160,8 @@ export interface IAminoChainAuthenticator extends BaseContract {
   };
 
   populateTransaction: {
+    isRegistered(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     registerUser(
       bioData: AminoChainLibrary.BioDataStruct,
       biobankAddress: PromiseOrValue<string>,

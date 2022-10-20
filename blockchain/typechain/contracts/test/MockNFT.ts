@@ -50,8 +50,9 @@ export interface MockNFTInterface extends utils.Interface {
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
+    "getTokenIdByDonor(address)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
-    "mint((uint8[],uint8[],uint8[],uint8[],uint8[]))": FunctionFragment;
+    "mint(address,(uint8[],uint8[],uint8[],uint8[],uint8[]))": FunctionFragment;
     "name()": FunctionFragment;
     "owner()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
@@ -71,6 +72,7 @@ export interface MockNFTInterface extends utils.Interface {
       | "approve"
       | "balanceOf"
       | "getApproved"
+      | "getTokenIdByDonor"
       | "isApprovedForAll"
       | "mint"
       | "name"
@@ -100,12 +102,16 @@ export interface MockNFTInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: "getTokenIdByDonor",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "isApprovedForAll",
     values: [PromiseOrValue<string>, PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "mint",
-    values: [AminoChainLibrary.BioDataStruct]
+    values: [PromiseOrValue<string>, AminoChainLibrary.BioDataStruct]
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
@@ -164,6 +170,10 @@ export interface MockNFTInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getApproved",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getTokenIdByDonor",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -309,6 +319,11 @@ export interface MockNFT extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
+    getTokenIdByDonor(
+      donor: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     isApprovedForAll(
       owner: PromiseOrValue<string>,
       operator: PromiseOrValue<string>,
@@ -316,6 +331,7 @@ export interface MockNFT extends BaseContract {
     ): Promise<[boolean]>;
 
     mint(
+      donor: PromiseOrValue<string>,
       bioData: AminoChainLibrary.BioDataStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
@@ -395,6 +411,11 @@ export interface MockNFT extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
+  getTokenIdByDonor(
+    donor: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   isApprovedForAll(
     owner: PromiseOrValue<string>,
     operator: PromiseOrValue<string>,
@@ -402,6 +423,7 @@ export interface MockNFT extends BaseContract {
   ): Promise<boolean>;
 
   mint(
+    donor: PromiseOrValue<string>,
     bioData: AminoChainLibrary.BioDataStruct,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
@@ -481,6 +503,11 @@ export interface MockNFT extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
+    getTokenIdByDonor(
+      donor: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     isApprovedForAll(
       owner: PromiseOrValue<string>,
       operator: PromiseOrValue<string>,
@@ -488,6 +515,7 @@ export interface MockNFT extends BaseContract {
     ): Promise<boolean>;
 
     mint(
+      donor: PromiseOrValue<string>,
       bioData: AminoChainLibrary.BioDataStruct,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -610,6 +638,11 @@ export interface MockNFT extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getTokenIdByDonor(
+      donor: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     isApprovedForAll(
       owner: PromiseOrValue<string>,
       operator: PromiseOrValue<string>,
@@ -617,6 +650,7 @@ export interface MockNFT extends BaseContract {
     ): Promise<BigNumber>;
 
     mint(
+      donor: PromiseOrValue<string>,
       bioData: AminoChainLibrary.BioDataStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
@@ -697,6 +731,11 @@ export interface MockNFT extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getTokenIdByDonor(
+      donor: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     isApprovedForAll(
       owner: PromiseOrValue<string>,
       operator: PromiseOrValue<string>,
@@ -704,6 +743,7 @@ export interface MockNFT extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     mint(
+      donor: PromiseOrValue<string>,
       bioData: AminoChainLibrary.BioDataStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;

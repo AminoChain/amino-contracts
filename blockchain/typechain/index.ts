@@ -44,6 +44,8 @@ export type { VRFConsumerBaseV2 } from "./@chainlink/contracts/src/v0.8/VRFConsu
 export { VRFConsumerBaseV2__factory } from "./factories/@chainlink/contracts/src/v0.8/VRFConsumerBaseV2__factory";
 export type { Ownable } from "./@openzeppelin/contracts/access/Ownable";
 export { Ownable__factory } from "./factories/@openzeppelin/contracts/access/Ownable__factory";
+export type { Pausable } from "./@openzeppelin/contracts/security/Pausable";
+export { Pausable__factory } from "./factories/@openzeppelin/contracts/security/Pausable__factory";
 export type { ERC20 } from "./@openzeppelin/contracts/token/ERC20/ERC20";
 export { ERC20__factory } from "./factories/@openzeppelin/contracts/token/ERC20/ERC20__factory";
 export type { IERC20Metadata } from "./@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata";
@@ -66,12 +68,14 @@ export type { AminoChainAuthenticator } from "./contracts/AminoChainAuthenticato
 export { AminoChainAuthenticator__factory } from "./factories/contracts/AminoChainAuthenticator__factory";
 export type { APIConsumer } from "./contracts/APIConsumer";
 export { APIConsumer__factory } from "./factories/contracts/APIConsumer__factory";
+export type { DonationNFT } from "./contracts/DonationNFT";
+export { DonationNFT__factory } from "./factories/contracts/DonationNFT__factory";
 export type { IAminoChainAuthenticator } from "./contracts/IAminoChainAuthenticator";
 export { IAminoChainAuthenticator__factory } from "./factories/contracts/IAminoChainAuthenticator__factory";
 export type { IAminoChainMarketplace } from "./contracts/IAminoChainMarketplace";
 export { IAminoChainMarketplace__factory } from "./factories/contracts/IAminoChainMarketplace__factory";
-export type { INFT } from "./contracts/INFT";
-export { INFT__factory } from "./factories/contracts/INFT__factory";
+export type { IDonationNFT } from "./contracts/IDonationNFT";
+export { IDonationNFT__factory } from "./factories/contracts/IDonationNFT__factory";
 export type { KeepersCounter } from "./contracts/KeepersCounter";
 export { KeepersCounter__factory } from "./factories/contracts/KeepersCounter__factory";
 export type { PriceConsumerV3 } from "./contracts/PriceConsumerV3";

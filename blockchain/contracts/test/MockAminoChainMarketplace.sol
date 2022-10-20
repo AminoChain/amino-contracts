@@ -1,13 +1,18 @@
 pragma solidity ^0.8.17;
 
 import "../IAminoChainMarketplace.sol";
+import "../IDonationNFT.sol";
 
 contract MockAminoChainMarketplace is IAminoChainMarketplace {
+    IDonationNFT nft;
+
     constructor(
         uint256 _donorIncentiveRate,
         address _usdc,
         address _tokenizedStemCells
-    ) {}
+    ) {
+        nft = IDonationNFT(_tokenizedStemCells);
+    }
 
     function listItem(
         uint256 tokenId,
@@ -16,7 +21,9 @@ contract MockAminoChainMarketplace is IAminoChainMarketplace {
         address bioBank
     ) external {}
 
-    function buyItem(uint256 tokenId) external {}
+    function buyItem(uint256 tokenId) external {
+        nft.transferFrom(address(this), msg.sender, tokenId);
+    }
 
     function cancelListing(uint256 tokenId) external {}
 

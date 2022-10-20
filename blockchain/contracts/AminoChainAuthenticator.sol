@@ -22,10 +22,14 @@ contract AminoChainAuthenticator is IAminoChainAuthenticator, IERC721Receiver {
     }
 
     function registerUser(AminoChainLibrary.BioData calldata bioData, address biobankAddress) public {
-        uint tokenId = nft.mint(bioData);
+        uint tokenId = nft.mint(msg.sender, bioData);
         nft.transferFrom(address(this), address(marketplace), tokenId);
         marketplace.listItem(tokenId, DEFAULT_PRICE, msg.sender, biobankAddress);
         emit UserRegistered(msg.sender);
+    }
+
+    function isRegistered() public view returns(bool) {
+        return nft.getTokenIdByDonor(msg.sender) != 0; // fixme
     }
 
     function onERC721Received(address, address, uint256, bytes calldata) external pure returns (bytes4) {

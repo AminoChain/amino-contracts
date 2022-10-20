@@ -47,14 +47,19 @@ export declare namespace AminoChainLibrary {
 
 export interface AminoChainAuthenticatorInterface extends utils.Interface {
   functions: {
+    "isRegistered()": FunctionFragment;
     "onERC721Received(address,address,uint256,bytes)": FunctionFragment;
     "registerUser((uint8[],uint8[],uint8[],uint8[],uint8[]),address)": FunctionFragment;
   };
 
   getFunction(
-    nameOrSignatureOrTopic: "onERC721Received" | "registerUser"
+    nameOrSignatureOrTopic: "isRegistered" | "onERC721Received" | "registerUser"
   ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: "isRegistered",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "onERC721Received",
     values: [
@@ -69,6 +74,10 @@ export interface AminoChainAuthenticatorInterface extends utils.Interface {
     values: [AminoChainLibrary.BioDataStruct, PromiseOrValue<string>]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "isRegistered",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "onERC721Received",
     data: BytesLike
@@ -122,6 +131,8 @@ export interface AminoChainAuthenticator extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    isRegistered(overrides?: CallOverrides): Promise<[boolean]>;
+
     onERC721Received(
       arg0: PromiseOrValue<string>,
       arg1: PromiseOrValue<string>,
@@ -136,6 +147,8 @@ export interface AminoChainAuthenticator extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
   };
+
+  isRegistered(overrides?: CallOverrides): Promise<boolean>;
 
   onERC721Received(
     arg0: PromiseOrValue<string>,
@@ -152,6 +165,8 @@ export interface AminoChainAuthenticator extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
+    isRegistered(overrides?: CallOverrides): Promise<boolean>;
+
     onERC721Received(
       arg0: PromiseOrValue<string>,
       arg1: PromiseOrValue<string>,
@@ -173,6 +188,8 @@ export interface AminoChainAuthenticator extends BaseContract {
   };
 
   estimateGas: {
+    isRegistered(overrides?: CallOverrides): Promise<BigNumber>;
+
     onERC721Received(
       arg0: PromiseOrValue<string>,
       arg1: PromiseOrValue<string>,
@@ -189,6 +206,8 @@ export interface AminoChainAuthenticator extends BaseContract {
   };
 
   populateTransaction: {
+    isRegistered(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     onERC721Received(
       arg0: PromiseOrValue<string>,
       arg1: PromiseOrValue<string>,

@@ -24,6 +24,19 @@ const _abi = [
     type: "event",
   },
   {
+    inputs: [],
+    name: "isRegistered",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         components: [

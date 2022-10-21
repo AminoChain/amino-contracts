@@ -1,9 +1,9 @@
-import { run } from "hardhat"
+import hre from "hardhat"
 
 const verify = async (contractAddress: string, args: any[]) => {
     console.log("Verifying contract...")
     try {
-        await run("verify:verify", {
+        await hre.run("verify:verify", {
             address: contractAddress,
             constructorArguments: args,
         })

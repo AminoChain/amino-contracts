@@ -1,7 +1,8 @@
 {
-  "name": "hardhat-starter-kit",
+  "name": "amino-contracts",
   "version": "1.0.0",
-  "description": "",
+  "description": "Contracts for the AminoChain protocol",
+  "license": "GPL-2.0",
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test ./test/*.spec.ts --network hardhat",
@@ -12,7 +13,6 @@
     "coverage": "hardhat coverage --solcoverjs ./.solcover.js",
     "fuzzing": "docker run -it --rm -v $PWD:/src trailofbits/eth-security-toolbox"
   },
-  "license": "MIT",
   "devDependencies": {
     "@ethersproject/abi": "^5.7.0",
     "@ethersproject/providers": "^5.7.1",

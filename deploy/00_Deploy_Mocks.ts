@@ -1,6 +1,6 @@
 import { DeployFunction } from "hardhat-deploy/types"
-import {getNamedAccounts, deployments, network, ethers} from "hardhat"
-import {BigNumber} from "ethers";
+import { getNamedAccounts, deployments, network, ethers } from "hardhat"
+import { BigNumber } from "ethers"
 
 const deployFunction: DeployFunction = async () => {
     const DECIMALS: string = `18`
@@ -19,14 +19,20 @@ const deployFunction: DeployFunction = async () => {
             contract: `Token`,
             from: deployer,
             log: true,
-            args: [`USDC`, `USDC`, 1000000 ],
+            args: [`USDC`, `USDC`, 1000000],
+        })
+        const erc20 = await deploy("MockERC20", {
+            contract: `MockERC20`,
+            from: deployer,
+            log: true,
+            args: [],
         })
 
         const nft = await deploy(`MockNFT`, {
             contract: `MockNFT`,
             from: deployer,
             log: true,
-            args: [ 'AMINO', 'AMINO' ],
+            args: ["AMINO", "AMINO"],
         })
 
         const donorIncentiveRate = 8
@@ -34,17 +40,15 @@ const deployFunction: DeployFunction = async () => {
             contract: `MockAminoChainMarketplace`,
             from: deployer,
             log: true,
-            args: [ donorIncentiveRate, usdc.address, nft.address ],
+            args: [donorIncentiveRate, usdc.address, nft.address],
         })
 
         const authenticator = await deploy(`AminoChainAuthenticator`, {
             contract: `AminoChainAuthenticator`,
             from: deployer,
             log: true,
-            args: [ nft.address, marketplace.address, usdc.address ],
+            args: [nft.address, marketplace.address, usdc.address],
         })
-
-
 
         /*await deploy(`MockV3Aggregator`, {
             contract: `MockV3Aggregator`,

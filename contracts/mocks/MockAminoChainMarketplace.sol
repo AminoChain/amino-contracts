@@ -18,7 +18,6 @@ contract MockAminoChainMarketplace is IAminoChainMarketplace {
 
     function listItem(
         uint256 tokenId,
-        uint256 price,
         address donor,
         address bioBank
     ) external {}

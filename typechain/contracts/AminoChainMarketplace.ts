@@ -59,7 +59,7 @@ export interface AminoChainMarketplaceInterface extends utils.Interface {
     "donorIncentiveRate()": FunctionFragment;
     "getListingData(uint256)": FunctionFragment;
     "i_usdc()": FunctionFragment;
-    "listItem(uint256,uint256,address,address)": FunctionFragment;
+    "listItem(uint256,address,address)": FunctionFragment;
     "owner()": FunctionFragment;
     "setAuthenticatorAddress(address)": FunctionFragment;
     "setDonorIncentiveRate(uint256)": FunctionFragment;
@@ -111,7 +111,6 @@ export interface AminoChainMarketplaceInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "listItem",
     values: [
-      PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<string>,
       PromiseOrValue<string>
@@ -344,7 +343,6 @@ export interface AminoChainMarketplace extends BaseContract {
 
     listItem(
       tokenId: PromiseOrValue<BigNumberish>,
-      price: PromiseOrValue<BigNumberish>,
       donor: PromiseOrValue<string>,
       bioBank: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -404,7 +402,6 @@ export interface AminoChainMarketplace extends BaseContract {
 
   listItem(
     tokenId: PromiseOrValue<BigNumberish>,
-    price: PromiseOrValue<BigNumberish>,
     donor: PromiseOrValue<string>,
     bioBank: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -464,7 +461,6 @@ export interface AminoChainMarketplace extends BaseContract {
 
     listItem(
       tokenId: PromiseOrValue<BigNumberish>,
-      price: PromiseOrValue<BigNumberish>,
       donor: PromiseOrValue<string>,
       bioBank: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -597,7 +593,6 @@ export interface AminoChainMarketplace extends BaseContract {
 
     listItem(
       tokenId: PromiseOrValue<BigNumberish>,
-      price: PromiseOrValue<BigNumberish>,
       donor: PromiseOrValue<string>,
       bioBank: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -660,7 +655,6 @@ export interface AminoChainMarketplace extends BaseContract {
 
     listItem(
       tokenId: PromiseOrValue<BigNumberish>,
-      price: PromiseOrValue<BigNumberish>,
       donor: PromiseOrValue<string>,
       bioBank: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }

@@ -27,7 +27,7 @@ describe("Authenticator Tests", async function () {
         marketplace = await ethers.getContract("MockAminoChainMarketplace")
         nft = await ethers.getContract("MockNFT")
         usdc = await ethers.getContract("USDC")
-        await usdc.transfer(buyer.address, ethers.utils.parseEther("1000"))
+        await usdc.transfer(buyer.address, ethers.utils.parseUnits("40000", 6))
 
         authenticator = await ethers.getContract("AminoChainAuthenticator")
         // await nft.setApprovalForAll(marketplace.address, true)
@@ -57,6 +57,7 @@ describe("Authenticator Tests", async function () {
         ///// before
         await authenticator.registerUser(bioData, biobankAddress)
         /////
+        await usdc.connect(buyer).approve(marketplace.address, ethers.utils.parseUnits("40000", 6))
 
         expect(await nft.balanceOf(buyer.address)).eq(0)
         await marketplace.connect(buyer).buyItem(1)

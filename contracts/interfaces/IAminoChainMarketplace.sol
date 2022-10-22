@@ -40,14 +40,12 @@ interface IAminoChainMarketplace {
      *  @dev Before calling this function, the lister must set isApprovedForAll
      *  to true for the marketplace address
      *  @param tokenId The tokenId of the ERC-721 token being listed
-     *  @param price The cost to purchase the ERC-721 token with USDC
      *  @param donor The source of the stem cells and the recipent of the
      *  incentive after the ERC-20 has been purchased
      *  @param bioBank The physical holder of the stem cells
      */
     function listItem(
         uint256 tokenId,
-        uint256 price,
         address donor,
         address bioBank
     ) external;

@@ -18,6 +18,8 @@ const deployAuthenticator: DeployFunction = async function (hre: HardhatRuntimeE
         usdcAddress = MockERC20.address
         const MockNFT = await ethers.getContract("MockNFT")
         mockNftAddress = MockNFT.address
+        const Marketplace = await ethers.getContract("AminoChainMarketplace")
+        marketplaceAddress = Marketplace.address
     } else {
         usdcAddress = "0xb0eaca4246d134cfcd104df91f9cd87e6c7271a7" // todo lets create some registry for deployed contracts addresses
         mockNftAddress = "0x7BbB00C38a70B384dcb713A1ba7143c8B2AF0109"

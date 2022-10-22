@@ -15,7 +15,7 @@ contract MockNFT is IDonationNFT, ERC721, Ownable {
     mapping(address => uint256) donorToTokenId;
 
     constructor(string memory name_, string memory symbol_) ERC721(name_, symbol_) {
-        //        _tokenIdCounter.increment(); // todo
+        _tokenIdCounter.increment();
     }
 
     function mint(address donor, AminoChainLibrary.BioData calldata bioData)

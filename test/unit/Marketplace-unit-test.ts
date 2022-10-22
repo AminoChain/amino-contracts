@@ -2,6 +2,8 @@ import { deployments, ethers, getNamedAccounts } from "hardhat"
 import { expect, assert } from "chai"
 import { AminoChainMarketplace, MockERC20, MockNFT } from "../../typechain"
 
+const firstNftTokeId = 1
+
 describe("AminoChainMarketplace", async () => {
     const { deployer } = await getNamedAccounts()
     let marketplace: AminoChainMarketplace
@@ -37,17 +39,17 @@ describe("AminoChainMarketplace", async () => {
             nft = await nft.connect(signers[0])
 
             await expect(
-                marketplace.listItem(0, ethers.utils.parseEther("0.00000001"), deployer, deployer)
+                marketplace.listItem(firstNftTokeId, ethers.utils.parseEther("0.00000001"), deployer, deployer)
             ).to.be.revertedWith("Token is not owned by sender")
         })
 
         it("fails if token is already listed by user", async () => {
             await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
             await nft.setApprovalForAll(marketplace.address, true)
-            await marketplace.listItem(0, ethers.utils.parseEther("0.00000001"), deployer, deployer)
+            await marketplace.listItem(firstNftTokeId, ethers.utils.parseEther("0.00000001"), deployer, deployer)
 
             await expect(
-                marketplace.listItem(0, ethers.utils.parseEther("0.00000001"), deployer, deployer)
+                marketplace.listItem(firstNftTokeId, ethers.utils.parseEther("0.00000001"), deployer, deployer)
             ).to.be.revertedWith("Token is already listed")
         })
 
@@ -57,7 +59,7 @@ describe("AminoChainMarketplace", async () => {
 
             await expect(
                 marketplace.listItem(
-                    0,
+                    firstNftTokeId,
                     ethers.utils.parseEther("0.00000001"),
                     deployer,
                     "0x0000000000000000000000000000000000000000"
@@ -69,19 +71,19 @@ describe("AminoChainMarketplace", async () => {
             await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
 
             await expect(
-                marketplace.listItem(0, ethers.utils.parseEther("0.00000001"), deployer, deployer)
+                marketplace.listItem(firstNftTokeId, ethers.utils.parseEther("0.00000001"), deployer, deployer)
             ).to.be.revertedWith("Marketplace does not have approval from lister on NFT contract")
         })
 
         it("Updates listing varibles", async () => {
             await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
             await nft.setApprovalForAll(marketplace.address, true)
-            await marketplace.listItem(0, ethers.utils.parseEther("0.00000001"), deployer, deployer)
+            await marketplace.listItem(firstNftTokeId, ethers.utils.parseEther("0.00000001"), deployer, deployer)
 
-            const listing = await marketplace.getListingData(0)
+            const listing = await marketplace.getListingData(firstNftTokeId)
 
             assert.equal(listing.seller, deployer)
-            assert.equal(listing.tokenId.toString(), "0")
+            assert.equal(listing.tokenId.toString(), firstNftTokeId.toString())
             assert.equal(listing.price.toString(), ethers.utils.parseEther("0.00000001").toString())
             assert.equal(listing.donor, deployer)
             assert.equal(listing.bioBank, deployer)
@@ -91,7 +93,7 @@ describe("AminoChainMarketplace", async () => {
             await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
             await nft.setApprovalForAll(marketplace.address, true)
             const tx = await marketplace.listItem(
-                0,
+                firstNftTokeId,
                 ethers.utils.parseEther("0.00000001"),
                 deployer,
                 deployer
@@ -99,7 +101,7 @@ describe("AminoChainMarketplace", async () => {
             const transactionReceipt = await tx.wait()
 
             assert.equal(transactionReceipt.events![0].args?.seller, deployer)
-            assert.equal(transactionReceipt.events![0].args?.tokenId.toString(), 0)
+            assert.equal(transactionReceipt.events![0].args?.tokenId.toString(), firstNftTokeId)
             assert.equal(
                 transactionReceipt.events![0].args?.price.toString(),
                 ethers.utils.parseEther("0.00000001").toString()
@@ -115,37 +117,37 @@ describe("AminoChainMarketplace", async () => {
             await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
             marketplace = await marketplace.connect(signers[1])
 
-            expect(marketplace.buyItem(0)).to.be.revertedWith("Token is not listed")
+            expect(marketplace.buyItem(firstNftTokeId)).to.be.revertedWith("Token is not listed")
         })
 
         it("fails if token seller tries to buy their item", async () => {
             await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
             await nft.setApprovalForAll(marketplace.address, true)
-            await marketplace.listItem(0, ethers.utils.parseEther("0.00000001"), deployer, deployer)
+            await marketplace.listItem(firstNftTokeId, ethers.utils.parseEther("0.00000001"), deployer, deployer)
 
-            expect(marketplace.buyItem(0)).to.be.revertedWith("Token seller cannot buy their token")
+            expect(marketplace.buyItem(firstNftTokeId)).to.be.revertedWith("Token seller cannot buy their token")
         })
 
         it("fails if buyer doesnt have enough USDC", async () => {
             const signers = await ethers.getSigners()
             await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
             await nft.setApprovalForAll(marketplace.address, true)
-            await marketplace.listItem(0, ethers.utils.parseEther("1"), deployer, deployer)
+            await marketplace.listItem(firstNftTokeId, ethers.utils.parseEther("1"), deployer, deployer)
             marketplace = await marketplace.connect(signers[1])
 
-            expect(marketplace.buyItem(0)).to.be.revertedWith("Buyer's USDC balence is too low")
+            expect(marketplace.buyItem(firstNftTokeId)).to.be.revertedWith("Buyer's USDC balence is too low")
         })
 
         it("fails if buyer doesnt give sufficent USDC approval to contract", async () => {
             const signers = await ethers.getSigners()
             await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
             await nft.setApprovalForAll(marketplace.address, true)
-            await marketplace.listItem(0, ethers.utils.parseEther("1"), deployer, deployer)
+            await marketplace.listItem(firstNftTokeId, ethers.utils.parseEther("1"), deployer, deployer)
             marketplace = await marketplace.connect(signers[1])
             erc20 = await erc20.connect(signers[1])
             await erc20.deposit({ value: ethers.utils.parseEther("1") })
 
-            expect(marketplace.buyItem(0)).to.be.revertedWith(
+            expect(marketplace.buyItem(firstNftTokeId)).to.be.revertedWith(
                 "Marketplace allowance from buyer on USDC contract must be higher than listing price"
             )
         })
@@ -155,7 +157,7 @@ describe("AminoChainMarketplace", async () => {
             await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
             await nft.setApprovalForAll(marketplace.address, true)
             await marketplace.listItem(
-                0,
+                firstNftTokeId,
                 ethers.utils.parseEther("1"),
                 signers[2].address,
                 signers[3].address
@@ -170,12 +172,12 @@ describe("AminoChainMarketplace", async () => {
             const preProtocolBal = await erc20.balanceOf(deployer)
             const preBioBankBal = await erc20.balanceOf(signers[3].address)
 
-            await marketplace.buyItem(0)
+            await marketplace.buyItem(firstNftTokeId)
 
             const postDonorBal = await erc20.balanceOf(signers[2].address)
             const postProtocolBal = await erc20.balanceOf(deployer)
             const postBioBankBal = await erc20.balanceOf(signers[3].address)
-            const nftOwner = await nft.ownerOf(0)
+            const nftOwner = await nft.ownerOf(firstNftTokeId)
 
             assert.equal(
                 postDonorBal.sub(preDonorBal).toString(),
@@ -206,7 +208,7 @@ describe("AminoChainMarketplace", async () => {
             await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
             await nft.setApprovalForAll(marketplace.address, true)
             await marketplace.listItem(
-                0,
+                firstNftTokeId,
                 ethers.utils.parseEther("1"),
                 signers[2].address,
                 deployer
@@ -217,11 +219,11 @@ describe("AminoChainMarketplace", async () => {
             await erc20.deposit({ value: ethers.utils.parseEther("1") })
             await erc20.approve(marketplace.address, ethers.utils.parseEther("1"))
 
-            const tx = await marketplace.buyItem(0)
+            const tx = await marketplace.buyItem(firstNftTokeId)
             const transactionReceipt = await tx.wait()
 
             assert.equal(transactionReceipt.events![5].args?.seller, deployer)
-            assert.equal(transactionReceipt.events![5].args?.tokenId, 0)
+            assert.equal(transactionReceipt.events![5].args?.tokenId, firstNftTokeId)
             assert.equal(transactionReceipt.events![5].args?.buyer, signers[1].address)
             assert.equal(
                 transactionReceipt.events![5].args?.salePrice.toString(),
@@ -244,7 +246,7 @@ describe("AminoChainMarketplace", async () => {
             await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
             await nft.setApprovalForAll(marketplace.address, true)
             await marketplace.listItem(
-                0,
+                firstNftTokeId,
                 ethers.utils.parseEther("1"),
                 signers[2].address,
                 deployer
@@ -255,8 +257,8 @@ describe("AminoChainMarketplace", async () => {
             await erc20.deposit({ value: ethers.utils.parseEther("1") })
             await erc20.approve(marketplace.address, ethers.utils.parseEther("1"))
 
-            await marketplace.buyItem(0)
-            const listing = await marketplace.getListingData(0)
+            await marketplace.buyItem(firstNftTokeId)
+            const listing = await marketplace.getListingData(firstNftTokeId)
 
             assert.equal(listing.seller, "0x0000000000000000000000000000000000000000")
         })
@@ -267,7 +269,7 @@ describe("AminoChainMarketplace", async () => {
             await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
             await nft.setApprovalForAll(marketplace.address, true)
             await marketplace.listItem(
-                0,
+                firstNftTokeId,
                 ethers.utils.parseEther("1"),
                 signers[2].address,
                 deployer
@@ -283,10 +285,10 @@ describe("AminoChainMarketplace", async () => {
         it("deletes listing variables", async () => {
             await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
             await nft.setApprovalForAll(marketplace.address, true)
-            await marketplace.listItem(0, ethers.utils.parseEther("1"), deployer, deployer)
+            await marketplace.listItem(firstNftTokeId, ethers.utils.parseEther("1"), deployer, deployer)
 
-            await marketplace.cancelListing(0)
-            const listing = await marketplace.getListingData(0)
+            await marketplace.cancelListing(firstNftTokeId)
+            const listing = await marketplace.getListingData(firstNftTokeId)
 
             assert.equal(listing.seller, "0x0000000000000000000000000000000000000000")
         })
@@ -295,13 +297,13 @@ describe("AminoChainMarketplace", async () => {
             const signers = await ethers.getSigners()
             await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
             await nft.setApprovalForAll(marketplace.address, true)
-            await marketplace.listItem(0, ethers.utils.parseEther("1"), deployer, deployer)
+            await marketplace.listItem(firstNftTokeId, ethers.utils.parseEther("1"), deployer, deployer)
 
-            const tx = await marketplace.cancelListing(0)
+            const tx = await marketplace.cancelListing(firstNftTokeId)
             const transactionReceipt = await tx.wait()
 
             assert.equal(transactionReceipt.events![0].args?.seller, signers[0].address)
-            assert.equal(transactionReceipt.events![0].args?.tokenId, 0)
+            assert.equal(transactionReceipt.events![0].args?.tokenId, firstNftTokeId)
         })
     })
     describe("updateListing", async () => {
@@ -309,11 +311,11 @@ describe("AminoChainMarketplace", async () => {
             const signers = await ethers.getSigners()
             await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
             await nft.setApprovalForAll(marketplace.address, true)
-            await marketplace.listItem(0, ethers.utils.parseEther("1"), deployer, deployer)
+            await marketplace.listItem(firstNftTokeId, ethers.utils.parseEther("1"), deployer, deployer)
 
             marketplace = await marketplace.connect(signers[1])
 
-            expect(marketplace.updateListing(0, ethers.utils.parseEther("2"))).to.be.revertedWith(
+            expect(marketplace.updateListing(firstNftTokeId, ethers.utils.parseEther("2"))).to.be.revertedWith(
                 "Only lister can update their listing"
             )
         })
@@ -321,9 +323,9 @@ describe("AminoChainMarketplace", async () => {
         it("fails if old listing price is the same as new", async () => {
             await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
             await nft.setApprovalForAll(marketplace.address, true)
-            await marketplace.listItem(0, ethers.utils.parseEther("1"), deployer, deployer)
+            await marketplace.listItem(firstNftTokeId, ethers.utils.parseEther("1"), deployer, deployer)
 
-            expect(marketplace.updateListing(0, ethers.utils.parseEther("1"))).to.be.revertedWith(
+            expect(marketplace.updateListing(firstNftTokeId, ethers.utils.parseEther("1"))).to.be.revertedWith(
                 "Old price cannot be the same as the new"
             )
         })
@@ -331,10 +333,10 @@ describe("AminoChainMarketplace", async () => {
         it("updates listing price", async () => {
             await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
             await nft.setApprovalForAll(marketplace.address, true)
-            await marketplace.listItem(0, ethers.utils.parseEther("1"), deployer, deployer)
+            await marketplace.listItem(firstNftTokeId, ethers.utils.parseEther("1"), deployer, deployer)
 
-            await marketplace.updateListing(0, ethers.utils.parseEther("0.5"))
-            const listing = await marketplace.getListingData(0)
+            await marketplace.updateListing(firstNftTokeId, ethers.utils.parseEther("0.5"))
+            const listing = await marketplace.getListingData(firstNftTokeId)
 
             assert.equal(listing.price.toString(), ethers.utils.parseEther("0.5").toString())
         })
@@ -343,13 +345,13 @@ describe("AminoChainMarketplace", async () => {
             const signers = await ethers.getSigners()
             await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
             await nft.setApprovalForAll(marketplace.address, true)
-            await marketplace.listItem(0, ethers.utils.parseEther("1"), deployer, deployer)
+            await marketplace.listItem(firstNftTokeId, ethers.utils.parseEther("1"), deployer, deployer)
 
-            const tx = await marketplace.updateListing(0, ethers.utils.parseEther("0.5"))
+            const tx = await marketplace.updateListing(firstNftTokeId, ethers.utils.parseEther("0.5"))
             const transactionReceipt = await tx.wait()
 
             assert.equal(transactionReceipt.events![0].args?.seller, signers[0].address)
-            assert.equal(transactionReceipt.events![0].args?.tokenId, 0)
+            assert.equal(transactionReceipt.events![0].args?.tokenId, firstNftTokeId)
             assert.equal(
                 transactionReceipt.events![0].args?.price.toString(),
                 ethers.utils.parseEther("0.5").toString()
@@ -456,12 +458,12 @@ describe("AminoChainMarketplace", async () => {
         it("retrives the correct data", async () => {
             await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
             await nft.setApprovalForAll(marketplace.address, true)
-            await marketplace.listItem(0, ethers.utils.parseEther("1"), deployer, deployer)
+            await marketplace.listItem(firstNftTokeId, ethers.utils.parseEther("1"), deployer, deployer)
 
-            const data = await marketplace.getListingData(0)
+            const data = await marketplace.getListingData(firstNftTokeId)
 
             assert.equal(data.seller, deployer)
-            assert.equal(data.tokenId.toString(), "0")
+            assert.equal(data.tokenId.toString(), firstNftTokeId.toString())
             assert.equal(data.price.toString(), ethers.utils.parseEther("1").toString())
             assert.equal(data.donor, deployer)
             assert.equal(data.bioBank, deployer)

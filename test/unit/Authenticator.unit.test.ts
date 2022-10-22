@@ -1,4 +1,3 @@
-import { developmentChains, networkConfig } from "../helper-hardhat-config"
 import { network, deployments, ethers, run } from "hardhat"
 // @ts-ignore
 import {
@@ -6,11 +5,10 @@ import {
     IDonationNFT,
     MockAminoChainMarketplace,
     Token,
-} from "../typechain"
+} from "../../typechain"
 import { assert, expect } from "chai"
 import { BigNumber, constants } from "ethers"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
-import { NFT } from "../typechain/contracts/NFT"
 
 describe("Authenticator Tests", async function () {
     // let authenticator: Authenticator

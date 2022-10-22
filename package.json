@@ -7,6 +7,8 @@
     "compile": "hardhat compile",
     "test": "hardhat test ./test/unit/*test.ts --network hardhat",
     "test-staging": "hardhat test ./test/staging/*.spec.ts",
+    "deploy": "hardhat deploy --network mumbai",
+    "deploy-authenticator": "hardhat deploy --network mumbai --tags authenticator",
     "lint": "solhint 'contracts/*.sol'",
     "lint:fix": "solhint 'contracts/**/*.sol' --fix",
     "format": "prettier --write .",

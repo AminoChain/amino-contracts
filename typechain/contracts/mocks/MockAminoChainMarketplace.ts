@@ -31,7 +31,7 @@ export interface MockAminoChainMarketplaceInterface extends utils.Interface {
   functions: {
     "buyItem(uint256)": FunctionFragment;
     "cancelListing(uint256)": FunctionFragment;
-    "listItem(uint256,uint256,address,address)": FunctionFragment;
+    "listItem(uint256,address,address)": FunctionFragment;
     "setAuthenticatorAddress(address)": FunctionFragment;
     "setDonorIncentiveRate(uint256)": FunctionFragment;
     "setTokenizedStemCells(address)": FunctionFragment;
@@ -62,7 +62,6 @@ export interface MockAminoChainMarketplaceInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "listItem",
     values: [
-      PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<string>,
       PromiseOrValue<string>
@@ -261,7 +260,6 @@ export interface MockAminoChainMarketplace extends BaseContract {
 
     listItem(
       tokenId: PromiseOrValue<BigNumberish>,
-      price: PromiseOrValue<BigNumberish>,
       donor: PromiseOrValue<string>,
       bioBank: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -306,7 +304,6 @@ export interface MockAminoChainMarketplace extends BaseContract {
 
   listItem(
     tokenId: PromiseOrValue<BigNumberish>,
-    price: PromiseOrValue<BigNumberish>,
     donor: PromiseOrValue<string>,
     bioBank: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -351,7 +348,6 @@ export interface MockAminoChainMarketplace extends BaseContract {
 
     listItem(
       tokenId: PromiseOrValue<BigNumberish>,
-      price: PromiseOrValue<BigNumberish>,
       donor: PromiseOrValue<string>,
       bioBank: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -469,7 +465,6 @@ export interface MockAminoChainMarketplace extends BaseContract {
 
     listItem(
       tokenId: PromiseOrValue<BigNumberish>,
-      price: PromiseOrValue<BigNumberish>,
       donor: PromiseOrValue<string>,
       bioBank: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -515,7 +510,6 @@ export interface MockAminoChainMarketplace extends BaseContract {
 
     listItem(
       tokenId: PromiseOrValue<BigNumberish>,
-      price: PromiseOrValue<BigNumberish>,
       donor: PromiseOrValue<string>,
       bioBank: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }

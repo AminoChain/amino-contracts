@@ -13,8 +13,6 @@ import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
  *  them on the marketplace
  */
 contract AminoChainAuthenticator is IAminoChainAuthenticator, IERC721Receiver {
-    uint256 DEFAULT_PRICE = 40000 * 10e18;
-
     IDonationNFT immutable nft;
     IAminoChainMarketplace immutable marketplace;
     IERC20 immutable usdc;
@@ -35,7 +33,7 @@ contract AminoChainAuthenticator is IAminoChainAuthenticator, IERC721Receiver {
     {
         uint256 tokenId = nft.mint(msg.sender, bioData);
         nft.transferFrom(address(this), address(marketplace), tokenId);
-        marketplace.listItem(tokenId, DEFAULT_PRICE, msg.sender, biobankAddress);
+        marketplace.listItem(tokenId, msg.sender, biobankAddress);
         emit UserRegistered(msg.sender);
     }
 

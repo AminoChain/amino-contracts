@@ -11,6 +11,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
  *  incentives to donors
  */
 contract AminoChainMarketplace is ReentrancyGuard {
+    uint256 constant DEFAULT_PRICE = 40000 * 10**6;
     address public owner;
     address public tokenziedStemCells;
     address public authenticator;
@@ -102,7 +103,6 @@ contract AminoChainMarketplace is ReentrancyGuard {
      */
     function listItem(
         uint256 tokenId,
-        uint256 price,
         address donor,
         address bioBank
     ) external onlyAuthenticator {
@@ -117,9 +117,9 @@ contract AminoChainMarketplace is ReentrancyGuard {
             "Marketplace does not have approval from lister on NFT contract"
         );
 
-        ListingData[tokenId] = Listing(msg.sender, tokenId, price, donor, bioBank);
+        ListingData[tokenId] = Listing(msg.sender, tokenId, DEFAULT_PRICE, donor, bioBank);
 
-        emit newListing(msg.sender, tokenId, price, donor, bioBank);
+        emit newListing(msg.sender, tokenId, DEFAULT_PRICE, donor, bioBank);
     }
 
     /** @dev Allows a user to buy tokenized stem cells for a given tokenId (No identity verification yet),

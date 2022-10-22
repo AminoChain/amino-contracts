@@ -21,12 +21,12 @@ const deployFunction: DeployFunction = async () => {
             log: true,
             args: [`USDC`, `USDC`, 1000000],
         })
-        const erc20 = await deploy("MockERC20", {
+        /*const erc20 = await deploy("MockERC20", {
             contract: `MockERC20`,
             from: deployer,
             log: true,
             args: [],
-        })
+        })*/
 
         const nft = await deploy(`MockNFT`, {
             contract: `MockNFT`,

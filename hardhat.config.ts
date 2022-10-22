@@ -48,7 +48,7 @@ const config: HardhatUserConfig = {
         },
         mumbai: {
             chainId: 80001,
-            url: process.env.MUMBAI_URL || "",
+            url: process.env.MUMBAI_URL || "https://rpc-mumbai.maticvigil.com",
             accounts: PRIVATE_KEY !== undefined ? [PRIVATE_KEY] : [],
         },
         goerli: {

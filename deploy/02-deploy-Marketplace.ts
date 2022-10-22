@@ -9,7 +9,7 @@ const deployMarketplace: DeployFunction = async function (hre: HardhatRuntimeEnv
     const { deploy, log, get } = deployments
     const { deployer } = await getNamedAccounts()
 
-    let args: any[] = []
+    let args: any[]
     if (developmentChains.includes(network.name)) {
         const MockERC20 = await ethers.getContract("MockERC20")
         const erc20Address = MockERC20.address
@@ -20,7 +20,7 @@ const deployMarketplace: DeployFunction = async function (hre: HardhatRuntimeEnv
     } else {
         args = [
             8,
-            "0xb0eaca4246d134cfcd104df91f9cd87e6c7271a7",
+            "0xb0eaca4246d134cfcd104df91f9cd87e6c7271a7", // todo lets create some registry for deployed contracts addresses
             "0x7BbB00C38a70B384dcb713A1ba7143c8B2AF0109",
         ]
     }

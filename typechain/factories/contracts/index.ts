@@ -3,6 +3,14 @@
 /* eslint-disable */
 export * as interfaces from "./interfaces";
 export * as mocks from "./mocks";
+export * as test from "./test";
+export { APIConsumer__factory } from "./APIConsumer__factory";
 export { AminoChainAuthenticator__factory } from "./AminoChainAuthenticator__factory";
 export { AminoChainMarketplace__factory } from "./AminoChainMarketplace__factory";
 export { DonationNFT__factory } from "./DonationNFT__factory";
+export { IAminoChainAuthenticator__factory } from "./IAminoChainAuthenticator__factory";
+export { IAminoChainMarketplace__factory } from "./IAminoChainMarketplace__factory";
+export { IDonationNFT__factory } from "./IDonationNFT__factory";
+export { KeepersCounter__factory } from "./KeepersCounter__factory";
+export { PriceConsumerV3__factory } from "./PriceConsumerV3__factory";
+export { RandomNumberConsumerV2__factory } from "./RandomNumberConsumerV2__factory";

@@ -1,4 +1,5 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-2.0
+
 pragma solidity ^0.8.7;
 
 import "./interfaces/IAminoChainAuthenticator.sol";
@@ -7,6 +8,10 @@ import "./interfaces/IAminoChainMarketplace.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 
+/** @title AminoChain Authenticator
+ *  @notice Handles the minting of tokenized stem cells and listing
+ *  them on the marketplace
+ */
 contract AminoChainAuthenticator is IAminoChainAuthenticator, IERC721Receiver {
     uint256 DEFAULT_PRICE = 40000 * 10e18;
 

@@ -1,4 +1,5 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-2.0
+
 pragma solidity ^0.8.4;
 
 import "./interfaces/IDonationNFT.sol";
@@ -8,6 +9,9 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
+/** @title AminoChain Donation
+ *  @notice Tokenizes donated stem cells
+ */
 contract DonationNFT is ERC721, Pausable, Ownable {
     using Counters for Counters.Counter;
 

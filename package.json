@@ -10,6 +10,7 @@
     "test-authenticator": "hardhat test ./test/unit/Authenticator.unit.test.ts --network hardhat",
     "deploy": "hardhat deploy --network polygon",
     "deploy-authenticator": "hardhat deploy --network mumbai --tags authenticator",
+    "deploy-mumbai": "hardhat deploy --network mumbai --tags usdc,marketplace,authenticator",
     "lint": "solhint 'contracts/*.sol'",
     "lint:fix": "solhint 'contracts/**/*.sol' --fix",
     "format": "prettier --write .",

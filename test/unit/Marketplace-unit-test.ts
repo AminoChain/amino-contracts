@@ -1,8 +1,7 @@
 import { deployments, ethers, getNamedAccounts } from "hardhat"
 import { expect, assert } from "chai"
 import { AminoChainMarketplace, MockERC20, MockNFT } from "../../typechain"
-
-const firstNftTokeId = 1
+import {firstNftTokeId} from "../commons";
 
 describe("AminoChainMarketplace", async () => {
     const { deployer } = await getNamedAccounts()

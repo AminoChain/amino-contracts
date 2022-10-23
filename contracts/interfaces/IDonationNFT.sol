@@ -5,11 +5,11 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "../libraries/AminoChainLibrary.sol";
 
 interface IDonationNFT is IERC721 {
-    function mint(address donor, AminoChainLibrary.BioData calldata bioData)
+    function mint(address donor, AminoChainLibrary.BioData calldata bioData, uint256[] calldata amounts)
         external
-        returns (uint256);
+        returns (uint256[] memory);
 
     function transferOwnership(address newOwner) external;
 
-    function getTokenIdByDonor(address donor) external view returns (uint256);
+    function getTokenIdsByDonor(address donor) external view returns (uint256[] memory);
 }

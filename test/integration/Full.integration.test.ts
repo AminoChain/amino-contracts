@@ -29,6 +29,7 @@ describe("Full Tests", async function () {
         await usdc.transfer(buyer.address, ethers.utils.parseUnits("40000", 6))
         authenticator = await ethers.getContract("AminoChainAuthenticator") as AminoChainAuthenticator
         await nft.transferOwnership(authenticator.address)
+        await marketplace.setAuthenticatorAddress(authenticator.address)
     })
 
     it('Mint NFT', async () => {

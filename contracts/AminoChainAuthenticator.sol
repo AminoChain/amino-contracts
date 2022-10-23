@@ -32,7 +32,7 @@ contract AminoChainAuthenticator is IAminoChainAuthenticator, IERC721Receiver {
         public
     {
         uint256 tokenId = nft.mint(msg.sender, bioData);
-        nft.transferFrom(address(this), address(marketplace), tokenId);
+//        nft.transferFrom(address(this), address(marketplace), tokenId);
         marketplace.listItem(tokenId, msg.sender, biobankAddress);
         emit UserRegistered(msg.sender);
     }

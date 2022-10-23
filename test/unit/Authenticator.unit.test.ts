@@ -52,7 +52,7 @@ describe("Authenticator Tests", async function () {
         expect(await authenticator.connect(donor).isRegistered()).eq(true)
     })
 
-    it("Buy Item", async () => {
+    /*it("Buy Item", async () => {
         ///// before
         await authenticator.registerUser(bioData, biobankAddress)
         /////
@@ -62,6 +62,6 @@ describe("Authenticator Tests", async function () {
         await marketplace.connect(buyer).buyItem(1)
         expect(await nft.balanceOf(buyer.address)).eq(1)
         // expect(await nft.tokenOfOwnerByIndex(buyer.address)).eq(1)
-    })
+    })*/
 })
 

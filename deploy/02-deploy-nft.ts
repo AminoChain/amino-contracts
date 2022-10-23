@@ -21,4 +21,4 @@ const deployFunction: DeployFunction = async () => {
 }
 
 export default deployFunction
-deployFunction.tags = [`all`, `usdc`]
+deployFunction.tags = [`all`, `nft`]

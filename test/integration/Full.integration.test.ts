@@ -20,7 +20,7 @@ describe("Full Tests", async function () {
     let nft: DonationNFT
 
     async function beforeEachDescribe() {
-        await deployments.fixture(["usdc", "marketplace", "authenticator"]) // no mocks
+        await deployments.fixture(["usdc", "nft", "marketplace", "authenticator"]) // no mocks
 
         ;[deployer, donor, doctor] = await ethers.getSigners()
         marketplace = await ethers.getContract("AminoChainMarketplace") as AminoChainMarketplace

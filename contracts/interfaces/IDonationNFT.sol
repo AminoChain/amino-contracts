@@ -12,4 +12,6 @@ interface IDonationNFT is IERC721 {
     function transferOwnership(address newOwner) external;
 
     function getTokenIdsByDonor(address donor) external view returns (uint256[] memory);
+
+    event NFTMinted(address donor, AminoChainLibrary.BioData bioData, uint256[] amounts);
 }

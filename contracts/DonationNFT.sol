@@ -12,26 +12,25 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 /** @title AminoChain Donation
  *  @notice Tokenizes donated stem cells
  */
-contract DonationNFT is ERC721, Pausable, Ownable {
+contract DonationNFT is IDonationNFT, ERC721, Pausable, Ownable {
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdCounter;
     mapping(uint256 => string) private _tokenURIs;
-
-    mapping(uint256 => string) public tokenIdToBioData;
 
     // Struct encapsulating BioData might be useful in case that we plan
     // to store additional data in the NFT
     struct DonationData {
         address donorAddress;
         AminoChainLibrary.BioData bioData;
+        uint256 amount;
     }
 
     // Might also make sense to just use an array since tokenIds are sequencially
     // assigned with the minted DonationNFTs
     //DonationData[] donations;
     mapping(uint256 => DonationData) public tokenIdToDonationData;
-    mapping(address => uint256) public addressToTokenId;
+    mapping(address => uint256[]) public addressToTokenIds;
 
     constructor(string memory name, string memory symbol) ERC721(name, symbol) {
         _tokenIdCounter.increment();
@@ -45,30 +44,35 @@ contract DonationNFT is ERC721, Pausable, Ownable {
         _unpause();
     }
 
-    function mint(address donor, AminoChainLibrary.BioData calldata bioData)
+    function mint(address donor, AminoChainLibrary.BioData calldata bioData, uint256[] calldata amounts)
         public
         onlyOwner
         whenNotPaused
-        returns (uint256)
+        returns (uint256[] memory)
     {
-        uint256 tokenId = _tokenIdCounter.current();
-        _tokenIdCounter.increment();
-        _safeMint(msg.sender, tokenId);
-        tokenIdToDonationData[tokenId] = DonationData(donor, bioData);
-        addressToTokenId[donor] = tokenId;
-        return tokenId;
+        uint256[] memory tokenIds = new uint256[](amounts.length);
+        for (uint i = 0; i < amounts.length; i++) {        
+            uint256 tokenId = _tokenIdCounter.current();
+            _tokenIdCounter.increment();
+            _safeMint(msg.sender, tokenId);
+            tokenIdToDonationData[tokenId] = DonationData(donor, bioData, amounts[i]);
+            addressToTokenIds[donor].push(tokenId);
+            tokenIds[i] = tokenId;
+        }
+        emit NFTMinted(donor, bioData, amounts);
+        return tokenIds;
     }
 
-    function getTokenIdByDonor(address donor) external view returns (uint256) {
-        return addressToTokenId[donor];
-    }
-
-    function nextTokenId() public view returns (uint256) {
-        return _tokenIdCounter.current() == 0 ? 1 : _tokenIdCounter.current(); // workaround for initial counter value
+    function getTokenIdsByDonor(address donor) external view returns (uint256[] memory) {
+        return addressToTokenIds[donor];
     }
 
     function getBioData(uint256 tokenId) public view returns (AminoChainLibrary.BioData memory) {
         return tokenIdToDonationData[tokenId].bioData;
+    }
+
+    function transferOwnership(address newOwner) public override(IDonationNFT, Ownable) onlyOwner{
+        Ownable.transferOwnership(newOwner);
     }
 
     function _beforeTokenTransfer(

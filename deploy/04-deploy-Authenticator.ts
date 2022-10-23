@@ -4,6 +4,8 @@ import { ethers } from "hardhat"
 import { developmentChains } from "../helper-hardhat-config"
 import verify from "../utils/verify"
 
+// 0x7d351a67CCA0955839D2e515d326125343D9780B
+
 const deployAuthenticator: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const { getNamedAccounts, deployments, network } = hre
     const { deploy, log, get } = deployments
@@ -14,16 +16,22 @@ const deployAuthenticator: DeployFunction = async function (hre: HardhatRuntimeE
     let usdcAddress
 
     if (developmentChains.includes(network.name)) {
-        const MockERC20 = await ethers.getContract("MockERC20")
-        usdcAddress = MockERC20.address
-        const MockNFT = await ethers.getContract("MockNFT")
-        mockNftAddress = MockNFT.address
-        const Marketplace = await ethers.getContract("AminoChainMarketplace")
+        const USDC = await ethers.getContract("USDC")
+        usdcAddress = USDC.address
+
+        const NFT = await ethers.getContract("MockNFT")
+            .catch(() => ethers.getContract("DonationNFT"))
+
+        mockNftAddress = NFT.address
+
+        const Marketplace = await ethers.getContract("MockAminoChainMarketplace")
+            .catch(() => ethers.getContract("AminoChainMarketplace"))
+
         marketplaceAddress = Marketplace.address
     } else {
         usdcAddress = "0xb0eaca4246d134cfcd104df91f9cd87e6c7271a7" // todo lets create some registry for deployed contracts addresses
-        mockNftAddress = "0x7BbB00C38a70B384dcb713A1ba7143c8B2AF0109"
-        marketplaceAddress = "0xB64C0837BA35D07F61b87553d61a830Bc1E36Dd4"
+        mockNftAddress = "0x6dfEb832F1902301703c48922B5821ABBA8f251B"
+        marketplaceAddress = "0xccdbcf18830ac135b711bd5a8912fcb09457a62c"
     }
 
     const constructorArgs = [mockNftAddress, marketplaceAddress, usdcAddress]

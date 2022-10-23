@@ -3,6 +3,7 @@ import { DeployFunction } from "hardhat-deploy/types"
 import { ethers } from "hardhat"
 import { developmentChains } from "../helper-hardhat-config"
 import verify from "../utils/verify"
+import {MockERC20, MockERC20__factory} from "../typechain";
 
 const deployMarketplace: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const { getNamedAccounts, deployments, network } = hre
@@ -11,10 +12,13 @@ const deployMarketplace: DeployFunction = async function (hre: HardhatRuntimeEnv
 
     let args: any[]
     if (developmentChains.includes(network.name)) {
-        const MockERC20 = await ethers.getContract("MockERC20")
-        const erc20Address = MockERC20.address
-        const MockNFT = await ethers.getContract("MockNFT")
-        const nftAddress = MockNFT.address
+        const USDC = await ethers.getContract("MockERC20")
+            .catch(() => ethers.getContract("USDC"))
+        const NFT= await ethers.getContract("MockNFT")
+            .catch(() => ethers.getContract("DonationNFT"))
+
+        const erc20Address = USDC.address
+        const nftAddress = NFT.address
 
         args = [8, erc20Address, nftAddress]
     } else {

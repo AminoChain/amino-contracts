@@ -30,7 +30,7 @@ const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY || "Your polygonscan
 const config: HardhatUserConfig = {
     defaultNetwork: "hardhat",
     paths: {
-        // artifacts: '../frontend/src/artifacts',
+        artifacts: '../amino-authenticator-ui/src/artifacts',
     },
     networks: {
         hardhat: {

@@ -1,5 +1,4 @@
 import { network, deployments, ethers, run } from "hardhat"
-// @ts-ignore
 import {
     AminoChainAuthenticator,
     IDonationNFT,
@@ -9,9 +8,9 @@ import {
 import { assert, expect } from "chai"
 import { BigNumber, constants } from "ethers"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
+import {HLA} from "../commons";
 
 describe("Authenticator Tests", async function () {
-    // let authenticator: Authenticator
     let authenticator: AminoChainAuthenticator
     let marketplace: MockAminoChainMarketplace
     let owner: SignerWithAddress
@@ -21,7 +20,7 @@ describe("Authenticator Tests", async function () {
     let nft: IDonationNFT
 
     beforeEach(async () => {
-        await deployments.fixture(["mocks" /*, "api"*/])
+        await deployments.fixture(["all"])
         ;[owner, donor, buyer] = await ethers.getSigners()
 
         marketplace = await ethers.getContract("MockAminoChainMarketplace")
@@ -66,10 +65,3 @@ describe("Authenticator Tests", async function () {
     })
 })
 
-interface HLA {
-    A: number[]
-    B: number[]
-    C: number[]
-    DPB: number[]
-    DRB: number[]
-}

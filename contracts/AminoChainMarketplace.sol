@@ -5,13 +5,14 @@ pragma solidity ^0.8.17;
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 /** @title AminoChain Marketplace V0.1.5
  *  @notice Handles the sale of tokenized stem cells and distributing
  *  incentives to donors
  */
 contract AminoChainMarketplace is ReentrancyGuard {
-    uint256 constant DEFAULT_PRICE = 40000 * 10**6;
+    uint256 constant DEFAULT_PRICE = 40000;
     address public owner;
     address public tokenziedStemCells;
     address public authenticator;
@@ -117,9 +118,11 @@ contract AminoChainMarketplace is ReentrancyGuard {
             "Marketplace does not have approval from lister on NFT contract"
         );
 
-        ListingData[tokenId] = Listing(msg.sender, tokenId, DEFAULT_PRICE, donor, bioBank);
+        uint256 price = DEFAULT_PRICE * 10**IERC20Metadata(i_usdc).decimals();
 
-        emit newListing(msg.sender, tokenId, DEFAULT_PRICE, donor, bioBank);
+        ListingData[tokenId] = Listing(msg.sender, tokenId, price, donor, bioBank);
+
+        emit newListing(msg.sender, tokenId, price, donor, bioBank);
     }
 
     /** @dev Allows a user to buy tokenized stem cells for a given tokenId (No identity verification yet),

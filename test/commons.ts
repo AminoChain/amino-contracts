@@ -16,3 +16,4 @@ export const bioData: HLA = {
 }
 
 export const biobankAddress = "0x985AC3C3Dbb4135Bea36D643bf93d073A10520bc"
+export const firstNftTokeId = 1

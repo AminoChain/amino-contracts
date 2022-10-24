@@ -8,7 +8,7 @@ import {
 import { assert, expect } from "chai"
 import { BigNumber, constants } from "ethers"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
-import {HLA} from "../commons";
+import { HLA } from "../commons"
 
 describe("Authenticator Tests", async function () {
     let authenticator: AminoChainAuthenticator
@@ -26,7 +26,7 @@ describe("Authenticator Tests", async function () {
         marketplace = await ethers.getContract("MockAminoChainMarketplace")
         nft = await ethers.getContract("MockNFT")
         usdc = await ethers.getContract("USDC")
-        await usdc.transfer(buyer.address, ethers.utils.parseUnits("40000", 6))
+        await usdc.transfer(buyer.address, ethers.utils.parseUnits("42000", 6))
 
         authenticator = await ethers.getContract("AminoChainAuthenticator")
         // await nft.setApprovalForAll(marketplace.address, true)
@@ -66,4 +66,3 @@ describe("Authenticator Tests", async function () {
         // expect(await nft.tokenOfOwnerByIndex(buyer.address)).eq(1)
     })*/
 })
-

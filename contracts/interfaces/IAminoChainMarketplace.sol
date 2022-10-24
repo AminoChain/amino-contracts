@@ -10,6 +10,7 @@ interface IAminoChainMarketplace {
     event newListing(
         address seller,
         uint256 tokenId,
+        uint256 sizeInCC,
         uint256 price,
         address donor,
         address bioBank
@@ -18,6 +19,7 @@ interface IAminoChainMarketplace {
     event sale(
         address seller,
         uint256 tokenId,
+        uint256 sizeInCC,
         address buyer,
         uint256 salePrice,
         uint256 protocolFee,
@@ -40,12 +42,14 @@ interface IAminoChainMarketplace {
      *  @dev Before calling this function, the lister must set isApprovedForAll
      *  to true for the marketplace address
      *  @param tokenId The tokenId of the ERC-721 token being listed
+     *  @param sizeInCC The donation size (in cubic centimeters) that is being sold
      *  @param donor The source of the stem cells and the recipent of the
      *  incentive after the ERC-20 has been purchased
      *  @param bioBank The physical holder of the stem cells
      */
     function listItem(
         uint256 tokenId,
+        uint256 sizeInCC,
         address donor,
         address bioBank
     ) external;

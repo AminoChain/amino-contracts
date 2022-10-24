@@ -1,3 +1,5 @@
+/// <reference path="../test.d.ts"/>
+
 import { network, deployments, ethers, run } from "hardhat"
 import {
     AminoChainAuthenticator,
@@ -6,6 +8,7 @@ import {
     Token,
 } from "../../typechain"
 import { assert, expect } from "chai"
+import chai from "chai"
 import { BigNumber, constants } from "ethers"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import {biobankAddress, bioData, firstNftTokeId, HLA} from "../commons"
@@ -50,11 +53,7 @@ describe("NFT Tests", async function () {
         await Promise.all(expectedTokenIds.map( async (tokenId) => {
             expect(await nft.ownerOf(tokenId)).eq(deployer.address)
             const actualBioData = await nft.getBioData(tokenId) as AminoChainLibrary.BioDataStruct
-            expect(actualBioData.A).eql(bioData.A)
-            expect(actualBioData.B).eql(bioData.B)
-            expect(actualBioData.C).eql(bioData.C)
-            expect(actualBioData.DPB).eql(bioData.DPB)
-            expect(actualBioData.DRB).eql(bioData.DRB)
+            expect(actualBioData).bioDataEqual(bioData)
         }))
 
         expect((await nft.getTokenIdsByDonor(donor.address)).map( t => t.toNumber()))

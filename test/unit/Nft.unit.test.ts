@@ -1,5 +1,3 @@
-/// <reference path="../test.d.ts"/>
-
 import { network, deployments, ethers, run } from "hardhat"
 import {
     AminoChainAuthenticator,

@@ -31,3 +31,9 @@ chai.use(function(chai, util) {
         new chai.Assertion(actual.DRB).eql(expected.DRB);
     });
 })
+
+declare module Chai {
+    interface Assertion {
+        bioDataEqual(bioData: any):Assertion;
+    }
+}

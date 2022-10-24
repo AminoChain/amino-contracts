@@ -177,23 +177,23 @@ contract AminoChainMarketplace is ReentrancyGuard {
         delete ListingData[tokenId];
     }
 
-    /** @dev Allows the lister of a given tokenId to cancel their listing by deleting
+    /** @dev Allows the owner of the contract to cancel a listing by deleting
      *  the corrosponding listing data.
      */
-    function cancelListing(uint256 tokenId) external onlyAuthenticator {
-        require(ListingData[tokenId].seller == msg.sender, "Only lister can cancel their listing");
+    function cancelListing(uint256 tokenId) external onlyOwner {
+        require(ListingData[tokenId].seller != address(0), "Token is not listed");
 
         delete ListingData[tokenId];
 
         emit listingCanceled(msg.sender, tokenId);
     }
 
-    /** @dev Allows the lister of a given tokenId to update the price of their listing by
+    /** @dev Allows the owner of the contract to update the price of a listing by
      *  modifing the corrosponding listing data.
      */
-    function updateListing(uint256 tokenId, uint256 newPrice) external onlyAuthenticator {
+    function updateListing(uint256 tokenId, uint256 newPrice) external onlyOwner {
         Listing memory data = ListingData[tokenId];
-        require(data.seller == msg.sender, "Only lister can update their listing");
+        require(data.seller != address(0), "Token is not listed");
         require(data.price != newPrice, "Old price cannot be the same as the new");
 
         ListingData[tokenId].price = newPrice;

@@ -299,17 +299,12 @@ describe("AminoChainMarketplace", async () => {
         })
     })
     describe("cancelListing", async () => {
-        it("fails if user tries to cancel someone else's listing", async () => {
-            const signers = await ethers.getSigners()
+        it("fails if item does not exist", async () => {
             await nft.mint(
                 deployer,
                 { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] },
                 [5, 6, 3, 2, 1]
             )
-            await nft.setApprovalForAll(marketplace.address, true)
-            await marketplace.listItem(firstNftTokeId, "30", signers[2].address, deployer)
-
-            marketplace = await marketplace.connect(signers[1])
 
             expect(marketplace.cancelListing(0)).to.be.revertedWith(
                 "Only lister can cancel their listing"
@@ -349,17 +344,12 @@ describe("AminoChainMarketplace", async () => {
         })
     })
     describe("updateListing", async () => {
-        it("fails if user tries to update someone else's listing", async () => {
-            const signers = await ethers.getSigners()
+        it("fails if item is not listed", async () => {
             await nft.mint(
                 deployer,
                 { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] },
                 [5, 6, 3, 2, 1]
             )
-            await nft.setApprovalForAll(marketplace.address, true)
-            await marketplace.listItem(firstNftTokeId, "30", deployer, deployer)
-
-            marketplace = await marketplace.connect(signers[1])
 
             expect(
                 marketplace.updateListing(firstNftTokeId, ethers.utils.parseEther("2"))

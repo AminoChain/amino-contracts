@@ -34,7 +34,7 @@ describe("AminoChainMarketplace", async () => {
         it("fails if user doesn't own item", async () => {
             const signers = await ethers.getSigners()
             nft = await nft.connect(signers[1])
-            await nft.mint(signers[1].address, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
+            await nft.mint(signers[1].address, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] }, [6,5,2,4,3])
             nft = await nft.connect(signers[0])
 
             await expect(
@@ -43,7 +43,7 @@ describe("AminoChainMarketplace", async () => {
         })
 
         it("fails if token is already listed by user", async () => {
-            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
+            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] }, [5,6,3,2,1])
             await nft.setApprovalForAll(marketplace.address, true)
             await marketplace.listItem(firstNftTokeId, deployer, deployer)
 
@@ -53,7 +53,7 @@ describe("AminoChainMarketplace", async () => {
         })
 
         it("fails if the bioBank is not set set to null", async () => {
-            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
+            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] }, [5,6,3,2,1])
             await nft.setApprovalForAll(marketplace.address, true)
 
             await expect(
@@ -66,7 +66,7 @@ describe("AminoChainMarketplace", async () => {
         })
 
         it("fails if the user does not approve the marketplace", async () => {
-            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
+            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] }, [5,6,3,2,1])
 
             await expect(
                 marketplace.listItem(firstNftTokeId, deployer, deployer)
@@ -74,7 +74,7 @@ describe("AminoChainMarketplace", async () => {
         })
 
         it("Updates listing varibles", async () => {
-            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
+            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] }, [5,6,3,2,1])
             await nft.setApprovalForAll(marketplace.address, true)
             await marketplace.listItem(firstNftTokeId, deployer, deployer)
 
@@ -88,7 +88,7 @@ describe("AminoChainMarketplace", async () => {
         })
 
         it("emits an event with correct data", async () => {
-            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
+            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] }, [5,6,3,2,1])
             await nft.setApprovalForAll(marketplace.address, true)
             const tx = await marketplace.listItem(firstNftTokeId, deployer, deployer)
             const transactionReceipt = await tx.wait()
@@ -107,14 +107,14 @@ describe("AminoChainMarketplace", async () => {
         it("fails if token is not listed", async () => {
             const signers = await ethers.getSigners()
 
-            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
+            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] }, [5,6,3,2,1])
             marketplace = await marketplace.connect(signers[1])
 
             expect(marketplace.buyItem(firstNftTokeId)).to.be.revertedWith("Token is not listed")
         })
 
         it("fails if token seller tries to buy their item", async () => {
-            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
+            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] }, [5,6,3,2,1])
             await nft.setApprovalForAll(marketplace.address, true)
             await marketplace.listItem(firstNftTokeId, deployer, deployer)
 
@@ -125,7 +125,7 @@ describe("AminoChainMarketplace", async () => {
 
         it("fails if buyer doesnt have enough USDC", async () => {
             const signers = await ethers.getSigners()
-            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
+            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] }, [5,6,3,2,1])
             await nft.setApprovalForAll(marketplace.address, true)
             await marketplace.listItem(firstNftTokeId, deployer, deployer)
             marketplace = await marketplace.connect(signers[1])
@@ -137,7 +137,7 @@ describe("AminoChainMarketplace", async () => {
 
         it("fails if buyer doesnt give sufficent USDC approval to contract", async () => {
             const signers = await ethers.getSigners()
-            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
+            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] }, [5,6,3,2,1])
             await nft.setApprovalForAll(marketplace.address, true)
             await marketplace.listItem(firstNftTokeId, deployer, deployer)
             marketplace = await marketplace.connect(signers[1])
@@ -151,7 +151,7 @@ describe("AminoChainMarketplace", async () => {
 
         it("pays donor, bioBank and protcol the correct amounts, then transfers NFT", async () => {
             const signers = await ethers.getSigners()
-            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
+            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] }, [5,6,3,2,1])
             await nft.setApprovalForAll(marketplace.address, true)
             await marketplace.listItem(firstNftTokeId, signers[2].address, signers[3].address)
 
@@ -197,7 +197,7 @@ describe("AminoChainMarketplace", async () => {
 
         it("emits an event with the correct data", async () => {
             const signers = await ethers.getSigners()
-            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
+            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] }, [5,6,3,2,1])
             await nft.setApprovalForAll(marketplace.address, true)
             await marketplace.listItem(firstNftTokeId, signers[2].address, deployer)
 
@@ -230,7 +230,7 @@ describe("AminoChainMarketplace", async () => {
 
         it("deletes listing data", async () => {
             const signers = await ethers.getSigners()
-            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
+            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] }, [5,6,3,2,1])
             await nft.setApprovalForAll(marketplace.address, true)
             await marketplace.listItem(firstNftTokeId, signers[2].address, deployer)
 
@@ -248,7 +248,7 @@ describe("AminoChainMarketplace", async () => {
     describe("cancelListing", async () => {
         it("fails if user tries to cancel someone else's listing", async () => {
             const signers = await ethers.getSigners()
-            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
+            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] }, [5,6,3,2,1])
             await nft.setApprovalForAll(marketplace.address, true)
             await marketplace.listItem(firstNftTokeId, signers[2].address, deployer)
 
@@ -260,7 +260,7 @@ describe("AminoChainMarketplace", async () => {
         })
 
         it("deletes listing variables", async () => {
-            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
+            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] }, [5,6,3,2,1])
             await nft.setApprovalForAll(marketplace.address, true)
             await marketplace.listItem(firstNftTokeId, deployer, deployer)
 
@@ -272,7 +272,7 @@ describe("AminoChainMarketplace", async () => {
 
         it("emits event with the correct data", async () => {
             const signers = await ethers.getSigners()
-            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
+            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] }, [5,6,3,2,1])
             await nft.setApprovalForAll(marketplace.address, true)
             await marketplace.listItem(firstNftTokeId, deployer, deployer)
 
@@ -286,7 +286,7 @@ describe("AminoChainMarketplace", async () => {
     describe("updateListing", async () => {
         it("fails if user tries to update someone else's listing", async () => {
             const signers = await ethers.getSigners()
-            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
+            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] }, [5,6,3,2,1])
             await nft.setApprovalForAll(marketplace.address, true)
             await marketplace.listItem(firstNftTokeId, deployer, deployer)
 
@@ -298,7 +298,7 @@ describe("AminoChainMarketplace", async () => {
         })
 
         it("fails if old listing price is the same as new", async () => {
-            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
+            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] }, [5,6,3,2,1])
             await nft.setApprovalForAll(marketplace.address, true)
             await marketplace.listItem(firstNftTokeId, deployer, deployer)
 
@@ -308,7 +308,7 @@ describe("AminoChainMarketplace", async () => {
         })
 
         it("updates listing price", async () => {
-            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
+            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] }, [5,6,3,2,1])
             await nft.setApprovalForAll(marketplace.address, true)
             await marketplace.listItem(firstNftTokeId, deployer, deployer)
 
@@ -320,7 +320,7 @@ describe("AminoChainMarketplace", async () => {
 
         it("emits event with the correct data", async () => {
             const signers = await ethers.getSigners()
-            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
+            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] }, [5,6,3,2,1])
             await nft.setApprovalForAll(marketplace.address, true)
             await marketplace.listItem(firstNftTokeId, deployer, deployer)
 
@@ -436,7 +436,7 @@ describe("AminoChainMarketplace", async () => {
     })
     describe("getListingData", async () => {
         it("retrives the correct data", async () => {
-            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] })
+            await nft.mint(deployer, { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] }, [5,6,3,2,1])
             await nft.setApprovalForAll(marketplace.address, true)
             await marketplace.listItem(firstNftTokeId, deployer, deployer)
 

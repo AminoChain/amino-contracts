@@ -8,7 +8,7 @@ import {
 import { assert, expect } from "chai"
 import { BigNumber, constants } from "ethers"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
-import {biobankAddress, bioData, firstNftTokeId} from "../commons";
+import {biobankAddress, bioData, firstNftTokeId, amounts} from "../commons";
 
 describe("Full Tests", async function () {
     let authenticator: AminoChainAuthenticator
@@ -41,7 +41,7 @@ describe("Full Tests", async function () {
             await expect(nft.ownerOf(tokenId)).revertedWith("ERC721: invalid token ID")
             expect(await authenticator.connect(donor).isRegistered()).eq(false)
 
-            await authenticator.connect(donor).registerUser(bioData, biobankAddress)
+            await authenticator.connect(donor).registerUser(bioData, biobankAddress, amounts)
 
             expect(await authenticator.connect(donor).isRegistered()).eq(true)
             expect(await nft.ownerOf(tokenId)).eq(authenticator.address)
@@ -55,7 +55,8 @@ describe("Full Tests", async function () {
         it('Buy', async () => {
             const price = BigNumber.from(10).pow(await usdc.decimals()).mul(40000)
             await usdc.connect(doctor).approve(marketplace.address, price)
-
+            // Test seems to only pass when token has be minted in the below line.
+            await authenticator.connect(donor).registerUser(bioData, biobankAddress, amounts)
             await marketplace.connect(doctor).buyItem(tokenId)
             expect(await nft.ownerOf(tokenId)).eq(doctor.address)
 
@@ -70,7 +71,7 @@ describe("Full Tests", async function () {
         before(beforeEachDescribe)
 
         it('Mint & Cancel', async () => {
-            await authenticator.connect(donor).registerUser(bioData, biobankAddress)
+            await authenticator.connect(donor).registerUser(bioData, biobankAddress, amounts)
 
             // fixme Should be canceled by Authenticator
             /*await marketplace.cancelListing(tokenId)

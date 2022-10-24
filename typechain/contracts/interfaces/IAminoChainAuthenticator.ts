@@ -48,7 +48,7 @@ export declare namespace AminoChainLibrary {
 export interface IAminoChainAuthenticatorInterface extends utils.Interface {
   functions: {
     "isRegistered()": FunctionFragment;
-    "registerUser((uint8[],uint8[],uint8[],uint8[],uint8[]),address)": FunctionFragment;
+    "registerUser((uint8[],uint8[],uint8[],uint8[],uint8[]),address,uint256[])": FunctionFragment;
   };
 
   getFunction(
@@ -61,7 +61,11 @@ export interface IAminoChainAuthenticatorInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "registerUser",
-    values: [AminoChainLibrary.BioDataStruct, PromiseOrValue<string>]
+    values: [
+      AminoChainLibrary.BioDataStruct,
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>[]
+    ]
   ): string;
 
   decodeFunctionResult(
@@ -74,7 +78,7 @@ export interface IAminoChainAuthenticatorInterface extends utils.Interface {
   ): Result;
 
   events: {
-    "UserRegistered(address,uint256)": EventFragment;
+    "UserRegistered(address,uint256[])": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "UserRegistered"): EventFragment;
@@ -82,10 +86,10 @@ export interface IAminoChainAuthenticatorInterface extends utils.Interface {
 
 export interface UserRegisteredEventObject {
   user: string;
-  tokenId: BigNumber;
+  tokenIds: BigNumber[];
 }
 export type UserRegisteredEvent = TypedEvent<
-  [string, BigNumber],
+  [string, BigNumber[]],
   UserRegisteredEventObject
 >;
 
@@ -123,6 +127,7 @@ export interface IAminoChainAuthenticator extends BaseContract {
     registerUser(
       bioData: AminoChainLibrary.BioDataStruct,
       biobankAddress: PromiseOrValue<string>,
+      amounts: PromiseOrValue<BigNumberish>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
   };
@@ -132,6 +137,7 @@ export interface IAminoChainAuthenticator extends BaseContract {
   registerUser(
     bioData: AminoChainLibrary.BioDataStruct,
     biobankAddress: PromiseOrValue<string>,
+    amounts: PromiseOrValue<BigNumberish>[],
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -141,18 +147,19 @@ export interface IAminoChainAuthenticator extends BaseContract {
     registerUser(
       bioData: AminoChainLibrary.BioDataStruct,
       biobankAddress: PromiseOrValue<string>,
+      amounts: PromiseOrValue<BigNumberish>[],
       overrides?: CallOverrides
     ): Promise<void>;
   };
 
   filters: {
-    "UserRegistered(address,uint256)"(
+    "UserRegistered(address,uint256[])"(
       user?: PromiseOrValue<string> | null,
-      tokenId?: PromiseOrValue<BigNumberish> | null
+      tokenIds?: PromiseOrValue<BigNumberish>[] | null
     ): UserRegisteredEventFilter;
     UserRegistered(
       user?: PromiseOrValue<string> | null,
-      tokenId?: PromiseOrValue<BigNumberish> | null
+      tokenIds?: PromiseOrValue<BigNumberish>[] | null
     ): UserRegisteredEventFilter;
   };
 
@@ -162,6 +169,7 @@ export interface IAminoChainAuthenticator extends BaseContract {
     registerUser(
       bioData: AminoChainLibrary.BioDataStruct,
       biobankAddress: PromiseOrValue<string>,
+      amounts: PromiseOrValue<BigNumberish>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
   };
@@ -172,6 +180,7 @@ export interface IAminoChainAuthenticator extends BaseContract {
     registerUser(
       bioData: AminoChainLibrary.BioDataStruct,
       biobankAddress: PromiseOrValue<string>,
+      amounts: PromiseOrValue<BigNumberish>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };

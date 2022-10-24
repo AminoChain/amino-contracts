@@ -50,9 +50,9 @@ export interface IDonationNFTInterface extends utils.Interface {
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
-    "getTokenIdByDonor(address)": FunctionFragment;
+    "getTokenIdsByDonor(address)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
-    "mint(address,(uint8[],uint8[],uint8[],uint8[],uint8[]))": FunctionFragment;
+    "mint(address,(uint8[],uint8[],uint8[],uint8[],uint8[]),uint256[])": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
     "safeTransferFrom(address,address,uint256,bytes)": FunctionFragment;
@@ -67,7 +67,7 @@ export interface IDonationNFTInterface extends utils.Interface {
       | "approve"
       | "balanceOf"
       | "getApproved"
-      | "getTokenIdByDonor"
+      | "getTokenIdsByDonor"
       | "isApprovedForAll"
       | "mint"
       | "ownerOf"
@@ -92,7 +92,7 @@ export interface IDonationNFTInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "getTokenIdByDonor",
+    functionFragment: "getTokenIdsByDonor",
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
@@ -101,7 +101,11 @@ export interface IDonationNFTInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "mint",
-    values: [PromiseOrValue<string>, AminoChainLibrary.BioDataStruct]
+    values: [
+      PromiseOrValue<string>,
+      AminoChainLibrary.BioDataStruct,
+      PromiseOrValue<BigNumberish>[]
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "ownerOf",
@@ -152,7 +156,7 @@ export interface IDonationNFTInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getTokenIdByDonor",
+    functionFragment: "getTokenIdsByDonor",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -189,11 +193,13 @@ export interface IDonationNFTInterface extends utils.Interface {
   events: {
     "Approval(address,address,uint256)": EventFragment;
     "ApprovalForAll(address,address,bool)": EventFragment;
+    "NFTMinted(address,tuple,uint256[])": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "NFTMinted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
 }
 
@@ -220,6 +226,18 @@ export type ApprovalForAllEvent = TypedEvent<
 >;
 
 export type ApprovalForAllEventFilter = TypedEventFilter<ApprovalForAllEvent>;
+
+export interface NFTMintedEventObject {
+  donor: string;
+  bioData: AminoChainLibrary.BioDataStructOutput;
+  amounts: BigNumber[];
+}
+export type NFTMintedEvent = TypedEvent<
+  [string, AminoChainLibrary.BioDataStructOutput, BigNumber[]],
+  NFTMintedEventObject
+>;
+
+export type NFTMintedEventFilter = TypedEventFilter<NFTMintedEvent>;
 
 export interface TransferEventObject {
   from: string;
@@ -276,10 +294,10 @@ export interface IDonationNFT extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string] & { operator: string }>;
 
-    getTokenIdByDonor(
+    getTokenIdsByDonor(
       donor: PromiseOrValue<string>,
       overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    ): Promise<[BigNumber[]]>;
 
     isApprovedForAll(
       owner: PromiseOrValue<string>,
@@ -290,6 +308,7 @@ export interface IDonationNFT extends BaseContract {
     mint(
       donor: PromiseOrValue<string>,
       bioData: AminoChainLibrary.BioDataStruct,
+      amounts: PromiseOrValue<BigNumberish>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -353,10 +372,10 @@ export interface IDonationNFT extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
-  getTokenIdByDonor(
+  getTokenIdsByDonor(
     donor: PromiseOrValue<string>,
     overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  ): Promise<BigNumber[]>;
 
   isApprovedForAll(
     owner: PromiseOrValue<string>,
@@ -367,6 +386,7 @@ export interface IDonationNFT extends BaseContract {
   mint(
     donor: PromiseOrValue<string>,
     bioData: AminoChainLibrary.BioDataStruct,
+    amounts: PromiseOrValue<BigNumberish>[],
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -430,10 +450,10 @@ export interface IDonationNFT extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
-    getTokenIdByDonor(
+    getTokenIdsByDonor(
       donor: PromiseOrValue<string>,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    ): Promise<BigNumber[]>;
 
     isApprovedForAll(
       owner: PromiseOrValue<string>,
@@ -444,8 +464,9 @@ export interface IDonationNFT extends BaseContract {
     mint(
       donor: PromiseOrValue<string>,
       bioData: AminoChainLibrary.BioDataStruct,
+      amounts: PromiseOrValue<BigNumberish>[],
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    ): Promise<BigNumber[]>;
 
     ownerOf(
       tokenId: PromiseOrValue<BigNumberish>,
@@ -514,6 +535,17 @@ export interface IDonationNFT extends BaseContract {
       approved?: null
     ): ApprovalForAllEventFilter;
 
+    "NFTMinted(address,tuple,uint256[])"(
+      donor?: PromiseOrValue<string> | null,
+      bioData?: AminoChainLibrary.BioDataStruct | null,
+      amounts?: PromiseOrValue<BigNumberish>[] | null
+    ): NFTMintedEventFilter;
+    NFTMinted(
+      donor?: PromiseOrValue<string> | null,
+      bioData?: AminoChainLibrary.BioDataStruct | null,
+      amounts?: PromiseOrValue<BigNumberish>[] | null
+    ): NFTMintedEventFilter;
+
     "Transfer(address,address,uint256)"(
       from?: PromiseOrValue<string> | null,
       to?: PromiseOrValue<string> | null,
@@ -543,7 +575,7 @@ export interface IDonationNFT extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getTokenIdByDonor(
+    getTokenIdsByDonor(
       donor: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -557,6 +589,7 @@ export interface IDonationNFT extends BaseContract {
     mint(
       donor: PromiseOrValue<string>,
       bioData: AminoChainLibrary.BioDataStruct,
+      amounts: PromiseOrValue<BigNumberish>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -621,7 +654,7 @@ export interface IDonationNFT extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getTokenIdByDonor(
+    getTokenIdsByDonor(
       donor: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -635,6 +668,7 @@ export interface IDonationNFT extends BaseContract {
     mint(
       donor: PromiseOrValue<string>,
       bioData: AminoChainLibrary.BioDataStruct,
+      amounts: PromiseOrValue<BigNumberish>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

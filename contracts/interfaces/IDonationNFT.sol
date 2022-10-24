@@ -13,5 +13,5 @@ interface IDonationNFT is IERC721 {
 
     function getTokenIdsByDonor(address donor) external view returns (uint256[] memory);
 
-    event NFTMinted(address donor, AminoChainLibrary.BioData bioData, uint256[] amounts);
+    event NFTMinted(address indexed donor, AminoChainLibrary.BioData indexed bioData, uint256[] indexed amounts);
 }

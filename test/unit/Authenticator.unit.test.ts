@@ -46,9 +46,11 @@ describe("Authenticator Tests", async function () {
     }
     const biobankAddress = "0x985AC3C3Dbb4135Bea36D643bf93d073A10520bc"
 
+    const amounts = [5, 4, 3, 6]
+
     it("Register User", async () => {
         expect(await authenticator.connect(donor).isRegistered()).eq(false)
-        await authenticator.connect(donor).registerUser(bioData, biobankAddress)
+        await authenticator.connect(donor).registerUser(bioData, biobankAddress, amounts)
         expect(await authenticator.connect(donor).isRegistered()).eq(true)
     })
 

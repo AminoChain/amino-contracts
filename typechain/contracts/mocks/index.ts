@@ -4,5 +4,4 @@
 export type { MockAminoChainMarketplace } from "./MockAminoChainMarketplace";
 export type { MockERC20 } from "./MockERC20";
 export type { MockNFT } from "./MockNFT";
-export type { MockOracle } from "./MockOracle";
 export type { Token } from "./Token";

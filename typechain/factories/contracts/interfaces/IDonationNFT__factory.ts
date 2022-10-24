@@ -66,6 +66,58 @@ const _abi = [
       {
         indexed: true,
         internalType: "address",
+        name: "donor",
+        type: "address",
+      },
+      {
+        components: [
+          {
+            internalType: "uint8[]",
+            name: "A",
+            type: "uint8[]",
+          },
+          {
+            internalType: "uint8[]",
+            name: "B",
+            type: "uint8[]",
+          },
+          {
+            internalType: "uint8[]",
+            name: "C",
+            type: "uint8[]",
+          },
+          {
+            internalType: "uint8[]",
+            name: "DPB",
+            type: "uint8[]",
+          },
+          {
+            internalType: "uint8[]",
+            name: "DRB",
+            type: "uint8[]",
+          },
+        ],
+        indexed: true,
+        internalType: "struct AminoChainLibrary.BioData",
+        name: "bioData",
+        type: "tuple",
+      },
+      {
+        indexed: true,
+        internalType: "uint256[]",
+        name: "amounts",
+        type: "uint256[]",
+      },
+    ],
+    name: "NFTMinted",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
         name: "from",
         type: "address",
       },
@@ -149,12 +201,12 @@ const _abi = [
         type: "address",
       },
     ],
-    name: "getTokenIdByDonor",
+    name: "getTokenIdsByDonor",
     outputs: [
       {
-        internalType: "uint256",
+        internalType: "uint256[]",
         name: "",
-        type: "uint256",
+        type: "uint256[]",
       },
     ],
     stateMutability: "view",
@@ -223,13 +275,18 @@ const _abi = [
         name: "bioData",
         type: "tuple",
       },
+      {
+        internalType: "uint256[]",
+        name: "amounts",
+        type: "uint256[]",
+      },
     ],
     name: "mint",
     outputs: [
       {
-        internalType: "uint256",
+        internalType: "uint256[]",
         name: "",
-        type: "uint256",
+        type: "uint256[]",
       },
     ],
     stateMutability: "nonpayable",

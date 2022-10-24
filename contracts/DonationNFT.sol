@@ -50,6 +50,9 @@ contract DonationNFT is IDonationNFT, ERC721, Pausable, Ownable {
         whenNotPaused
         returns (uint256[] memory)
     {
+        // It would have been also possible ot return the ids stored in addressToTokenIds[donor],
+        // new array is created here to account for the case that donor might give donation
+        // not for the first time
         uint256[] memory tokenIds = new uint256[](amounts.length);
         for (uint i = 0; i < amounts.length; i++) {        
             uint256 tokenId = _tokenIdCounter.current();

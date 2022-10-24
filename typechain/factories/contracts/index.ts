@@ -4,5 +4,5 @@
 export * as interfaces from "./interfaces";
 export * as mocks from "./mocks";
 export { AminoChainAuthenticator__factory } from "./AminoChainAuthenticator__factory";
+export { AminoChainDonation__factory } from "./AminoChainDonation__factory";
 export { AminoChainMarketplace__factory } from "./AminoChainMarketplace__factory";
-export { DonationNFT__factory } from "./DonationNFT__factory";

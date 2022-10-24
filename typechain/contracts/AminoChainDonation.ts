@@ -45,7 +45,7 @@ export declare namespace AminoChainLibrary {
   ] & { A: number[]; B: number[]; C: number[]; DPB: number[]; DRB: number[] };
 }
 
-export interface DonationNFTInterface extends utils.Interface {
+export interface AminoChainDonationInterface extends utils.Interface {
   functions: {
     "addressToTokenIds(address,uint256)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
@@ -362,12 +362,12 @@ export type UnpausedEvent = TypedEvent<[string], UnpausedEventObject>;
 
 export type UnpausedEventFilter = TypedEventFilter<UnpausedEvent>;
 
-export interface DonationNFT extends BaseContract {
+export interface AminoChainDonation extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: DonationNFTInterface;
+  interface: AminoChainDonationInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,

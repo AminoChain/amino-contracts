@@ -1,7 +1,7 @@
 import { network, deployments, ethers, run } from "hardhat"
 import {
-    AminoChainAuthenticator, AminoChainMarketplace, DonationNFT, ERC20,
-    IDonationNFT,
+    AminoChainAuthenticator, AminoChainMarketplace, AminoChainDonation, ERC20,
+    IAminoChainDonation,
     MockAminoChainMarketplace,
     Token,
 } from "../../typechain"
@@ -17,14 +17,14 @@ describe("Full Tests", async function () {
     let doctor: SignerWithAddress
     let donor: SignerWithAddress
     let usdc: Token
-    let nft: DonationNFT
+    let nft: AminoChainDonation
 
     async function beforeEachDescribe() {
         await deployments.fixture(["usdc", "nft", "marketplace", "authenticator"]) // no mocks
 
         ;[deployer, donor, doctor] = await ethers.getSigners()
         marketplace = await ethers.getContract("AminoChainMarketplace") as AminoChainMarketplace
-        nft = await ethers.getContract("DonationNFT") as DonationNFT
+        nft = await ethers.getContract("AminoChainDonation") as AminoChainDonation
         usdc = await ethers.getContract("USDC") as ERC20
         await usdc.transfer(doctor.address, ethers.utils.parseUnits("40000", 6))
         authenticator = await ethers.getContract("AminoChainAuthenticator") as AminoChainAuthenticator
@@ -57,6 +57,7 @@ describe("Full Tests", async function () {
         })
 
         it('Buy', async () => {
+            await authenticator.connect(donor).registerUser(bioData, biobankAddress, [30]) // Test fails unless listing has been posted before via registration of new user
             const list = await marketplace.getListingData(tokenId) as AminoChainMarketplace.ListingStruct
             const price = await list.price
             await usdc.connect(doctor).approve(marketplace.address, price)

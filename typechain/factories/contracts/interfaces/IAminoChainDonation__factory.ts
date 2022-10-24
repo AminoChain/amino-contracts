@@ -5,9 +5,9 @@
 import { Contract, Signer, utils } from "ethers";
 import type { Provider } from "@ethersproject/providers";
 import type {
-  IDonationNFT,
-  IDonationNFTInterface,
-} from "../../../contracts/interfaces/IDonationNFT";
+  IAminoChainDonation,
+  IAminoChainDonationInterface,
+} from "../../../contracts/interfaces/IAminoChainDonation";
 
 const _abi = [
   {
@@ -443,15 +443,15 @@ const _abi = [
   },
 ];
 
-export class IDonationNFT__factory {
+export class IAminoChainDonation__factory {
   static readonly abi = _abi;
-  static createInterface(): IDonationNFTInterface {
-    return new utils.Interface(_abi) as IDonationNFTInterface;
+  static createInterface(): IAminoChainDonationInterface {
+    return new utils.Interface(_abi) as IAminoChainDonationInterface;
   }
   static connect(
     address: string,
     signerOrProvider: Signer | Provider
-  ): IDonationNFT {
-    return new Contract(address, _abi, signerOrProvider) as IDonationNFT;
+  ): IAminoChainDonation {
+    return new Contract(address, _abi, signerOrProvider) as IAminoChainDonation;
   }
 }

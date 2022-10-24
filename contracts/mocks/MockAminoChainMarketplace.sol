@@ -3,17 +3,17 @@
 pragma solidity ^0.8.17;
 
 import "../interfaces/IAminoChainMarketplace.sol";
-import "../interfaces/IDonationNFT.sol";
+import "../interfaces/IAminoChainDonation.sol";
 
 contract MockAminoChainMarketplace is IAminoChainMarketplace {
-    IDonationNFT nft;
+    IAminoChainDonation nft;
 
     constructor(
         uint256 _donorIncentiveRate,
         address _usdc,
         address _tokenizedStemCells
     ) {
-        nft = IDonationNFT(_tokenizedStemCells);
+        nft = IAminoChainDonation(_tokenizedStemCells);
     }
 
     function listItem(

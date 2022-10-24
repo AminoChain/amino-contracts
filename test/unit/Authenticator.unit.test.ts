@@ -1,7 +1,7 @@
 import { network, deployments, ethers, run } from "hardhat"
 import {
     AminoChainAuthenticator,
-    IDonationNFT,
+    IAminoChainDonation,
     MockAminoChainMarketplace,
     Token,
 } from "../../typechain"
@@ -17,7 +17,7 @@ describe("Authenticator Tests", async function () {
     let buyer: SignerWithAddress
     let donor: SignerWithAddress
     let usdc: Token
-    let nft: IDonationNFT
+    let nft: IAminoChainDonation
 
     beforeEach(async () => {
         await deployments.fixture(["all"])

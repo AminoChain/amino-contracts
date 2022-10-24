@@ -15,7 +15,7 @@ const deployMarketplace: DeployFunction = async function (hre: HardhatRuntimeEnv
         const USDC = await ethers.getContract("MockERC20")
             .catch(() => ethers.getContract("USDC"))
         const NFT= await ethers.getContract("MockNFT")
-            .catch(() => ethers.getContract("DonationNFT"))
+            .catch(() => ethers.getContract("AminoChainDonation"))
 
         const erc20Address = USDC.address
         const nftAddress = NFT.address

@@ -1,7 +1,7 @@
 import { network, deployments, ethers, run } from "hardhat"
 import {
     AminoChainAuthenticator,
-    DonationNFT,
+    AminoChainDonation,
     MockAminoChainMarketplace,
     Token,
 } from "../../typechain"
@@ -10,7 +10,7 @@ import chai from "chai"
 import { BigNumber, constants } from "ethers"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import {biobankAddress, bioData, firstNftTokeId, HLA} from "../commons"
-import {AminoChainLibrary} from "../../typechain/contracts/DonationNFT";
+import {AminoChainLibrary} from "../../typechain/contracts/AminoChainDonation";
 
 describe("NFT Tests", async function () {
     let authenticator: AminoChainAuthenticator
@@ -19,14 +19,14 @@ describe("NFT Tests", async function () {
     let doctor: SignerWithAddress
     let donor: SignerWithAddress
     let usdc: Token
-    let nft: DonationNFT
+    let nft: AminoChainDonation
 
     beforeEach(async () => {
         await deployments.fixture(["all"])
         ;[deployer, donor, doctor] = await ethers.getSigners()
 
         // marketplace = await ethers.getContract("MockAminoChainMarketplace")
-        nft = await ethers.getContract("DonationNFT")
+        nft = await ethers.getContract("AminoChainDonation")
         usdc = await ethers.getContract("USDC")
         await usdc.transfer(doctor.address, ethers.utils.parseUnits("42000", 6))
 

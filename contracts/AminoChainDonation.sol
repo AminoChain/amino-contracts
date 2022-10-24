@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.4;
 
-import "./interfaces/IDonationNFT.sol";
+import "./interfaces/IAminoChainDonation.sol";
 import "./libraries/AminoChainLibrary.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
@@ -12,7 +12,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 /** @title AminoChain Donation
  *  @notice Tokenizes donated stem cells
  */
-contract DonationNFT is IDonationNFT, ERC721, Pausable, Ownable {
+contract AminoChainDonation is IAminoChainDonation, ERC721, Pausable, Ownable {
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdCounter;
@@ -27,7 +27,7 @@ contract DonationNFT is IDonationNFT, ERC721, Pausable, Ownable {
     }
 
     // Might also make sense to just use an array since tokenIds are sequencially
-    // assigned with the minted DonationNFTs
+    // assigned with the minted NFTs
     //DonationData[] donations;
     mapping(uint256 => DonationData) public tokenIdToDonationData;
     mapping(address => uint256[]) public addressToTokenIds;
@@ -74,7 +74,7 @@ contract DonationNFT is IDonationNFT, ERC721, Pausable, Ownable {
         return tokenIdToDonationData[tokenId].bioData;
     }
 
-    function transferOwnership(address newOwner) public override(IDonationNFT, Ownable) onlyOwner{
+    function transferOwnership(address newOwner) public override(IAminoChainDonation, Ownable) onlyOwner{
         Ownable.transferOwnership(newOwner);
     }
 

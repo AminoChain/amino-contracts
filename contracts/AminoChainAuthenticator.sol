@@ -3,7 +3,7 @@
 pragma solidity ^0.8.7;
 
 import "./interfaces/IAminoChainAuthenticator.sol";
-import "./DonationNFT.sol";
+import "./AminoChainDonation.sol";
 import "./interfaces/IAminoChainMarketplace.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
@@ -13,7 +13,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
  *  them on the marketplace
  */
 contract AminoChainAuthenticator is IAminoChainAuthenticator, IERC721Receiver {
-    IDonationNFT immutable nft;
+    IAminoChainDonation immutable nft;
     IAminoChainMarketplace immutable marketplace;
     IERC20 immutable usdc;
 
@@ -22,7 +22,7 @@ contract AminoChainAuthenticator is IAminoChainAuthenticator, IERC721Receiver {
         address marketplaceAddress,
         address usdcAddress
     ) {
-        nft = IDonationNFT(nftAddress);
+        nft = IAminoChainDonation(nftAddress);
         nft.setApprovalForAll(marketplaceAddress, true);
         marketplace = IAminoChainMarketplace(marketplaceAddress);
         usdc = IERC20(usdcAddress);

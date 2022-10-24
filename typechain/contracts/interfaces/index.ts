@@ -2,5 +2,5 @@
 /* tslint:disable */
 /* eslint-disable */
 export type { IAminoChainAuthenticator } from "./IAminoChainAuthenticator";
+export type { IAminoChainDonation } from "./IAminoChainDonation";
 export type { IAminoChainMarketplace } from "./IAminoChainMarketplace";
-export type { IDonationNFT } from "./IDonationNFT";

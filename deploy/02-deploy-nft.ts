@@ -11,8 +11,8 @@ const deployFunction: DeployFunction = async () => {
     if (chainId === 31337) {
         log(`Local network detected! Deploying NFT...`)
 
-        const nft = await deploy(`DonationNFT`, {
-            contract: `DonationNFT`,
+        const nft = await deploy(`AminoChainDonation`, {
+            contract: `AminoChainDonation`,
             from: deployer,
             log: true,
             args: ["Amino", "AMINO"],

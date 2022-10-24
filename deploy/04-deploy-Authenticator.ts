@@ -20,7 +20,7 @@ const deployAuthenticator: DeployFunction = async function (hre: HardhatRuntimeE
         usdcAddress = USDC.address
 
         const NFT = await ethers.getContract("MockNFT")
-            .catch(() => ethers.getContract("DonationNFT"))
+            .catch(() => ethers.getContract("AminoChainDonation"))
 
         mockNftAddress = NFT.address
 

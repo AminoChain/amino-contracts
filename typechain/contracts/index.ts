@@ -6,5 +6,5 @@ export type { interfaces };
 import type * as mocks from "./mocks";
 export type { mocks };
 export type { AminoChainAuthenticator } from "./AminoChainAuthenticator";
+export type { AminoChainDonation } from "./AminoChainDonation";
 export type { AminoChainMarketplace } from "./AminoChainMarketplace";
-export type { DonationNFT } from "./DonationNFT";

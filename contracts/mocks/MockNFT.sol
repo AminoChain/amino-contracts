@@ -55,7 +55,7 @@ contract MockNFT is IDonationNFT, ERC721, Pausable, Ownable {
             addressToTokenIds[donor].push(tokenId);
             tokenIds[i] = tokenId;
         }
-        emit NFTMinted(donor, bioData, amounts);
+        emit NFTMinted(donor, bioData, amounts, tokenIds);
         return tokenIds;
     }
 

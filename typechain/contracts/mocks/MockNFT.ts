@@ -271,7 +271,7 @@ export interface MockNFTInterface extends utils.Interface {
   events: {
     "Approval(address,address,uint256)": EventFragment;
     "ApprovalForAll(address,address,bool)": EventFragment;
-    "NFTMinted(address,tuple,uint256[])": EventFragment;
+    "NFTMinted(address,tuple,uint256[],uint256[])": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "Paused(address)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
@@ -314,10 +314,11 @@ export type ApprovalForAllEventFilter = TypedEventFilter<ApprovalForAllEvent>;
 export interface NFTMintedEventObject {
   donor: string;
   bioData: AminoChainLibrary.BioDataStructOutput;
+  tokenIds: BigNumber[];
   amounts: BigNumber[];
 }
 export type NFTMintedEvent = TypedEvent<
-  [string, AminoChainLibrary.BioDataStructOutput, BigNumber[]],
+  [string, AminoChainLibrary.BioDataStructOutput, BigNumber[], BigNumber[]],
   NFTMintedEventObject
 >;
 
@@ -798,15 +799,17 @@ export interface MockNFT extends BaseContract {
       approved?: null
     ): ApprovalForAllEventFilter;
 
-    "NFTMinted(address,tuple,uint256[])"(
+    "NFTMinted(address,tuple,uint256[],uint256[])"(
       donor?: PromiseOrValue<string> | null,
       bioData?: AminoChainLibrary.BioDataStruct | null,
-      amounts?: PromiseOrValue<BigNumberish>[] | null
+      tokenIds?: PromiseOrValue<BigNumberish>[] | null,
+      amounts?: null
     ): NFTMintedEventFilter;
     NFTMinted(
       donor?: PromiseOrValue<string> | null,
       bioData?: AminoChainLibrary.BioDataStruct | null,
-      amounts?: PromiseOrValue<BigNumberish>[] | null
+      tokenIds?: PromiseOrValue<BigNumberish>[] | null,
+      amounts?: null
     ): NFTMintedEventFilter;
 
     "OwnershipTransferred(address,address)"(

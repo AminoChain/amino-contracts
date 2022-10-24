@@ -105,6 +105,12 @@ const _abi = [
       {
         indexed: true,
         internalType: "uint256[]",
+        name: "tokenIds",
+        type: "uint256[]",
+      },
+      {
+        indexed: false,
+        internalType: "uint256[]",
         name: "amounts",
         type: "uint256[]",
       },

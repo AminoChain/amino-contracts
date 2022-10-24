@@ -28,13 +28,15 @@ contract AminoChainAuthenticator is IAminoChainAuthenticator, IERC721Receiver {
         usdc = IERC20(usdcAddress);
     }
 
-    function registerUser(AminoChainLibrary.BioData calldata bioData, address biobankAddress, uint256[] calldata amounts)
-        external
-    {
+    function registerUser(
+        AminoChainLibrary.BioData calldata bioData,
+        address biobankAddress,
+        uint256[] calldata amounts
+    ) external {
         uint256[] memory tokenIds = nft.mint(msg.sender, bioData, amounts);
         //nft.transferFrom(address(this), address(marketplace), tokenId);
-        for (uint256 i = 0; i<tokenIds.length; i++){
-            marketplace.listItem(tokenIds[i], msg.sender, biobankAddress);
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            marketplace.listItem(tokenIds[i], amounts[i], msg.sender, biobankAddress);
         }
         emit UserRegistered(msg.sender, tokenIds);
     }

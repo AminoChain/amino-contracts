@@ -18,12 +18,13 @@ contract MockAminoChainMarketplace is IAminoChainMarketplace {
 
     function listItem(
         uint256 tokenId,
+        uint256 sizeInCC,
         address donor,
         address bioBank
     ) external {}
 
     function buyItem(uint256 tokenId) external {
-//        nft.transferFrom(address(this), msg.sender, tokenId);
+        //        nft.transferFrom(address(this), msg.sender, tokenId);
     }
 
     function cancelListing(uint256 tokenId) external {}

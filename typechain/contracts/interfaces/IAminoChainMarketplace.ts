@@ -31,7 +31,7 @@ export interface IAminoChainMarketplaceInterface extends utils.Interface {
   functions: {
     "buyItem(uint256)": FunctionFragment;
     "cancelListing(uint256)": FunctionFragment;
-    "listItem(uint256,address,address)": FunctionFragment;
+    "listItem(uint256,uint256,address,address)": FunctionFragment;
     "setAuthenticatorAddress(address)": FunctionFragment;
     "setDonorIncentiveRate(uint256)": FunctionFragment;
     "setTokenizedStemCells(address)": FunctionFragment;
@@ -62,6 +62,7 @@ export interface IAminoChainMarketplaceInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "listItem",
     values: [
+      PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<string>,
       PromiseOrValue<string>
@@ -119,9 +120,9 @@ export interface IAminoChainMarketplaceInterface extends utils.Interface {
     "authenticatorAddressSet(address)": EventFragment;
     "listingCanceled(address,uint256)": EventFragment;
     "newDonorIncentiveRate(uint256)": EventFragment;
-    "newListing(address,uint256,uint256,address,address)": EventFragment;
+    "newListing(address,uint256,uint256,uint256,address,address)": EventFragment;
     "ownershipTransferred(address,address)": EventFragment;
-    "sale(address,uint256,address,uint256,uint256,address,uint256,address)": EventFragment;
+    "sale(address,uint256,uint256,address,uint256,uint256,address,uint256,address)": EventFragment;
     "stemCellsAddressSet(address)": EventFragment;
   };
 
@@ -170,12 +171,13 @@ export type newDonorIncentiveRateEventFilter =
 export interface newListingEventObject {
   seller: string;
   tokenId: BigNumber;
+  sizeInCC: BigNumber;
   price: BigNumber;
   donor: string;
   bioBank: string;
 }
 export type newListingEvent = TypedEvent<
-  [string, BigNumber, BigNumber, string, string],
+  [string, BigNumber, BigNumber, BigNumber, string, string],
   newListingEventObject
 >;
 
@@ -196,6 +198,7 @@ export type ownershipTransferredEventFilter =
 export interface saleEventObject {
   seller: string;
   tokenId: BigNumber;
+  sizeInCC: BigNumber;
   buyer: string;
   salePrice: BigNumber;
   protocolFee: BigNumber;
@@ -204,7 +207,17 @@ export interface saleEventObject {
   bioBank: string;
 }
 export type saleEvent = TypedEvent<
-  [string, BigNumber, string, BigNumber, BigNumber, string, BigNumber, string],
+  [
+    string,
+    BigNumber,
+    BigNumber,
+    string,
+    BigNumber,
+    BigNumber,
+    string,
+    BigNumber,
+    string
+  ],
   saleEventObject
 >;
 
@@ -260,6 +273,7 @@ export interface IAminoChainMarketplace extends BaseContract {
 
     listItem(
       tokenId: PromiseOrValue<BigNumberish>,
+      sizeInCC: PromiseOrValue<BigNumberish>,
       donor: PromiseOrValue<string>,
       bioBank: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -304,6 +318,7 @@ export interface IAminoChainMarketplace extends BaseContract {
 
   listItem(
     tokenId: PromiseOrValue<BigNumberish>,
+    sizeInCC: PromiseOrValue<BigNumberish>,
     donor: PromiseOrValue<string>,
     bioBank: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -348,6 +363,7 @@ export interface IAminoChainMarketplace extends BaseContract {
 
     listItem(
       tokenId: PromiseOrValue<BigNumberish>,
+      sizeInCC: PromiseOrValue<BigNumberish>,
       donor: PromiseOrValue<string>,
       bioBank: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -401,9 +417,10 @@ export interface IAminoChainMarketplace extends BaseContract {
       newIncentiveRate?: null
     ): newDonorIncentiveRateEventFilter;
 
-    "newListing(address,uint256,uint256,address,address)"(
+    "newListing(address,uint256,uint256,uint256,address,address)"(
       seller?: null,
       tokenId?: null,
+      sizeInCC?: null,
       price?: null,
       donor?: null,
       bioBank?: null
@@ -411,6 +428,7 @@ export interface IAminoChainMarketplace extends BaseContract {
     newListing(
       seller?: null,
       tokenId?: null,
+      sizeInCC?: null,
       price?: null,
       donor?: null,
       bioBank?: null
@@ -425,9 +443,10 @@ export interface IAminoChainMarketplace extends BaseContract {
       newOwner?: null
     ): ownershipTransferredEventFilter;
 
-    "sale(address,uint256,address,uint256,uint256,address,uint256,address)"(
+    "sale(address,uint256,uint256,address,uint256,uint256,address,uint256,address)"(
       seller?: null,
       tokenId?: null,
+      sizeInCC?: null,
       buyer?: null,
       salePrice?: null,
       protocolFee?: null,
@@ -438,6 +457,7 @@ export interface IAminoChainMarketplace extends BaseContract {
     sale(
       seller?: null,
       tokenId?: null,
+      sizeInCC?: null,
       buyer?: null,
       salePrice?: null,
       protocolFee?: null,
@@ -465,6 +485,7 @@ export interface IAminoChainMarketplace extends BaseContract {
 
     listItem(
       tokenId: PromiseOrValue<BigNumberish>,
+      sizeInCC: PromiseOrValue<BigNumberish>,
       donor: PromiseOrValue<string>,
       bioBank: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -510,6 +531,7 @@ export interface IAminoChainMarketplace extends BaseContract {
 
     listItem(
       tokenId: PromiseOrValue<BigNumberish>,
+      sizeInCC: PromiseOrValue<BigNumberish>,
       donor: PromiseOrValue<string>,
       bioBank: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }

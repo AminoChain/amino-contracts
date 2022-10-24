@@ -12,7 +12,7 @@ import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
  *  incentives to donors
  */
 contract AminoChainMarketplace is ReentrancyGuard {
-    uint256 constant DEFAULT_PRICE = 40000;
+    uint256 constant DEFAULT_PRICE_PER_CC = 1400;
     address public owner;
     address public tokenziedStemCells;
     address public authenticator;
@@ -27,6 +27,7 @@ contract AminoChainMarketplace is ReentrancyGuard {
     struct Listing {
         address seller;
         uint256 tokenId;
+        uint256 sizeInCC;
         uint256 price;
         address donor;
         address bioBank;
@@ -70,6 +71,7 @@ contract AminoChainMarketplace is ReentrancyGuard {
     event newListing(
         address seller,
         uint256 tokenId,
+        uint256 sizeInCC,
         uint256 price,
         address donor,
         address bioBank
@@ -78,6 +80,7 @@ contract AminoChainMarketplace is ReentrancyGuard {
     event sale(
         address seller,
         uint256 tokenId,
+        uint256 sizeInCC,
         address buyer,
         uint256 salePrice,
         uint256 protocolFee,
@@ -104,6 +107,7 @@ contract AminoChainMarketplace is ReentrancyGuard {
      */
     function listItem(
         uint256 tokenId,
+        uint256 sizeInCC,
         address donor,
         address bioBank
     ) external onlyAuthenticator {
@@ -118,11 +122,11 @@ contract AminoChainMarketplace is ReentrancyGuard {
             "Marketplace does not have approval from lister on NFT contract"
         );
 
-        uint256 price = DEFAULT_PRICE * 10**IERC20Metadata(i_usdc).decimals();
+        uint256 price = (DEFAULT_PRICE_PER_CC * sizeInCC) * 10**IERC20Metadata(i_usdc).decimals();
 
-        ListingData[tokenId] = Listing(msg.sender, tokenId, price, donor, bioBank);
+        ListingData[tokenId] = Listing(msg.sender, tokenId, sizeInCC, price, donor, bioBank);
 
-        emit newListing(msg.sender, tokenId, price, donor, bioBank);
+        emit newListing(msg.sender, tokenId, sizeInCC, price, donor, bioBank);
     }
 
     /** @dev Allows a user to buy tokenized stem cells for a given tokenId (No identity verification yet),
@@ -161,6 +165,7 @@ contract AminoChainMarketplace is ReentrancyGuard {
         emit sale(
             data.seller,
             tokenId,
+            data.sizeInCC,
             msg.sender,
             data.price,
             fee,
@@ -193,7 +198,7 @@ contract AminoChainMarketplace is ReentrancyGuard {
 
         ListingData[tokenId].price = newPrice;
 
-        emit newListing(msg.sender, tokenId, newPrice, data.donor, data.bioBank);
+        emit newListing(msg.sender, tokenId, data.sizeInCC, newPrice, data.donor, data.bioBank);
     }
 
     /** @dev Transfers contract ownership to another wallet address. Many functions

@@ -45,7 +45,7 @@ const deployAuthenticator: DeployFunction = async function (hre: HardhatRuntimeE
 
     if (!developmentChains.includes(network.name) && process.env.POLYGONSCAN_API_KEY) {
         console.log("Verifying on polygonscan...")
-        await verify(marketplace.address, constructorArgs)
+        await verify(marketplace.address, constructorArgs)/*.catch( () => {})*/
     }
 }
 

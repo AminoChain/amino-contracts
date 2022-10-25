@@ -1,22 +1,24 @@
 import { DeployFunction } from "hardhat-deploy/types"
 import { getNamedAccounts, deployments, network, ethers } from "hardhat"
 import { BigNumber } from "ethers"
+import {developmentChains} from "../helper-hardhat-config";
+import verify from "../utils/verify";
 
 const deployFunction: DeployFunction = async () => {
     const { deploy, log } = deployments
     const { deployer } = await getNamedAccounts()
-    const chainId: number | undefined = network.config.chainId
 
-    // If we are on a local development network, we need to deploy mocks!
-    if (chainId === 31337) {
-        log(`Local network detected! Deploying NFT...`)
+    const constructorArgs = ["Amino", "AMINO"]
+    const nft = await deploy(`AminoChainDonation`, {
+        contract: `AminoChainDonation`,
+        from: deployer,
+        log: true,
+        args: constructorArgs,
+    })
 
-        const nft = await deploy(`AminoChainDonation`, {
-            contract: `AminoChainDonation`,
-            from: deployer,
-            log: true,
-            args: ["Amino", "AMINO"],
-        })
+    if (!developmentChains.includes(network.name) && process.env.POLYGONSCAN_API_KEY) {
+        console.log("Verifying on polygonscan...")
+        await verify(nft.address, constructorArgs)/*.catch( () => {})*/
     }
 }
 

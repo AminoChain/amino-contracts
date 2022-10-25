@@ -51,6 +51,7 @@ describe("NFT Tests", async function () {
         await Promise.all(expectedTokenIds.map( async (tokenId) => {
             expect(await nft.ownerOf(tokenId)).eq(deployer.address)
             const actualBioData = await nft.getBioData(tokenId) as AminoChainLibrary.BioDataStruct
+            // @ts-ignore
             expect(actualBioData).bioDataEqual(bioData)
         }))
 

@@ -101,3 +101,7 @@ gas-report.txt
 
 contracts/test/fuzzing/crytic-export
 /.idea/
+
+#typechain
+typechain
+typechain/*

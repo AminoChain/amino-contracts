@@ -1,14 +1,15 @@
 import { DeployFunction } from "hardhat-deploy/types"
 import { getNamedAccounts, deployments, network, ethers } from "hardhat"
 import { BigNumber } from "ethers"
-import {developmentChains} from "../helper-hardhat-config";
-import verify from "../utils/verify";
+import { developmentChains } from "../helper-hardhat-config"
+import verify from "../utils/verify"
 
 const deployFunction: DeployFunction = async () => {
     const { deploy, log } = deployments
     const { deployer } = await getNamedAccounts()
 
     const constructorArgs = ["Amino", "AMINO"]
+
     const nft = await deploy(`AminoChainDonation`, {
         contract: `AminoChainDonation`,
         from: deployer,
@@ -18,7 +19,7 @@ const deployFunction: DeployFunction = async () => {
 
     if (!developmentChains.includes(network.name) && process.env.POLYGONSCAN_API_KEY) {
         console.log("Verifying on polygonscan...")
-        await verify(nft.address, constructorArgs)/*.catch( () => {})*/
+        await verify(nft.address, constructorArgs) /*.catch( () => {})*/
     }
 }
 

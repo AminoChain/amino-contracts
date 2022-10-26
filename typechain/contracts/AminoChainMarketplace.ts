@@ -56,40 +56,52 @@ export declare namespace AminoChainMarketplace {
 
 export interface AminoChainMarketplaceInterface extends utils.Interface {
   functions: {
+    "DEFAULT_PRICE_PER_CC()": FunctionFragment;
     "authenticator()": FunctionFragment;
     "buyItem(uint256)": FunctionFragment;
     "cancelListing(uint256)": FunctionFragment;
     "donorIncentiveRate()": FunctionFragment;
+    "fulfill(bytes32,bool)": FunctionFragment;
     "getListingData(uint256)": FunctionFragment;
     "i_usdc()": FunctionFragment;
     "listItem(uint256,uint256,address,address)": FunctionFragment;
     "owner()": FunctionFragment;
+    "requestBuyAccess()": FunctionFragment;
     "setAuthenticatorAddress(address)": FunctionFragment;
     "setDonorIncentiveRate(uint256)": FunctionFragment;
     "setTokenizedStemCells(address)": FunctionFragment;
     "tokenziedStemCells()": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "updateListing(uint256,uint256)": FunctionFragment;
+    "withdrawLink()": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
+      | "DEFAULT_PRICE_PER_CC"
       | "authenticator"
       | "buyItem"
       | "cancelListing"
       | "donorIncentiveRate"
+      | "fulfill"
       | "getListingData"
       | "i_usdc"
       | "listItem"
       | "owner"
+      | "requestBuyAccess"
       | "setAuthenticatorAddress"
       | "setDonorIncentiveRate"
       | "setTokenizedStemCells"
       | "tokenziedStemCells"
       | "transferOwnership"
       | "updateListing"
+      | "withdrawLink"
   ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: "DEFAULT_PRICE_PER_CC",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "authenticator",
     values?: undefined
@@ -107,6 +119,10 @@ export interface AminoChainMarketplaceInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "fulfill",
+    values: [PromiseOrValue<BytesLike>, PromiseOrValue<boolean>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getListingData",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
@@ -121,6 +137,10 @@ export interface AminoChainMarketplaceInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "requestBuyAccess",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "setAuthenticatorAddress",
     values: [PromiseOrValue<string>]
@@ -145,7 +165,15 @@ export interface AminoChainMarketplaceInterface extends utils.Interface {
     functionFragment: "updateListing",
     values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
   ): string;
+  encodeFunctionData(
+    functionFragment: "withdrawLink",
+    values?: undefined
+  ): string;
 
+  decodeFunctionResult(
+    functionFragment: "DEFAULT_PRICE_PER_CC",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "authenticator",
     data: BytesLike
@@ -159,6 +187,7 @@ export interface AminoChainMarketplaceInterface extends utils.Interface {
     functionFragment: "donorIncentiveRate",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "fulfill", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getListingData",
     data: BytesLike
@@ -166,6 +195,10 @@ export interface AminoChainMarketplaceInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "i_usdc", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "listItem", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "requestBuyAccess",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "setAuthenticatorAddress",
     data: BytesLike
@@ -190,8 +223,15 @@ export interface AminoChainMarketplaceInterface extends utils.Interface {
     functionFragment: "updateListing",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "withdrawLink",
+    data: BytesLike
+  ): Result;
 
   events: {
+    "ChainlinkCancelled(bytes32)": EventFragment;
+    "ChainlinkFulfilled(bytes32)": EventFragment;
+    "ChainlinkRequested(bytes32)": EventFragment;
     "authenticatorAddressSet(address)": EventFragment;
     "listingCanceled(address,uint256)": EventFragment;
     "newDonorIncentiveRate(uint256)": EventFragment;
@@ -201,6 +241,9 @@ export interface AminoChainMarketplaceInterface extends utils.Interface {
     "stemCellsAddressSet(address)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "ChainlinkCancelled"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ChainlinkFulfilled"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ChainlinkRequested"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "authenticatorAddressSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "listingCanceled"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "newDonorIncentiveRate"): EventFragment;
@@ -209,6 +252,39 @@ export interface AminoChainMarketplaceInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "sale"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "stemCellsAddressSet"): EventFragment;
 }
+
+export interface ChainlinkCancelledEventObject {
+  id: string;
+}
+export type ChainlinkCancelledEvent = TypedEvent<
+  [string],
+  ChainlinkCancelledEventObject
+>;
+
+export type ChainlinkCancelledEventFilter =
+  TypedEventFilter<ChainlinkCancelledEvent>;
+
+export interface ChainlinkFulfilledEventObject {
+  id: string;
+}
+export type ChainlinkFulfilledEvent = TypedEvent<
+  [string],
+  ChainlinkFulfilledEventObject
+>;
+
+export type ChainlinkFulfilledEventFilter =
+  TypedEventFilter<ChainlinkFulfilledEvent>;
+
+export interface ChainlinkRequestedEventObject {
+  id: string;
+}
+export type ChainlinkRequestedEvent = TypedEvent<
+  [string],
+  ChainlinkRequestedEventObject
+>;
+
+export type ChainlinkRequestedEventFilter =
+  TypedEventFilter<ChainlinkRequestedEvent>;
 
 export interface authenticatorAddressSetEventObject {
   authenticator: string;
@@ -336,6 +412,8 @@ export interface AminoChainMarketplace extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    DEFAULT_PRICE_PER_CC(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     authenticator(overrides?: CallOverrides): Promise<[string]>;
 
     buyItem(
@@ -349,6 +427,12 @@ export interface AminoChainMarketplace extends BaseContract {
     ): Promise<ContractTransaction>;
 
     donorIncentiveRate(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    fulfill(
+      _requestId: PromiseOrValue<BytesLike>,
+      isDoctorOrResearcher: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     getListingData(
       tokenId: PromiseOrValue<BigNumberish>,
@@ -366,6 +450,10 @@ export interface AminoChainMarketplace extends BaseContract {
     ): Promise<ContractTransaction>;
 
     owner(overrides?: CallOverrides): Promise<[string]>;
+
+    requestBuyAccess(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     setAuthenticatorAddress(
       _authenticator: PromiseOrValue<string>,
@@ -394,7 +482,13 @@ export interface AminoChainMarketplace extends BaseContract {
       newPrice: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
+
+    withdrawLink(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
   };
+
+  DEFAULT_PRICE_PER_CC(overrides?: CallOverrides): Promise<BigNumber>;
 
   authenticator(overrides?: CallOverrides): Promise<string>;
 
@@ -409,6 +503,12 @@ export interface AminoChainMarketplace extends BaseContract {
   ): Promise<ContractTransaction>;
 
   donorIncentiveRate(overrides?: CallOverrides): Promise<BigNumber>;
+
+  fulfill(
+    _requestId: PromiseOrValue<BytesLike>,
+    isDoctorOrResearcher: PromiseOrValue<boolean>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   getListingData(
     tokenId: PromiseOrValue<BigNumberish>,
@@ -426,6 +526,10 @@ export interface AminoChainMarketplace extends BaseContract {
   ): Promise<ContractTransaction>;
 
   owner(overrides?: CallOverrides): Promise<string>;
+
+  requestBuyAccess(
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   setAuthenticatorAddress(
     _authenticator: PromiseOrValue<string>,
@@ -455,7 +559,13 @@ export interface AminoChainMarketplace extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  withdrawLink(
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   callStatic: {
+    DEFAULT_PRICE_PER_CC(overrides?: CallOverrides): Promise<BigNumber>;
+
     authenticator(overrides?: CallOverrides): Promise<string>;
 
     buyItem(
@@ -469,6 +579,12 @@ export interface AminoChainMarketplace extends BaseContract {
     ): Promise<void>;
 
     donorIncentiveRate(overrides?: CallOverrides): Promise<BigNumber>;
+
+    fulfill(
+      _requestId: PromiseOrValue<BytesLike>,
+      isDoctorOrResearcher: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     getListingData(
       tokenId: PromiseOrValue<BigNumberish>,
@@ -486,6 +602,8 @@ export interface AminoChainMarketplace extends BaseContract {
     ): Promise<void>;
 
     owner(overrides?: CallOverrides): Promise<string>;
+
+    requestBuyAccess(overrides?: CallOverrides): Promise<string>;
 
     setAuthenticatorAddress(
       _authenticator: PromiseOrValue<string>,
@@ -514,9 +632,32 @@ export interface AminoChainMarketplace extends BaseContract {
       newPrice: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    withdrawLink(overrides?: CallOverrides): Promise<void>;
   };
 
   filters: {
+    "ChainlinkCancelled(bytes32)"(
+      id?: PromiseOrValue<BytesLike> | null
+    ): ChainlinkCancelledEventFilter;
+    ChainlinkCancelled(
+      id?: PromiseOrValue<BytesLike> | null
+    ): ChainlinkCancelledEventFilter;
+
+    "ChainlinkFulfilled(bytes32)"(
+      id?: PromiseOrValue<BytesLike> | null
+    ): ChainlinkFulfilledEventFilter;
+    ChainlinkFulfilled(
+      id?: PromiseOrValue<BytesLike> | null
+    ): ChainlinkFulfilledEventFilter;
+
+    "ChainlinkRequested(bytes32)"(
+      id?: PromiseOrValue<BytesLike> | null
+    ): ChainlinkRequestedEventFilter;
+    ChainlinkRequested(
+      id?: PromiseOrValue<BytesLike> | null
+    ): ChainlinkRequestedEventFilter;
+
     "authenticatorAddressSet(address)"(
       authenticator?: null
     ): authenticatorAddressSetEventFilter;
@@ -593,6 +734,8 @@ export interface AminoChainMarketplace extends BaseContract {
   };
 
   estimateGas: {
+    DEFAULT_PRICE_PER_CC(overrides?: CallOverrides): Promise<BigNumber>;
+
     authenticator(overrides?: CallOverrides): Promise<BigNumber>;
 
     buyItem(
@@ -606,6 +749,12 @@ export interface AminoChainMarketplace extends BaseContract {
     ): Promise<BigNumber>;
 
     donorIncentiveRate(overrides?: CallOverrides): Promise<BigNumber>;
+
+    fulfill(
+      _requestId: PromiseOrValue<BytesLike>,
+      isDoctorOrResearcher: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
 
     getListingData(
       tokenId: PromiseOrValue<BigNumberish>,
@@ -623,6 +772,10 @@ export interface AminoChainMarketplace extends BaseContract {
     ): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
+
+    requestBuyAccess(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
 
     setAuthenticatorAddress(
       _authenticator: PromiseOrValue<string>,
@@ -651,9 +804,17 @@ export interface AminoChainMarketplace extends BaseContract {
       newPrice: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
+
+    withdrawLink(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
+    DEFAULT_PRICE_PER_CC(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     authenticator(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     buyItem(
@@ -668,6 +829,12 @@ export interface AminoChainMarketplace extends BaseContract {
 
     donorIncentiveRate(
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    fulfill(
+      _requestId: PromiseOrValue<BytesLike>,
+      isDoctorOrResearcher: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     getListingData(
@@ -686,6 +853,10 @@ export interface AminoChainMarketplace extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    requestBuyAccess(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
 
     setAuthenticatorAddress(
       _authenticator: PromiseOrValue<string>,
@@ -714,6 +885,10 @@ export interface AminoChainMarketplace extends BaseContract {
     updateListing(
       tokenId: PromiseOrValue<BigNumberish>,
       newPrice: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    withdrawLink(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };

@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.17;
 
-/** @title The interface for AminoChain Marketplace V0.1.5
+/** @title The interface for AminoChain Marketplace V0.2.0
  *  @notice The AminoChain Marketplace handles the sale of tokenized stem cells and distributing
  *  incentives to donors
  */
@@ -60,6 +60,11 @@ interface IAminoChainMarketplace {
      *  @param tokenId The tokenId of the desired tokenized stem cells
      */
     function buyItem(uint256 tokenId) external;
+
+    /** @notice Requests a Chainlink Any-Api call to determine if the caller is a registered
+     *  doctor or researcher. Which then determines if they are allowed to buy stem cells.
+     */
+    function requestBuyAccess() external returns (bytes32 requestId);
 
     /** @param tokenId The tokenId of the listing being canceled
      */

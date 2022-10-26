@@ -246,6 +246,19 @@ const _abi = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "requestBuyAccess",
+    outputs: [
+      {
+        internalType: "bytes32",
+        name: "requestId",
+        type: "bytes32",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "address",

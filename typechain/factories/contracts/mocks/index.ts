@@ -3,5 +3,7 @@
 /* eslint-disable */
 export { MockAminoChainMarketplace__factory } from "./MockAminoChainMarketplace__factory";
 export { MockERC20__factory } from "./MockERC20__factory";
+export { MockLinkToken__factory } from "./MockLinkToken__factory";
 export { MockNFT__factory } from "./MockNFT__factory";
+export { MockOracle__factory } from "./MockOracle__factory";
 export { Token__factory } from "./Token__factory";

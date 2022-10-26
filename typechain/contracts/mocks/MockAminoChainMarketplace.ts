@@ -32,6 +32,7 @@ export interface MockAminoChainMarketplaceInterface extends utils.Interface {
     "buyItem(uint256)": FunctionFragment;
     "cancelListing(uint256)": FunctionFragment;
     "listItem(uint256,uint256,address,address)": FunctionFragment;
+    "requestBuyAccess()": FunctionFragment;
     "setAuthenticatorAddress(address)": FunctionFragment;
     "setDonorIncentiveRate(uint256)": FunctionFragment;
     "setTokenizedStemCells(address)": FunctionFragment;
@@ -44,6 +45,7 @@ export interface MockAminoChainMarketplaceInterface extends utils.Interface {
       | "buyItem"
       | "cancelListing"
       | "listItem"
+      | "requestBuyAccess"
       | "setAuthenticatorAddress"
       | "setDonorIncentiveRate"
       | "setTokenizedStemCells"
@@ -67,6 +69,10 @@ export interface MockAminoChainMarketplaceInterface extends utils.Interface {
       PromiseOrValue<string>,
       PromiseOrValue<string>
     ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "requestBuyAccess",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "setAuthenticatorAddress",
@@ -95,6 +101,10 @@ export interface MockAminoChainMarketplaceInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "listItem", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "requestBuyAccess",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "setAuthenticatorAddress",
     data: BytesLike
@@ -279,6 +289,10 @@ export interface MockAminoChainMarketplace extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    requestBuyAccess(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     setAuthenticatorAddress(
       _authenticator: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -321,6 +335,10 @@ export interface MockAminoChainMarketplace extends BaseContract {
     sizeInCC: PromiseOrValue<BigNumberish>,
     donor: PromiseOrValue<string>,
     bioBank: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  requestBuyAccess(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -368,6 +386,8 @@ export interface MockAminoChainMarketplace extends BaseContract {
       bioBank: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    requestBuyAccess(overrides?: CallOverrides): Promise<string>;
 
     setAuthenticatorAddress(
       _authenticator: PromiseOrValue<string>,
@@ -491,6 +511,10 @@ export interface MockAminoChainMarketplace extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    requestBuyAccess(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     setAuthenticatorAddress(
       _authenticator: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -534,6 +558,10 @@ export interface MockAminoChainMarketplace extends BaseContract {
       sizeInCC: PromiseOrValue<BigNumberish>,
       donor: PromiseOrValue<string>,
       bioBank: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    requestBuyAccess(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

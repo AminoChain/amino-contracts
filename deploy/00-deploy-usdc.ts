@@ -17,7 +17,7 @@ const deployFunction: DeployFunction = async () => {
             contract: `Token`,
             from: deployer.address,
             log: true,
-            args: [`USDC`, `USDC`, 1000000],
+            args: [`USDC`, `USDC`, 6, 1000000],
         })
         const usdc = await ethers.getContract("USDC") as IERC20Metadata
         let usdcDecimals = await usdc.decimals();

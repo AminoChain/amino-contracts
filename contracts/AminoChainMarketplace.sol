@@ -47,15 +47,15 @@ contract AminoChainMarketplace is ReentrancyGuard, ChainlinkClient {
         uint256 _donorIncentiveRate,
         address _usdc,
         address _tokenizedStemCells,
-        address _chainlinkOracele,
-        address _chainlinkToken
+        address _chainlinkToken,
+        address _chainlinkOracle
     ) {
         owner = msg.sender;
         tokenziedStemCells = _tokenizedStemCells;
         i_usdc = _usdc;
         donorIncentiveRate = _donorIncentiveRate;
         setChainlinkToken(_chainlinkToken);
-        setChainlinkOracle(_chainlinkOracele);
+        setChainlinkOracle(_chainlinkOracle);
     }
 
     /** === Modifiers === **/

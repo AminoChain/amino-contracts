@@ -3,7 +3,7 @@ import { expect, assert } from "chai"
 import { AminoChainMarketplace, MockERC20, MockNFT } from "../../typechain"
 import { firstNftTokeId } from "../commons"
 
-describe("AminoChainMarketplace", async () => {
+describe("AminoChainMarketplace Tests", async () => {
     const { deployer } = await getNamedAccounts()
     let marketplace: AminoChainMarketplace
     let erc20: MockERC20

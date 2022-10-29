@@ -104,4 +104,3 @@ contracts/test/fuzzing/crytic-export
 
 #typechain
 typechain
-typechain/*

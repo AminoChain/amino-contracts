@@ -3,7 +3,7 @@ import { expect, assert } from "chai"
 import { AminoChainMarketplace, MockERC20, MockNFT } from "../../typechain"
 import { firstNftTokeId } from "../commons"
 
-describe("AminoChainMarketplace", async () => {
+describe("AminoChainMarketplace Tests", async () => {
     const { deployer } = await getNamedAccounts()
     let marketplace: AminoChainMarketplace
     let erc20: MockERC20
@@ -31,21 +31,6 @@ describe("AminoChainMarketplace", async () => {
         })
     })
     describe("listItem", async () => {
-        it("fails if user doesn't own item", async () => {
-            const signers = await ethers.getSigners()
-            nft = await nft.connect(signers[1])
-            await nft.mint(
-                signers[1].address,
-                { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] },
-                [6, 5, 2, 4, 3]
-            )
-            nft = await nft.connect(signers[0])
-
-            await expect(
-                marketplace.listItem(firstNftTokeId, "30", deployer, deployer)
-            ).to.be.revertedWith(`Ownable: caller is not the owner`)
-        })
-
         it("fails if token is already listed by user", async () => {
             await nft.mint(
                 deployer,
@@ -140,6 +125,25 @@ describe("AminoChainMarketplace", async () => {
             marketplace = await marketplace.connect(signers[1])
 
             expect(marketplace.buyItem(firstNftTokeId)).to.be.revertedWith("Token is not listed")
+        })
+
+        it("fails if token is not listed", async () => {
+            const signers = await ethers.getSigners()
+
+            await nft.mint(
+                deployer,
+                { A: [0], B: [0], C: [0], DPB: [0], DRB: [0] },
+                [5, 6, 3, 2, 1]
+            )
+            marketplace = await marketplace.connect(signers[1])
+            const tx = await marketplace.requestBuyAccess()
+            await tx.wait(6000)
+            await nft.setApprovalForAll(marketplace.address, true)
+            await marketplace.listItem(firstNftTokeId, "30", deployer, deployer)
+
+            expect(marketplace.buyItem(firstNftTokeId)).to.be.revertedWith(
+                "Msg sender is not approved to buy"
+            )
         })
 
         it("fails if token seller tries to buy their item", async () => {

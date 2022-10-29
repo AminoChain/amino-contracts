@@ -3,16 +3,20 @@
 pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 
-/** @title AminoChain Marketplace V0.1.5
+/** @title AminoChain Marketplace V0.2.0
  *  @notice Handles the sale of tokenized stem cells and distributing
  *  incentives to donors
  */
-contract AminoChainMarketplace is ReentrancyGuard {
-    uint256 constant DEFAULT_PRICE_PER_CC = 1400;
+contract AminoChainMarketplace is ReentrancyGuard, ChainlinkClient {
+    using Chainlink for Chainlink.Request;
+
+    uint256 public constant DEFAULT_PRICE_PER_CC = 1400;
     address public owner;
     address public tokenziedStemCells;
     address public authenticator;
@@ -34,18 +38,24 @@ contract AminoChainMarketplace is ReentrancyGuard {
     }
 
     mapping(uint256 => Listing) ListingData;
+    mapping(bytes32 => address) ApprovalRequest;
+    mapping(address => bool) ApprovedToBuy;
 
     /** === Constructor === **/
 
     constructor(
         uint256 _donorIncentiveRate,
         address _usdc,
-        address _tokenizedStemCells
+        address _tokenizedStemCells,
+        address _chainlinkToken,
+        address _chainlinkOracle
     ) {
         owner = msg.sender;
         tokenziedStemCells = _tokenizedStemCells;
         i_usdc = _usdc;
         donorIncentiveRate = _donorIncentiveRate;
+        setChainlinkToken(_chainlinkToken);
+        setChainlinkOracle(_chainlinkOracle);
     }
 
     /** === Modifiers === **/
@@ -129,14 +139,15 @@ contract AminoChainMarketplace is ReentrancyGuard {
         emit newListing(msg.sender, tokenId, sizeInCC, price, donor, bioBank);
     }
 
-    /** @dev Allows a user to buy tokenized stem cells for a given tokenId (No identity verification yet),
-     *  then transfers the incentive (based on donorIncentiveRate) to the donor's wallet, a fee to the authenticator contract,
+    /** @dev Allows a user to buy tokenized stem cells for a given tokenId, then transfers the incentive
+     *  (based on donorIncentiveRate) to the donor's wallet, a fee to the authenticator contract,
      *  and the rest of the payment to the bioBanks's wallet. Buyer must have the price amount approved for marketplace address
      *  on the USDC contract.
      */
     function buyItem(uint256 tokenId) external nonReentrant {
         Listing memory data = ListingData[tokenId];
         require(data.seller != address(0), "Token is not listed");
+        require(ApprovedToBuy[msg.sender] == true, "Msg sender is not approved to buy");
         require(
             IERC721(tokenziedStemCells).ownerOf(tokenId) != msg.sender,
             "Token seller cannot buy their token"
@@ -175,6 +186,29 @@ contract AminoChainMarketplace is ReentrancyGuard {
         );
 
         delete ListingData[tokenId];
+    }
+
+    /** @dev Requests a Chainlink Any-Api call to determine if the caller is a registered
+     *  doctor or researcher. Which then determines if they are allowed to buy stem cells.
+     */
+    function requestBuyAccess() external returns (bytes32 requestId) {
+        Chainlink.Request memory req = buildChainlinkRequest(
+            "c1c5e92880894eb6b27d3cae19670aa3",
+            address(this),
+            this.fulfill.selector
+        );
+        req.add(
+            "get",
+            string.concat(
+                "https://amino-chain-doctors-registry.herokuapp.com/is-it-doctor-wallet/",
+                Strings.toHexString(msg.sender)
+            )
+        );
+        req.add("path", "doctor");
+
+        bytes32 id = sendChainlinkRequest(req, (1 * LINK_DIVISIBILITY) / 10);
+        ApprovalRequest[id] = msg.sender;
+        return (id);
     }
 
     /** @dev Allows the owner of the contract to cancel a listing by deleting
@@ -239,6 +273,26 @@ contract AminoChainMarketplace is ReentrancyGuard {
         );
         donorIncentiveRate = newIncentiveRate;
         emit newDonorIncentiveRate(newIncentiveRate);
+    }
+
+    /** @dev Allows the owner of this contract to withdrawl stored LINK.
+     */
+    function withdrawLink() external onlyOwner {
+        LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());
+        require(link.transfer(msg.sender, link.balanceOf(address(this))), "Unable to transfer");
+    }
+
+    // === Public Functions === //
+
+    /** @dev Allows or prevents a buyer from buying tokenized stem cells. Based on a
+     *  Chainlink API call to the doctor/researcher registry.
+     */
+    function fulfill(bytes32 _requestId, bool isDoctorOrResearcher)
+        public
+        recordChainlinkFulfillment(_requestId)
+    {
+        address requester = ApprovalRequest[_requestId];
+        ApprovedToBuy[requester] = isDoctorOrResearcher;
     }
 
     // === View Functions === //

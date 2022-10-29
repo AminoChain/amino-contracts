@@ -46,9 +46,10 @@ const deployMarketplace: DeployFunction = async function (hre: HardhatRuntimeEnv
         log: true,
     })
 
-    if (!developmentChains.includes(network.name) && process.env.POLYGONSCAN_API_KEY) {
+  if (!developmentChains.includes(network.name) && process.env.POLYGONSCAN_API_KEY) {
         console.log("Verifing on Etherscan...")
-        await verify(marketplace.address, args) /*.catch( () => {})*/
+        await verify(marketplace.address,
+            "contracts/AminoChainMarketplace.sol:AminoChainMarketplace", args)/*.catch( () => {})*/
     }
 }
 

@@ -28,6 +28,8 @@ interface IAminoChainMarketplace {
         address bioBank
     );
 
+    event approvalRequest(bytes32 requestId, address requester);
+
     event listingCanceled(address seller, uint256 tokenId);
 
     event ownershipTransferred(address oldOwner, address newOwner);
@@ -64,7 +66,7 @@ interface IAminoChainMarketplace {
     /** @notice Requests a Chainlink Any-Api call to determine if the caller is a registered
      *  doctor or researcher. Which then determines if they are allowed to buy stem cells.
      */
-    function requestBuyAccess() external returns (bytes32 requestId);
+    function requestBuyAccess() external;
 
     /** @param tokenId The tokenId of the listing being canceled
      */

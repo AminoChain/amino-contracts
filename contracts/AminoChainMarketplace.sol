@@ -99,6 +99,8 @@ contract AminoChainMarketplace is ReentrancyGuard, ChainlinkClient {
         address bioBank
     );
 
+    event approvalRequest(bytes32 requestId, address requester);
+
     event listingCanceled(address seller, uint256 tokenId);
 
     event ownershipTransferred(address oldOwner, address newOwner);
@@ -191,7 +193,7 @@ contract AminoChainMarketplace is ReentrancyGuard, ChainlinkClient {
     /** @dev Requests a Chainlink Any-Api call to determine if the caller is a registered
      *  doctor or researcher. Which then determines if they are allowed to buy stem cells.
      */
-    function requestBuyAccess() external returns (bytes32 requestId) {
+    function requestBuyAccess() external {
         Chainlink.Request memory req = buildChainlinkRequest(
             "c1c5e92880894eb6b27d3cae19670aa3",
             address(this),
@@ -208,7 +210,7 @@ contract AminoChainMarketplace is ReentrancyGuard, ChainlinkClient {
 
         bytes32 id = sendChainlinkRequest(req, (1 * LINK_DIVISIBILITY) / 10);
         ApprovalRequest[id] = msg.sender;
-        return (id);
+        emit approvalRequest(id, msg.sender);
     }
 
     /** @dev Allows the owner of the contract to cancel a listing by deleting

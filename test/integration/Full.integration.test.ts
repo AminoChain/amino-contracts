@@ -7,11 +7,22 @@ import {
     IAminoChainDonation,
     MockAminoChainMarketplace,
     Token,
+    LinkToken,
+    MockOracle,
 } from "../../typechain"
 import { assert, expect } from "chai"
 import { BigNumber, constants } from "ethers"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
-import { biobankAddress, bioData, firstNftTokeId, amounts, DEFAULT_PRICE_PER_CC } from "../commons"
+import {
+    biobankAddress,
+    bioData,
+    HLAHashed,
+    firstNftTokeId,
+    amounts,
+    DEFAULT_PRICE_PER_CC,
+} from "../commons"
+
+const trueBoolInBytes = "0x0000000000000000000000000000000000000000000000000000000000000001"
 
 describe("Full Tests", async function () {
     let authenticator: AminoChainAuthenticator
@@ -21,9 +32,12 @@ describe("Full Tests", async function () {
     let donor: SignerWithAddress
     let usdc: Token
     let nft: AminoChainDonation
+    let mockOracle: MockOracle
+    let linkToken: LinkToken
+    let bioDataHashed: HLAHashed
 
     async function beforeEachDescribe() {
-        await deployments.fixture(["usdc", "nft", "marketplace", "authenticator"]) // no mocks
+        await deployments.fixture(["full"]) // no mocks (except oracle)
         ;[deployer, donor, doctor] = await ethers.getSigners()
         marketplace = (await ethers.getContract("AminoChainMarketplace")) as AminoChainMarketplace
         nft = (await ethers.getContract("AminoChainDonation")) as AminoChainDonation
@@ -32,20 +46,38 @@ describe("Full Tests", async function () {
         authenticator = (await ethers.getContract(
             "AminoChainAuthenticator"
         )) as AminoChainAuthenticator
+        mockOracle = await ethers.getContract("MockOracle", deployer)
+        linkToken = await ethers.getContract("LinkToken", deployer)
         await nft.transferOwnership(authenticator.address)
         await marketplace.setAuthenticatorAddress(authenticator.address)
+        await linkToken.transfer(marketplace.address, ethers.utils.parseEther("10"))
     }
 
     describe("Buy happy path", async () => {
         before(beforeEachDescribe)
 
         const tokenId = firstNftTokeId
+        const biodataHash = await authenticator.getBioDataHash(
+            bioData.A.toString(),
+            bioData.B.toString(),
+            bioData.C.toString(),
+            bioData.DPB.toString(),
+            bioData.DRB.toString()
+        )
 
         it("Mint & List", async () => {
             await expect(nft.ownerOf(tokenId)).revertedWith("ERC721: invalid token ID")
             expect(await authenticator.connect(donor).isRegistered()).eq(false)
 
-            await authenticator.connect(donor).registerUser(bioData, biobankAddress, [30])
+            const signature = await donor.signMessage("I donated")
+            await authenticator.register(
+                bioDataHashed,
+                donor.address,
+                biodataHash,
+                0,
+                signature,
+                amounts
+            )
 
             expect(await authenticator.connect(donor).isRegistered()).eq(true)
             expect(await nft.ownerOf(tokenId)).eq(authenticator.address)
@@ -66,12 +98,26 @@ describe("Full Tests", async function () {
         })
 
         it("Buy", async () => {
-            await authenticator.connect(donor).registerUser(bioData, biobankAddress, [30]) // Test fails unless listing has been posted before via registration of new user
+            const signature = await donor.signMessage("I donated")
+            await authenticator.register(
+                bioDataHashed,
+                donor.address,
+                biodataHash,
+                0,
+                signature,
+                amounts
+            ) // Test fails unless listing has been posted before via registration of new user
+
             const list = (await marketplace.getListingData(
                 tokenId
             )) as AminoChainMarketplace.ListingStruct
             const price = await list.price
             await usdc.connect(doctor).approve(marketplace.address, price)
+
+            const requestTx = await marketplace.connect(doctor).requestBuyAccess()
+            const requestTransactionReceipt = await requestTx.wait()
+            const requestId = requestTransactionReceipt.events![4].args?.requestId
+            await mockOracle.fulfillOracleRequest(requestId, trueBoolInBytes)
 
             await marketplace.connect(doctor).buyItem(tokenId)
             expect(await nft.ownerOf(tokenId)).eq(doctor.address)
@@ -90,6 +136,13 @@ describe("Full Tests", async function () {
 
         const firstTokenId = firstNftTokeId
         const secondTokenId = firstNftTokeId + 1
+        const biodataHash = await authenticator.getBioDataHash(
+            bioData.A.toString(),
+            bioData.B.toString(),
+            bioData.C.toString(),
+            bioData.DPB.toString(),
+            bioData.DRB.toString()
+        )
 
         it("Mint & List", async () => {
             await expect(nft.ownerOf(firstTokenId)).revertedWith("ERC721: invalid token ID")
@@ -97,7 +150,15 @@ describe("Full Tests", async function () {
 
             expect(await authenticator.connect(donor).isRegistered()).eq(false)
 
-            await authenticator.connect(donor).registerUser(bioData, biobankAddress, [20, 10])
+            const signature = await donor.signMessage("I donated")
+            await authenticator.register(
+                bioDataHashed,
+                donor.address,
+                biodataHash,
+                0,
+                signature,
+                [10, 20]
+            )
 
             expect(await authenticator.connect(donor).isRegistered()).eq(true)
 
@@ -125,8 +186,24 @@ describe("Full Tests", async function () {
     describe("Mint & Cancel Procedure", async () => {
         before(beforeEachDescribe)
 
+        const biodataHash = await authenticator.getBioDataHash(
+            bioData.A.toString(),
+            bioData.B.toString(),
+            bioData.C.toString(),
+            bioData.DPB.toString(),
+            bioData.DRB.toString()
+        )
+
         it("Mint & Cancel", async () => {
-            await authenticator.connect(donor).registerUser(bioData, biobankAddress, amounts)
+            const signature = await donor.signMessage("I donated")
+            await authenticator.register(
+                bioDataHashed,
+                donor.address,
+                biodataHash,
+                0,
+                signature,
+                [10, 20]
+            )
 
             // fixme Should be canceled by Authenticator
             /*await marketplace.cancelListing(tokenId)

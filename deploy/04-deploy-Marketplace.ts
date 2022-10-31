@@ -17,7 +17,7 @@ const deployMarketplace: DeployFunction = async function (hre: HardhatRuntimeEnv
             .getContract("MockNFT")
             .catch(() => ethers.getContract("AminoChainDonation"))
         const LINK = await ethers
-            .getContract("MockLinkToken")
+            .getContract("LinkToken")
             .catch(() => ethers.getContract("MockLinkToken"))
         const ORACLE = await ethers
             .getContract("MockOracle")
@@ -46,12 +46,15 @@ const deployMarketplace: DeployFunction = async function (hre: HardhatRuntimeEnv
         log: true,
     })
 
-  if (!developmentChains.includes(network.name) && process.env.POLYGONSCAN_API_KEY) {
+    if (!developmentChains.includes(network.name) && process.env.POLYGONSCAN_API_KEY) {
         console.log("Verifing on Etherscan...")
-        await verify(marketplace.address,
-            "contracts/AminoChainMarketplace.sol:AminoChainMarketplace", args)/*.catch( () => {})*/
+        await verify(
+            marketplace.address,
+            "contracts/AminoChainMarketplace.sol:AminoChainMarketplace",
+            args
+        ) /*.catch( () => {})*/
     }
 }
 
 export default deployMarketplace
-deployMarketplace.tags = [`all`, `marketplace`]
+deployMarketplace.tags = [`all`, `marketplace`, `full`]

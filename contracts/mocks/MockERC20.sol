@@ -8,7 +8,7 @@ contract MockERC20 {
     uint8 public decimals = 6;
 
     event Approval(address indexed src, address indexed guy, uint256 wad);
-    event Transfer(address indexed src, address indexed dst, uint256 wad);
+    event UsdcTransfer(address indexed src, address indexed dst, uint256 wad);
     event Deposit(address indexed dst, uint256 wad);
     event Withdrawal(address indexed src, uint256 wad);
 
@@ -70,7 +70,7 @@ contract MockERC20 {
         balanceOf[src] -= wad;
         balanceOf[dst] += wad;
 
-        emit Transfer(src, dst, wad);
+        emit UsdcTransfer(src, dst, wad);
 
         return true;
     }

@@ -27,7 +27,7 @@ contract MockAminoChainMarketplace is IAminoChainMarketplace {
         //        nft.transferFrom(address(this), msg.sender, tokenId);
     }
 
-    function requestBuyAccess() external returns (bytes32 requestId) {}
+    function requestBuyAccess() external {}
 
     function cancelListing(uint256 tokenId) external {}
 

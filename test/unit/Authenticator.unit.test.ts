@@ -8,7 +8,9 @@ import {
 import { assert, expect } from "chai"
 import { BigNumber, constants } from "ethers"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
-import { HLA } from "../commons"
+import { HLA, HLAHashed, web3StringToBytes32 } from "../commons"
+import { arrayify, parseEther } from "ethers/lib/utils"
+import { keccak256 } from "hardhat/internal/util/keccak"
 
 describe("Authenticator Tests", async function () {
     let authenticator: AminoChainAuthenticator
@@ -18,6 +20,7 @@ describe("Authenticator Tests", async function () {
     let donor: SignerWithAddress
     let usdc: Token
     let nft: IAminoChainDonation
+    let bioDataHashed: HLAHashed
 
     beforeEach(async () => {
         await deployments.fixture(["all"])
@@ -31,6 +34,14 @@ describe("Authenticator Tests", async function () {
         authenticator = await ethers.getContract("AminoChainAuthenticator")
         // await nft.setApprovalForAll(marketplace.address, true)
         await nft.transferOwnership(authenticator.address)
+
+        bioDataHashed = {
+            A: await authenticator.hash(bioData.A.toString()),
+            B: await authenticator.hash(bioData.B.toString()),
+            C: await authenticator.hash(bioData.C.toString()),
+            DPB: await authenticator.hash(bioData.DPB.toString()),
+            DRB: await authenticator.hash(bioData.DRB.toString()),
+        }
     })
 
     after(async function () {
@@ -44,13 +55,39 @@ describe("Authenticator Tests", async function () {
         DPB: [1, 2, 3],
         DRB: [1, 2, 3],
     }
-    const biobankAddress = "0x985AC3C3Dbb4135Bea36D643bf93d073A10520bc"
 
     const amounts = [10, 5, 5, 2, 2, 2, 2, 2]
 
     it("Register User", async () => {
         expect(await authenticator.connect(donor).isRegistered()).eq(false)
-        await authenticator.connect(donor).registerUser(bioData, biobankAddress, amounts)
+
+        const nonce = 1
+
+        const biodataHash = await authenticator.getBioDataHash(
+            bioData.A.toString(),
+            bioData.B.toString(),
+            bioData.C.toString(),
+            bioData.DPB.toString(),
+            bioData.DRB.toString()
+        )
+
+        const messageHash = await authenticator.getRegistrationHash(
+            donor.address,
+            biodataHash,
+            nonce
+        )
+
+        const signature = await donor.signMessage(arrayify(messageHash))
+
+        await authenticator.register(
+            bioDataHashed,
+            donor.address,
+            biodataHash,
+            nonce,
+            signature,
+            amounts
+        )
+
         expect(await authenticator.connect(donor).isRegistered()).eq(true)
     })
 
@@ -59,7 +96,6 @@ describe("Authenticator Tests", async function () {
         await authenticator.registerUser(bioData, biobankAddress)
         /////
         await usdc.connect(buyer).approve(marketplace.address, ethers.utils.parseUnits("40000", 6))
-
         expect(await nft.balanceOf(buyer.address)).eq(0)
         await marketplace.connect(buyer).buyItem(1)
         expect(await nft.balanceOf(buyer.address)).eq(1)

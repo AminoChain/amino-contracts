@@ -6,7 +6,7 @@ const verify = async (contractAddress: string, contract: string, args: any[]) =>
         await hre.run("verify:verify", {
             address: contractAddress,
             constructorArguments: args,
-            contract
+            contract,
         })
     } catch (e: any) {
         if (e.message.toLowerCase().includes("already verified")) {

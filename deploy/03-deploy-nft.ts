@@ -19,10 +19,13 @@ const deployFunction: DeployFunction = async () => {
 
     if (!developmentChains.includes(network.name) && process.env.POLYGONSCAN_API_KEY) {
         console.log("Verifying on polygonscan...")
-        await verify(nft.address, "contracts/AminoChainDonation.sol:AminoChainDonation",
-            constructorArgs)/*.catch( () => {})*/
+        await verify(
+            nft.address,
+            "contracts/AminoChainDonation.sol:AminoChainDonation",
+            constructorArgs
+        ) /*.catch( () => {})*/
     }
 }
 
 export default deployFunction
-deployFunction.tags = [`all`, `nft`]
+deployFunction.tags = [`all`, `donation`, "full"]

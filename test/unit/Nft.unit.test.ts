@@ -9,8 +9,8 @@ import { assert, expect } from "chai"
 import chai from "chai"
 import { BigNumber, constants } from "ethers"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
-import {biobankAddress, bioData, firstNftTokeId, HLA} from "../commons"
-import {AminoChainLibrary} from "../../typechain/contracts/AminoChainDonation";
+import { biobankAddress, bioData, bioDataHashed, firstNftTokeId, HLA } from "../commons"
+import { AminoChainLibrary } from "../../typechain/contracts/AminoChainDonation"
 
 describe("NFT Tests", async function () {
     let authenticator: AminoChainAuthenticator
@@ -42,20 +42,24 @@ describe("NFT Tests", async function () {
     const amounts = [10, 5, 5, 2, 2, 2, 2, 2]
 
     it("Mint", async () => {
-        const expectedTokenIds = [...Array(amounts.length).keys()]
-            .map( i => i + firstNftTokeId)
-        expect(await nft.mint(donor.address,bioData, amounts))
-            .emit(nft, 'NFTMinted')
-            .withArgs(donor.address, bioData, amounts, expectedTokenIds)
+        const expectedTokenIds = [...Array(amounts.length).keys()].map((i) => i + firstNftTokeId)
+        expect(await nft.mint(donor.address, bioDataHashed, amounts))
+            .emit(nft, "NFTMinted")
+            .withArgs(donor.address, bioDataHashed, amounts, expectedTokenIds)
 
-        await Promise.all(expectedTokenIds.map( async (tokenId) => {
-            expect(await nft.ownerOf(tokenId)).eq(deployer.address)
-            const actualBioData = await nft.getBioData(tokenId) as AminoChainLibrary.BioDataStruct
-            // @ts-ignore
-            expect(actualBioData).bioDataEqual(bioData)
-        }))
+        await Promise.all(
+            expectedTokenIds.map(async (tokenId) => {
+                expect(await nft.ownerOf(tokenId)).eq(deployer.address)
+                const actualBioData = (await nft.getBioData(
+                    tokenId
+                )) as AminoChainLibrary.BioDataStruct
+                // @ts-ignore
+                expect(actualBioData).bioDataEqual(bioDataHashed)
+            })
+        )
 
-        expect((await nft.getTokenIdsByDonor(donor.address)).map( t => t.toNumber()))
-            .eql(expectedTokenIds)
+        expect((await nft.getTokenIdsByDonor(donor.address)).map((t) => t.toNumber())).eql(
+            expectedTokenIds
+        )
     })
 })

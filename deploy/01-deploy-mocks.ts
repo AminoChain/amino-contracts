@@ -12,23 +12,7 @@ const deployFunction: DeployFunction = async () => {
     if (developmentChains.includes(network.name)) {
         log(`Local network detected! Deploying mocks...`)
 
-        // const linkToken = await deploy(`ERC20`, { from: deployer, log: true, args: [DECIMALS, INITIAL_PRICE] })
-
         const USDC = await ethers.getContract("USDC")
-
-        const link = await deploy("MockLinkToken", {
-            contract: "MockLinkToken",
-            from: deployer,
-            log: true,
-            args: [],
-        })
-
-        const oracle = await deploy("MockOracle", {
-            contract: `MockOracle`,
-            from: deployer,
-            log: true,
-            args: [link.address],
-        })
 
         const erc20 = await deploy("MockERC20", {
             contract: `MockERC20`,

@@ -20,7 +20,8 @@ interface IAminoChainAuthenticator {
         bytes memory rawBiodataEncoded,
         uint256[] calldata amounts,
         address donor,
-        bytes memory signature
+        bytes memory signature,
+        address biobank
     ) external;
 
     function isRegistered(address donor) external view returns (bool);

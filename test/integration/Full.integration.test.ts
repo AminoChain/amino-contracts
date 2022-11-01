@@ -68,13 +68,14 @@ describe("Full Tests", async function () {
             // Donor scan QR with biodataHash
             // On donor side, Authentication UI:
 
-            await authenticator.connect(biobank).register(
+            await authenticator.register(
                 bioDataHashed,
                 bioDataHash,
                 bioDataEncodedBytes,
                 [30],
                 donor.address,
-                signature
+                signature,
+                biobank.address
             )
 
             expect(await authenticator.connect(donor).isRegistered(donor.address)).eq(true)
@@ -103,6 +104,7 @@ describe("Full Tests", async function () {
                 amounts,
                 donor.address,
                 signature,
+                biobank.address
             ) // Test fails unless listing has been posted before via registration of new user
 
             const list = (await marketplace.getListingData(
@@ -147,13 +149,14 @@ describe("Full Tests", async function () {
 
             expect(await authenticator.connect(donor).isRegistered(donor.address)).eq(false)
 
-            await authenticator.connect(biobank).register(
+            await authenticator.register(
                 bioDataHashed,
                 biodataHash,
                 '',
                 [10, 20],
                 donor.address,
                 signature,
+                biobank.address
             )
 
             expect(await authenticator.connect(donor).isRegistered(donor.address)).eq(true)
@@ -197,7 +200,8 @@ describe("Full Tests", async function () {
                 '',
                 [10, 20],
                 donor.address,
-                signature
+                signature,
+                biobank.address
             )
 
             // fixme Should be canceled by Authenticator

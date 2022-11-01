@@ -19,13 +19,14 @@ describe("Authenticator Tests", async () => {
     let owner: SignerWithAddress
     let buyer: SignerWithAddress
     let donor: SignerWithAddress
+    let biobank: SignerWithAddress
     let usdc: Token
     let nft: IAminoChainDonation
     let bioDataHashed: HLAHashed
 
     beforeEach(async () => {
         await deployments.fixture(["all"])
-        ;[owner, donor, buyer] = await ethers.getSigners()
+        ;[owner, donor, buyer, biobank] = await ethers.getSigners()
 
         marketplace = await ethers.getContract("MockAminoChainMarketplace")
         nft = await ethers.getContract("MockNFT")
@@ -85,7 +86,8 @@ describe("Authenticator Tests", async () => {
             bioDataEncodedBytes,
             amounts,
             donor.address,
-            signature
+            signature,
+            biobank.address
         )
 
         expect(await authenticator.connect(donor).isRegistered(donor.address)).eq(true)

@@ -83,7 +83,8 @@ contract AminoChainAuthenticator is IAminoChainAuthenticator, IERC721Receiver {
         bytes memory biodataEncoded,
         uint256[] calldata amounts,
         address donor,
-        bytes memory signature
+        bytes memory signature,
+        address biobank
     ) public {
         bytes32 messageHash = getRegistrationHash(donor, biodataHash);
         bytes32 signedMessageHash = messageHash.toEthSignedMessageHash();
@@ -96,11 +97,11 @@ contract AminoChainAuthenticator is IAminoChainAuthenticator, IERC721Receiver {
 
         uint256[] memory tokenIds = nft.mint(donor, bioData, amounts);
         for (uint256 i = 0; i < tokenIds.length; i++) {
-            marketplace.listItem(tokenIds[i], amounts[i], donor, msg.sender);
+            marketplace.listItem(tokenIds[i], amounts[i], donor, biobank);
         }
 
         bioDataEncoded[biodataHash] = biodataEncoded;
 
-        emit UserRegistered(donor, msg.sender, tokenIds, amounts);
+        emit UserRegistered(donor, biobank, tokenIds, amounts);
     }
 }

@@ -28,4 +28,4 @@ const deployFunction: DeployFunction = async () => {
 }
 
 export default deployFunction
-deployFunction.tags = [`all`, `donation`, "full"]
+deployFunction.tags = [`all`, `donation`, "all-without-mocks"]

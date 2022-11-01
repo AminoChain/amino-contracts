@@ -57,4 +57,4 @@ const deployMarketplace: DeployFunction = async function (hre: HardhatRuntimeEnv
 }
 
 export default deployMarketplace
-deployMarketplace.tags = [`all`, `marketplace`, `full`]
+deployMarketplace.tags = [`all`, `marketplace`, "all-without-mocks"]

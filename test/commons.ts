@@ -1,6 +1,7 @@
 import chai from "chai";
 import {BigNumber} from "ethers";
 import {ethers} from "hardhat";
+import {arrayify} from "ethers/lib/utils";
 
 export interface HLA {
     A: number[]
@@ -26,6 +27,26 @@ export const bioData: HLA = {
     DRB: [1, 2, 3, 4],
 }
 
+/* bioDataHash = await authenticator.getBioDataHash(
+    bioData.A.toString(),
+    bioData.B.toString(),
+    bioData.C.toString(),
+    bioData.DPB.toString(),
+    bioData.DRB.toString()
+)*/
+export const bioDataHash = '0x1d6b4481e160c4328f25e4e540261b41dcc9ef6ae904f6220e8a0eafaab6ddc6'
+
+/*
+messageHash = await authenticator.getRegistrationHash(
+            donor.address,
+            biodataHash
+        )
+ */
+export const messageHash = '0x84338cc7dcebbbbc8e2df4105f451df8da42e2b854fb44ab48b3943b5156b41d'
+
+// signature = await donor.signMessage(arrayify(messageHash))
+export const signature = '0x5577543102ecf5dc9696e90511bf863aa86b67db8cdedf1c473dc2f283add16d454f01a2a586597662895a62fd8f1c0b8bd88481327f713de20889d666fea3be1c'
+
 export const bioDataHashed: HLAHashed = {
     A: "0x0000000000000000000000000000000000000000000000000000000000000001",
     B: "0x0000000000000000000000000000000000000000000000000000000000000001",
@@ -34,7 +55,7 @@ export const bioDataHashed: HLAHashed = {
     DRB: "0x0000000000000000000000000000000000000000000000000000000000000001",
 }
 
-export const biobankAddress = "0x985AC3C3Dbb4135Bea36D643bf93d073A10520bc"
+// export const biobankAddress = "0x985AC3C3Dbb4135Bea36D643bf93d073A10520bc"
 export const amounts = [6, 3, 4, 1, 2]
 export const firstNftTokeId = 1
 export const DEFAULT_PRICE_PER_CC = 1400

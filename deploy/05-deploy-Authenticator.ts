@@ -56,4 +56,4 @@ const deployAuthenticator: DeployFunction = async function (hre: HardhatRuntimeE
 }
 
 export default deployAuthenticator
-deployAuthenticator.tags = [`all`, `authenticator`, `full`]
+deployAuthenticator.tags = [`all`, `authenticator`, "all-without-mocks"]

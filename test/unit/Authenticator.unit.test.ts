@@ -6,11 +6,9 @@ import {
     Token,
 } from "../../typechain"
 import { assert, expect } from "chai"
-import { BigNumber, constants } from "ethers"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
-import {bioData, HLA, HLAHashed, web3StringToBytes32} from "../commons"
-import {arrayify, parseEther, UnicodeNormalizationForm} from "ethers/lib/utils";
-import {keccak256} from "hardhat/internal/util/keccak";
+import {bioData, HLA, HLAHashed} from "../commons"
+import {arrayify} from "ethers/lib/utils";
 import {Encryptor} from "../encryptor";
 
 const hlaEncodingKey = 'secret'
@@ -65,7 +63,7 @@ describe("Authenticator Tests", async () => {
         )
 
         // Donor scan QR with biodataHash
-        // Donor Side, Authentication UI
+        // On donor side, Authentication UI:
 
         const messageHash = await authenticator.getRegistrationHash(
             donor.address,

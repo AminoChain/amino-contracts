@@ -8,11 +8,15 @@ import {
 import { assert, expect } from "chai"
 import { BigNumber, constants } from "ethers"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
-import {HLA, HLAHashed, web3StringToBytes32} from "../commons"
-import {arrayify, parseEther} from "ethers/lib/utils";
+import {bioData, HLA, HLAHashed, web3StringToBytes32} from "../commons"
+import {arrayify, parseEther, UnicodeNormalizationForm} from "ethers/lib/utils";
 import {keccak256} from "hardhat/internal/util/keccak";
+import {AES, padding, utils} from "aes-js";
+import {Encryptor} from "../encryptor";
 
-describe("Authenticator Tests", async function () {
+const hlaEncodingKey = 'secret'
+
+describe("Authenticator Tests", async () => {
     let authenticator: AminoChainAuthenticator
     let marketplace: MockAminoChainMarketplace
     let owner: SignerWithAddress
@@ -48,46 +52,51 @@ describe("Authenticator Tests", async function () {
         // authenticator.removeAllListeners()
     })
 
-    const bioData: HLA = {
-        A: [1, 2, 3],
-        B: [1, 2, 3],
-        C: [1, 2, 3],
-        DPB: [1, 2, 3],
-        DRB: [1, 2, 3],
-    }
-
     const amounts = [10, 5, 5, 2, 2, 2, 2, 2]
 
     it("Register User", async () => {
-        expect(await authenticator.connect(donor).isRegistered()).eq(false)
-
-        const nonce = 1
+        expect(await authenticator.connect(donor).isRegistered(donor.address)).eq(false)
 
         const biodataHash = await authenticator.getBioDataHash(
             bioData.A.toString(),
             bioData.B.toString(),
             bioData.C.toString(),
             bioData.DPB.toString(),
-            bioData.DRB.toString())
+            bioData.DRB.toString()
+        )
+
+        // Donor scan QR with biodataHash
+        // Donor Side, Authentication UI
 
         const messageHash = await authenticator.getRegistrationHash(
             donor.address,
-            biodataHash,
-            nonce
+            biodataHash
         )
 
-        const signature = await donor.signMessage(arrayify(messageHash));
+        // Donor connect wallet and sign messageHash
+        const signature = await donor.signMessage(arrayify(messageHash))
+        //
+
+        // signature coming back to biobank
+
+        const encryptor = new Encryptor(hlaEncodingKey)
+        const bioDataEncodedBytes = encryptor.encrypt(JSON.stringify(bioData))
 
         await authenticator.register(
             bioDataHashed,
-            donor.address,
             biodataHash,
-            nonce,
-            signature,
-            amounts
+            bioDataEncodedBytes,
+            amounts,
+            donor.address,
+            signature
         )
 
-        expect(await authenticator.connect(donor).isRegistered()).eq(true)
+        expect(await authenticator.connect(donor).isRegistered(donor.address)).eq(true)
+
+        const storedBioDataEncoded = await authenticator.bioDataEncoded(biodataHash)
+        const storedBioData = encryptor.decrypt(ethers.utils.arrayify(storedBioDataEncoded))
+
+        expect(storedBioData).eq(JSON.stringify(bioData))
     })
 
     /*it("Buy Item", async () => {

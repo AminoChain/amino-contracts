@@ -19,6 +19,8 @@ contract AminoChainAuthenticator is IAminoChainAuthenticator, IERC721Receiver {
     IERC20 immutable usdc;
     using ECDSA for bytes32;
 
+    mapping(bytes32 => bytes) public bioDataEncoded; // bioDataHash to bioDataEncodedBytes
+
     constructor(
         address nftAddress,
         address marketplaceAddress,
@@ -42,8 +44,8 @@ contract AminoChainAuthenticator is IAminoChainAuthenticator, IERC721Receiver {
 //        emit UserRegistered(msg.sender, tokenIds);
     }*/
 
-    function isRegistered() public view returns (bool) {
-        return nft.getTokenIdsByDonor(msg.sender).length != 0; // fixme
+    function isRegistered(address donor) public view returns (bool) {
+        return nft.getTokenIdsByDonor(donor).length != 0;
     }
 
     function onERC721Received(
@@ -71,38 +73,34 @@ contract AminoChainAuthenticator is IAminoChainAuthenticator, IERC721Receiver {
         return keccak256(abi.encodePacked(A, B, C, DPB, DRB));
     }
 
-    function getRegistrationHash(address donor, bytes32 biodataHash, uint nonce) public pure returns (bytes32) {
-        return keccak256(abi.encodePacked(donor, biodataHash, nonce));
+    function getRegistrationHash(address donor, bytes32 biodataHash) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(donor, biodataHash));
     }
 
     function register(
         AminoChainLibrary.BioData calldata bioData,
-        address donor,
         bytes32 biodataHash,
-        uint nonce,
-        bytes memory signature,
-        uint256[] calldata amounts
+        bytes memory biodataEncoded,
+        uint256[] calldata amounts,
+        address donor,
+        bytes memory signature
     ) public {
-        bytes32 messageHash = getRegistrationHash(donor, biodataHash, nonce);
+        bytes32 messageHash = getRegistrationHash(donor, biodataHash);
         bytes32 signedMessageHash = messageHash.toEthSignedMessageHash();
 
         address signer = signedMessageHash.recover(signature);
 
         require(signer == donor, "Signature does not come from donor");
 
-        _register(bioData, msg.sender, donor, amounts);
-    }
+        // actual registration
 
-    function _register(
-        AminoChainLibrary.BioData calldata bioData,
-        address biobank,
-        address donor,
-        uint256[] calldata amounts
-    ) private {
         uint256[] memory tokenIds = nft.mint(donor, bioData, amounts);
         for (uint256 i = 0; i < tokenIds.length; i++) {
-            marketplace.listItem(tokenIds[i], amounts[i], donor, biobank);
+            marketplace.listItem(tokenIds[i], amounts[i], donor, msg.sender);
         }
-        emit UserRegistered(donor, biobank, tokenIds, amounts);
+
+        bioDataEncoded[biodataHash] = biodataEncoded;
+
+        emit UserRegistered(donor, msg.sender, tokenIds, amounts);
     }
 }

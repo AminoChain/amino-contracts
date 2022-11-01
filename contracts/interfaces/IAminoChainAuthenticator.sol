@@ -16,12 +16,12 @@ interface IAminoChainAuthenticator {
 
     function register(
         AminoChainLibrary.BioData calldata bioData,
-        address donor,
         bytes32 biodataHash,
-        uint256 nonce,
-        bytes memory signature,
-        uint256[] calldata amounts
+        bytes memory rawBiodataEncoded,
+        uint256[] calldata amounts,
+        address donor,
+        bytes memory signature
     ) external;
 
-    function isRegistered() external view returns (bool);
+    function isRegistered(address donor) external view returns (bool);
 }

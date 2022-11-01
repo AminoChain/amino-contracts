@@ -1,6 +1,6 @@
-import chai from "chai"
-import { BigNumber } from "ethers"
-import { ethers } from "hardhat"
+import chai from "chai";
+import {BigNumber} from "ethers";
+import {ethers} from "hardhat";
 
 export interface HLA {
     A: number[]
@@ -52,15 +52,14 @@ export const LAGEST_UINT = BigNumber.from(
 
 export function web3StringToBytes32(text: string) {
     const utils = ethers.utils
-    let result = utils.hexlify(utils.toUtf8Bytes(text))
-    while (result.length < 66) {
-        result += "0"
-    }
+    let result = utils.hexlify(utils.toUtf8Bytes(text));
+    while (result.length < 66) { result += '0'; }
     if (result.length !== 66) {
-        throw new Error(`invalid web3 implicit bytes32: ${result} for text: ${text}`)
+        throw new Error(`invalid web3 implicit bytes32: ${result} for text: ${text}`);
     }
-    return result
+    return result;
 }
+
 
 chai.use(function (chai, util) {
     chai.Assertion.addMethod("bioDataEqual", function (expected: HLA) {

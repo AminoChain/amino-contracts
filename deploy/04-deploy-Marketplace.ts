@@ -33,7 +33,7 @@ const deployMarketplace: DeployFunction = async function (hre: HardhatRuntimeEnv
         args = [
             8,
             "0xb0eaca4246d134cfcd104df91f9cd87e6c7271a7", // todo lets create some registry for deployed contracts addresses
-            "0x7BbB00C38a70B384dcb713A1ba7143c8B2AF0109",
+            "0x5a28C5fF79EA75f2A2f88502f420De5504Fb6902",
             "0x326C977E6efc84E512bB9C30f76E30c160eD06FB", //LINK on mumbai
             "0x40193c8518BB267228Fc409a613bDbD8eC5a97b3", //Chainlink Oracle on mumbai
         ]

@@ -18,12 +18,16 @@ import {
     HLAHashed,
     firstNftTokeId,
     amounts,
-    DEFAULT_PRICE_PER_CC, bioDataHashed, bioDataHash, messageHash, signature,
+    DEFAULT_PRICE_PER_CC,
+    bioDataHashed,
+    bioDataHash,
+    messageHash,
+    signature,
 } from "../commons"
-import {Encryptor} from "../encryptor";
+import { Encryptor } from "../encryptor"
 
 const trueBoolInBytes = "0x0000000000000000000000000000000000000000000000000000000000000001"
-const hlaEncodingKey = 'secret'
+const hlaEncodingKey = "secret"
 
 describe("Full Tests", async function () {
     let authenticator: AminoChainAuthenticator
@@ -86,7 +90,6 @@ describe("Full Tests", async function () {
             )) as AminoChainMarketplace.ListingStruct
             expect(listing.donor).eq(donor.address)
             expect(listing.bioBank).eq(biobank.address)
-            expect(listing.tokenId).eq(tokenId)
             expect(listing.sizeInCC).eq(30)
             expect(listing.price).eq(
                 BigNumber.from(10)
@@ -115,18 +118,17 @@ describe("Full Tests", async function () {
 
             const requestTx = await marketplace.connect(doctor).requestBuyAccess()
             const requestTransactionReceipt = await requestTx.wait()
-            const requestId = requestTransactionReceipt.events![4].args?.requestId
+            const requestId = requestTransactionReceipt.events![0].args?.id
             await mockOracle.fulfillOracleRequest(requestId, trueBoolInBytes)
 
             await marketplace.connect(doctor).buyItem(tokenId)
-            expect(await nft.ownerOf(tokenId)).eq(doctor.address)
+            expect(await nft.ownerOf(tokenId)).eq(marketplace.address)
 
             const listing = (await marketplace.getListingData(
                 tokenId
             )) as AminoChainMarketplace.ListingStruct
             expect(listing.donor).eq(ethers.constants.AddressZero)
             expect(listing.bioBank).eq(ethers.constants.AddressZero)
-            expect(listing.tokenId).eq(0)
         })
     })
 
@@ -152,7 +154,7 @@ describe("Full Tests", async function () {
             await authenticator.register(
                 bioDataHashed,
                 biodataHash,
-                '',
+                "",
                 [10, 20],
                 donor.address,
                 signature,
@@ -169,7 +171,6 @@ describe("Full Tests", async function () {
             )) as AminoChainMarketplace.ListingStruct
             expect(listing.donor).eq(donor.address)
             expect(listing.bioBank).eq(biobank.address)
-            expect(listing.tokenId).eq(firstTokenId)
             expect(listing.sizeInCC).eq(20)
 
             listing = (await marketplace.getListingData(
@@ -177,7 +178,6 @@ describe("Full Tests", async function () {
             )) as AminoChainMarketplace.ListingStruct
             expect(listing.donor).eq(donor.address)
             expect(listing.bioBank).eq(biobank.address)
-            expect(listing.tokenId).eq(secondTokenId)
             expect(listing.sizeInCC).eq(10)
         })
     })
@@ -197,7 +197,7 @@ describe("Full Tests", async function () {
             await authenticator.register(
                 bioDataHashed,
                 biodataHash,
-                '',
+                "",
                 [10, 20],
                 donor.address,
                 signature,

@@ -5,15 +5,22 @@ pragma solidity ^0.8.17;
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.sol";
 
 /** @title AminoChain Marketplace V0.2.0
  *  @notice Handles the sale of tokenized stem cells and distributing
  *  incentives to donors
  */
-contract AminoChainMarketplace is ReentrancyGuard, ChainlinkClient {
+contract AminoChainMarketplace is
+    ReentrancyGuard,
+    IERC721Receiver,
+    ChainlinkClient,
+    AutomationCompatibleInterface
+{
     using Chainlink for Chainlink.Request;
 
     uint256 public constant DEFAULT_PRICE_PER_CC = 1400;
@@ -28,16 +35,35 @@ contract AminoChainMarketplace is ReentrancyGuard, ChainlinkClient {
      */
     uint256 public donorIncentiveRate;
 
+    enum physicalStatus {
+        AT_ORIGIN,
+        IN_TRANSIT,
+        DELIVERED
+    }
+
     struct Listing {
         address seller;
-        uint256 tokenId;
         uint256 sizeInCC;
         uint256 price;
         address donor;
         address bioBank;
     }
 
+    struct PendingSale {
+        uint256 date;
+        physicalStatus saleStatus;
+        address seller;
+        address buyer;
+        address bioBank;
+        address donor;
+        uint256 escrowedPayment;
+    }
+
+    uint256[] pendingSaleTokenIds;
+
     mapping(uint256 => Listing) ListingData;
+    mapping(uint256 => PendingSale) PendingSales;
+    mapping(uint256 => uint256) PendingSaleIdsIndex;
     mapping(bytes32 => address) ApprovalRequest;
     mapping(address => bool) ApprovedToBuy;
 
@@ -87,21 +113,28 @@ contract AminoChainMarketplace is ReentrancyGuard, ChainlinkClient {
         address bioBank
     );
 
-    event sale(
-        address seller,
+    event saleInitiated(
+        address bioBank,
+        address buyer,
         uint256 tokenId,
         uint256 sizeInCC,
-        address buyer,
-        uint256 salePrice,
-        uint256 protocolFee,
         address donor,
-        uint256 donorIncentive,
-        address bioBank
+        uint256 escrowedPrice
     );
 
-    event approvalRequest(bytes32 requestId, address requester);
+    event saleCompleted(
+        address bioBank,
+        address buyer,
+        uint256 tokenId,
+        address donor,
+        uint256 salePrice,
+        uint256 donorIncentive,
+        uint256 protocolFee
+    );
 
-    event listingCanceled(address seller, uint256 tokenId);
+    event saleRefunded(uint256 tokenId, address buyer, address bioBank, uint256 refundTotal);
+
+    event listingCanceled(uint256 tokenId);
 
     event ownershipTransferred(address oldOwner, address newOwner);
 
@@ -136,7 +169,7 @@ contract AminoChainMarketplace is ReentrancyGuard, ChainlinkClient {
 
         uint256 price = (DEFAULT_PRICE_PER_CC * sizeInCC) * 10**IERC20Metadata(i_usdc).decimals();
 
-        ListingData[tokenId] = Listing(msg.sender, tokenId, sizeInCC, price, donor, bioBank);
+        ListingData[tokenId] = Listing(msg.sender, sizeInCC, price, donor, bioBank);
 
         emit newListing(msg.sender, tokenId, sizeInCC, price, donor, bioBank);
     }
@@ -163,31 +196,31 @@ contract AminoChainMarketplace is ReentrancyGuard, ChainlinkClient {
             "Marketplace allowance from buyer on USDC contract must be higher than listing price"
         );
 
-        uint256 incentive = data.price / donorIncentiveRate;
-        uint256 fee = data.price / 10;
+        IERC20(i_usdc).transferFrom(msg.sender, address(this), data.price);
 
-        /// BioBank Payment
-        IERC20(i_usdc).transferFrom(msg.sender, data.bioBank, data.price - (incentive + fee));
-        /// Protocol Fee Payment
-        IERC20(i_usdc).transferFrom(msg.sender, data.seller, fee);
-        /// Donor Incentive Payment
-        IERC20(i_usdc).transferFrom(msg.sender, data.donor, incentive);
+        IERC721(tokenziedStemCells).safeTransferFrom(data.seller, address(this), tokenId);
 
-        IERC721(tokenziedStemCells).safeTransferFrom(data.seller, msg.sender, tokenId);
-
-        emit sale(
+        pendingSaleTokenIds.push(tokenId);
+        PendingSaleIdsIndex[tokenId] = pendingSaleTokenIds.length - 1;
+        PendingSales[tokenId] = PendingSale(
+            block.timestamp,
+            physicalStatus.AT_ORIGIN,
             data.seller,
+            msg.sender,
+            data.bioBank,
+            data.donor,
+            data.price
+        );
+        delete ListingData[tokenId];
+
+        emit saleInitiated(
+            data.bioBank,
+            msg.sender,
             tokenId,
             data.sizeInCC,
-            msg.sender,
-            data.price,
-            fee,
             data.donor,
-            incentive,
-            data.bioBank
+            data.price
         );
-
-        delete ListingData[tokenId];
     }
 
     /** @dev Requests a Chainlink Any-Api call to determine if the caller is a registered
@@ -210,7 +243,55 @@ contract AminoChainMarketplace is ReentrancyGuard, ChainlinkClient {
 
         bytes32 id = sendChainlinkRequest(req, (1 * LINK_DIVISIBILITY) / 10);
         ApprovalRequest[id] = msg.sender;
-        emit approvalRequest(id, msg.sender);
+    }
+
+    /** @dev Called by Chainlink to complete sales if the phyisical stem cells have been delivered or
+     *  refund them if they have not been delivered in the acceptable time frame.
+     */
+    function performUpkeep(bytes calldata performData) external override {
+        (uint256[] memory completedSaleIds, uint256[] memory refundSaleIds) = abi.decode(
+            performData,
+            (uint256[], uint256[])
+        );
+        require(completedSaleIds.length >= 0 || refundSaleIds.length >= 0, "no upkeep to preform");
+
+        if (completedSaleIds.length >= 0) {
+            for (uint256 i = 0; i < completedSaleIds.length; i++) {
+                PendingSale memory data = PendingSales[completedSaleIds[i]];
+                require(
+                    data.saleStatus == physicalStatus.DELIVERED,
+                    "provided tokenId has not been delivered"
+                );
+                completeItemSale(completedSaleIds[i]);
+            }
+        }
+        if (refundSaleIds.length >= 0) {
+            for (uint256 i = 0; i < refundSaleIds.length; i++) {
+                PendingSale memory data = PendingSales[refundSaleIds[i]];
+                require(
+                    block.timestamp - data.date >= 30 days,
+                    "provided tokenId has not surpassed time limit"
+                );
+                refundSale(refundSaleIds[i]);
+            }
+        }
+    }
+
+    /** @dev Updates the delivery status of a pending sale for a given tokenId.
+     *  @notice 0 = At_Origin, 1 = In Transit, 2 = Delivered
+     */
+    function updateDeliveryStatus(uint256 tokenId, uint256 status) external onlyOwner {
+        PendingSale memory data = PendingSales[tokenId];
+        require(data.buyer != address(0), "Buyer cannot be null");
+        require(status < 3, "Invalid status input");
+
+        if (status == 0) {
+            PendingSales[tokenId].saleStatus = physicalStatus.AT_ORIGIN;
+        } else if (status == 1) {
+            PendingSales[tokenId].saleStatus = physicalStatus.IN_TRANSIT;
+        } else if (status == 2) {
+            PendingSales[tokenId].saleStatus = physicalStatus.DELIVERED;
+        }
     }
 
     /** @dev Allows the owner of the contract to cancel a listing by deleting
@@ -221,7 +302,7 @@ contract AminoChainMarketplace is ReentrancyGuard, ChainlinkClient {
 
         delete ListingData[tokenId];
 
-        emit listingCanceled(msg.sender, tokenId);
+        emit listingCanceled(tokenId);
     }
 
     /** @dev Allows the owner of the contract to update the price of a listing by
@@ -284,6 +365,68 @@ contract AminoChainMarketplace is ReentrancyGuard, ChainlinkClient {
         require(link.transfer(msg.sender, link.balanceOf(address(this))), "Unable to transfer");
     }
 
+    // === Internal Functions === //
+
+    /** @dev Finishes sale on delivery of physical stem cells. Tranfers escrowed payment to Bio Bank,
+     *  escrowed incentive to donor, and escrowed fee to authenticator. Transfers NFT to buyer.
+     */
+    function completeItemSale(uint256 tokenId) internal {
+        PendingSale memory data = PendingSales[tokenId];
+        require(
+            data.saleStatus == physicalStatus.DELIVERED,
+            "Physical item has not been delivered yet"
+        );
+        require(
+            IERC20(i_usdc).balanceOf(address(this)) >= data.escrowedPayment,
+            "Contract USDC balance is too low"
+        );
+
+        uint256 incentive = data.escrowedPayment / donorIncentiveRate;
+        uint256 fee = data.escrowedPayment / 10;
+
+        /// BioBank Payment
+        IERC20(i_usdc).transfer(data.bioBank, data.escrowedPayment - (incentive + fee));
+        /// Protocol Fee Payment
+        IERC20(i_usdc).transfer(data.seller, fee);
+        /// Donor Incentive Payment
+        IERC20(i_usdc).transfer(data.donor, incentive);
+
+        IERC721(tokenziedStemCells).safeTransferFrom(address(this), data.buyer, tokenId);
+
+        delete PendingSales[tokenId];
+        delete pendingSaleTokenIds[PendingSaleIdsIndex[tokenId]];
+
+        emit saleCompleted(
+            data.bioBank,
+            data.buyer,
+            tokenId,
+            data.donor,
+            data.escrowedPayment,
+            incentive,
+            fee
+        );
+    }
+
+    /** @dev Called by Chainlink automation if the physical stem cells have not been delivered
+     *  in the acceptable time frame. Transfers escrowed payment back to buyer and tokenId to authenticator.
+     */
+    function refundSale(uint256 tokenId) internal {
+        PendingSale memory data = PendingSales[tokenId];
+        require(
+            block.timestamp - data.date >= 30 days,
+            "provided tokenId has not surpassed time limit"
+        );
+
+        IERC20(i_usdc).transfer(data.buyer, data.escrowedPayment);
+
+        IERC721(tokenziedStemCells).safeTransferFrom(address(this), data.seller, tokenId);
+
+        delete PendingSales[tokenId];
+        delete pendingSaleTokenIds[PendingSaleIdsIndex[tokenId]];
+
+        emit saleRefunded(tokenId, data.buyer, data.bioBank, data.escrowedPayment);
+    }
+
     // === Public Functions === //
 
     /** @dev Allows or prevents a buyer from buying tokenized stem cells. Based on a
@@ -299,9 +442,58 @@ contract AminoChainMarketplace is ReentrancyGuard, ChainlinkClient {
 
     // === View Functions === //
 
+    /** @dev Called by Chainlink automation to determine if there are sales to complete or refund.
+     */
+    function checkUpkeep(
+        bytes calldata /* checkData */
+    ) external view override returns (bool upkeepNeeded, bytes memory performData) {
+        uint256 completedCounter;
+        uint256 refundedCounter;
+        for (uint256 i = 0; i < pendingSaleTokenIds.length; i++) {
+            PendingSale memory data = PendingSales[pendingSaleTokenIds[i]];
+            if (data.saleStatus == physicalStatus.DELIVERED) {
+                completedCounter++;
+            } else if (block.timestamp - data.date >= 30 days) {
+                refundedCounter++;
+            }
+        }
+
+        upkeepNeeded = false;
+        uint256[] memory completedSaleIds = new uint256[](completedCounter);
+        uint256[] memory refundSaleIds = new uint256[](refundedCounter);
+
+        uint256 completedIndexCounter = 0;
+        uint256 refundedIndexCounter = 0;
+        for (uint256 i = 0; i < pendingSaleTokenIds.length; i++) {
+            PendingSale memory data = PendingSales[pendingSaleTokenIds[i]];
+            if (data.saleStatus == physicalStatus.DELIVERED) {
+                upkeepNeeded = true;
+                completedSaleIds[completedIndexCounter] = pendingSaleTokenIds[i];
+                completedIndexCounter++;
+            } else if (block.timestamp - data.date >= 30 days) {
+                upkeepNeeded = true;
+                refundSaleIds[refundedIndexCounter] = pendingSaleTokenIds[i];
+                refundedIndexCounter++;
+            }
+        }
+        performData = abi.encode(completedSaleIds, refundSaleIds);
+        return (upkeepNeeded, performData);
+    }
+
     /** @dev Returns the listing data for a given tokenId
      */
     function getListingData(uint256 tokenId) public view returns (Listing memory) {
         return ListingData[tokenId];
+    }
+
+    /** @dev IERC721 Reciever for tokenized stem cells
+     */
+    function onERC721Received(
+        address,
+        address,
+        uint256,
+        bytes calldata
+    ) external pure returns (bytes4) {
+        return IERC721Receiver.onERC721Received.selector;
     }
 }

@@ -94,7 +94,6 @@ describe("AminoChainMarketplace Tests", async () => {
             const listing = await marketplace.getListingData(firstNftTokeId)
 
             assert.equal(listing.seller, deployer)
-            assert.equal(listing.tokenId.toString(), firstNftTokeId.toString())
             assert.equal(listing.price.toString(), ethers.utils.parseUnits("42000", 6).toString())
             assert.equal(listing.donor, deployer)
             assert.equal(listing.bioBank, deployer)
@@ -148,7 +147,7 @@ describe("AminoChainMarketplace Tests", async () => {
 
             const requestTx = await marketplace.requestBuyAccess()
             const requestTransactionReceipt = await requestTx.wait()
-            const requestId = requestTransactionReceipt.events![4].args?.requestId
+            const requestId = requestTransactionReceipt.events![0].args?.id
             await mockOracle.fulfillOracleRequest(requestId, trueBoolInBytes)
 
             expect(marketplace.buyItem(firstNftTokeId)).to.be.revertedWith(
@@ -165,7 +164,7 @@ describe("AminoChainMarketplace Tests", async () => {
 
             const requestTx = await marketplace.requestBuyAccess()
             const requestTransactionReceipt = await requestTx.wait()
-            const requestId = requestTransactionReceipt.events![4].args?.requestId
+            const requestId = requestTransactionReceipt.events![0].args?.id
             await mockOracle.fulfillOracleRequest(requestId, trueBoolInBytes)
 
             expect(marketplace.buyItem(firstNftTokeId)).to.be.revertedWith(
@@ -184,7 +183,7 @@ describe("AminoChainMarketplace Tests", async () => {
 
             const requestTx = await marketplace.requestBuyAccess()
             const requestTransactionReceipt = await requestTx.wait()
-            const requestId = requestTransactionReceipt.events![4].args?.requestId
+            const requestId = requestTransactionReceipt.events![0].args?.id
             await mockOracle.fulfillOracleRequest(requestId, trueBoolInBytes)
 
             expect(marketplace.buyItem(firstNftTokeId)).to.be.revertedWith(
@@ -192,7 +191,7 @@ describe("AminoChainMarketplace Tests", async () => {
             )
         })
 
-        it("pays donor, bioBank and protcol the correct amounts, then transfers NFT", async () => {
+        it("puts USDC payment and NFT into escrow", async () => {
             const signers = await ethers.getSigners()
             await nft.mint(deployer, bioDataHashed, [5, 6, 3, 2, 1])
             await nft.setApprovalForAll(marketplace.address, true)
@@ -203,44 +202,23 @@ describe("AminoChainMarketplace Tests", async () => {
             await erc20.deposit({ value: ethers.utils.parseUnits("42000", 6) })
             await erc20.approve(marketplace.address, ethers.utils.parseUnits("42000", 6))
 
-            const preDonorBal = await erc20.balanceOf(signers[2].address)
-            const preProtocolBal = await erc20.balanceOf(deployer)
-            const preBioBankBal = await erc20.balanceOf(signers[3].address)
+            const preMarketBal = await erc20.balanceOf(marketplace.address)
 
             const requestTx = await marketplace.requestBuyAccess()
             const requestTransactionReceipt = await requestTx.wait()
-            const requestId = requestTransactionReceipt.events![4].args?.requestId
+            const requestId = requestTransactionReceipt.events![0].args?.id
             await mockOracle.fulfillOracleRequest(requestId, trueBoolInBytes)
 
             await marketplace.buyItem(firstNftTokeId)
 
-            const postDonorBal = await erc20.balanceOf(signers[2].address)
-            const postProtocolBal = await erc20.balanceOf(deployer)
-            const postBioBankBal = await erc20.balanceOf(signers[3].address)
+            const postMarketBal = await erc20.balanceOf(marketplace.address)
             const nftOwner = await nft.ownerOf(firstNftTokeId)
 
             assert.equal(
-                postDonorBal.sub(preDonorBal).toString(),
-                ethers.utils.parseUnits("42000", 6).div("8").toString()
+                postMarketBal.sub(preMarketBal).toString(),
+                ethers.utils.parseUnits("42000", 6).toString()
             )
-            assert.equal(
-                postProtocolBal.sub(preProtocolBal).toString(),
-                ethers.utils.parseUnits("42000", 6).div("10").toString()
-            )
-            assert.equal(
-                postBioBankBal.sub(preBioBankBal).toString(),
-                ethers.utils
-                    .parseUnits("42000", 6)
-                    .sub(
-                        ethers.utils
-                            .parseUnits("42000", 6)
-                            .div("10")
-                            .add(ethers.utils.parseUnits("42000", 6).div("8"))
-                            .toString()
-                    )
-                    .toString()
-            )
-            assert.equal(nftOwner, signers[1].address)
+            assert.equal(nftOwner, marketplace.address)
         })
 
         it("emits an event with the correct data", async () => {
@@ -256,29 +234,21 @@ describe("AminoChainMarketplace Tests", async () => {
 
             const requestTx = await marketplace.requestBuyAccess()
             const requestTransactionReceipt = await requestTx.wait()
-            const requestId = requestTransactionReceipt.events![4].args?.requestId
+            const requestId = requestTransactionReceipt.events![0].args?.id
             await mockOracle.fulfillOracleRequest(requestId, trueBoolInBytes)
 
             const tx = await marketplace.buyItem(firstNftTokeId)
             const transactionReceipt = await tx.wait()
 
-            assert.equal(transactionReceipt.events![5].args?.seller, deployer)
-            assert.equal(transactionReceipt.events![5].args?.tokenId, firstNftTokeId)
-            assert.equal(transactionReceipt.events![5].args?.buyer, signers[1].address)
+            assert.equal(transactionReceipt.events![3].args?.tokenId, firstNftTokeId)
+            assert.equal(transactionReceipt.events![3].args?.buyer, signers[1].address)
             assert.equal(
-                transactionReceipt.events![5].args?.salePrice.toString(),
+                transactionReceipt.events![3].args?.escrowedPrice.toString(),
                 ethers.utils.parseUnits("42000", 6).toString()
             )
-            assert.equal(
-                transactionReceipt.events![5].args?.protocolFee.toString(),
-                ethers.utils.parseUnits("42000", 6).div("10").toString()
-            )
-            assert.equal(transactionReceipt.events![5].args?.donor, signers[2].address)
-            assert.equal(
-                transactionReceipt.events![5].args?.donorIncentive.toString(),
-                ethers.utils.parseUnits("42000", 6).div("8").toString()
-            )
-            assert.equal(transactionReceipt.events![5].args?.bioBank, deployer)
+            assert.equal(transactionReceipt.events![3].args?.sizeInCC.toString(), "30")
+            assert.equal(transactionReceipt.events![3].args?.donor, signers[2].address)
+            assert.equal(transactionReceipt.events![3].args?.bioBank, deployer)
         })
 
         it("deletes listing data", async () => {
@@ -294,7 +264,7 @@ describe("AminoChainMarketplace Tests", async () => {
 
             const requestTx = await marketplace.requestBuyAccess()
             const requestTransactionReceipt = await requestTx.wait()
-            const requestId = requestTransactionReceipt.events![4].args?.requestId
+            const requestId = requestTransactionReceipt.events![0].args?.id
             await mockOracle.fulfillOracleRequest(requestId, trueBoolInBytes)
 
             await marketplace.buyItem(firstNftTokeId)
@@ -332,7 +302,6 @@ describe("AminoChainMarketplace Tests", async () => {
             const tx = await marketplace.cancelListing(firstNftTokeId)
             const transactionReceipt = await tx.wait()
 
-            assert.equal(transactionReceipt.events![0].args?.seller, signers[0].address)
             assert.equal(transactionReceipt.events![0].args?.tokenId, firstNftTokeId)
         })
     })
@@ -491,7 +460,6 @@ describe("AminoChainMarketplace Tests", async () => {
             const data = await marketplace.getListingData(firstNftTokeId)
 
             assert.equal(data.seller, deployer)
-            assert.equal(data.tokenId.toString(), firstNftTokeId.toString())
             assert.equal(data.price.toString(), ethers.utils.parseUnits("42000", 6).toString())
             assert.equal(data.donor, deployer)
             assert.equal(data.bioBank, deployer)

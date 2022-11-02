@@ -245,44 +245,6 @@ contract AminoChainMarketplace is
         ApprovalRequest[id] = msg.sender;
     }
 
-    /** @dev Called by Chainlink automation to determine if there are sales to complete or refund.
-     */
-    function checkUpkeep(
-        bytes calldata /* checkData */
-    ) external view override returns (bool upkeepNeeded, bytes memory performData) {
-        uint256 completedCounter;
-        uint256 refundedCounter;
-        for (uint256 i = 0; i < pendingSaleTokenIds.length; i++) {
-            PendingSale memory data = PendingSales[pendingSaleTokenIds[i]];
-            if (data.saleStatus == physicalStatus.DELIVERED) {
-                completedCounter++;
-            } else if (block.timestamp - data.date >= 30 days) {
-                refundedCounter++;
-            }
-        }
-
-        upkeepNeeded = false;
-        uint256[] memory completedSaleIds = new uint256[](completedCounter);
-        uint256[] memory refundSaleIds = new uint256[](refundedCounter);
-
-        uint256 completedIndexCounter = 0;
-        uint256 refundedIndexCounter = 0;
-        for (uint256 i = 0; i < pendingSaleTokenIds.length; i++) {
-            PendingSale memory data = PendingSales[pendingSaleTokenIds[i]];
-            if (data.saleStatus == physicalStatus.DELIVERED) {
-                upkeepNeeded = true;
-                completedSaleIds[completedIndexCounter] = pendingSaleTokenIds[i];
-                completedIndexCounter++;
-            } else if (block.timestamp - data.date >= 30 days) {
-                upkeepNeeded = true;
-                refundSaleIds[refundedIndexCounter] = pendingSaleTokenIds[i];
-                refundedIndexCounter++;
-            }
-        }
-        performData = abi.encode(completedSaleIds, refundSaleIds);
-        return (upkeepNeeded, performData);
-    }
-
     /** @dev Called by Chainlink to complete sales if the phyisical stem cells have been delivered or
      *  refund them if they have not been delivered in the acceptable time frame.
      */
@@ -423,15 +385,11 @@ contract AminoChainMarketplace is
         uint256 fee = data.escrowedPayment / 10;
 
         /// BioBank Payment
-        IERC20(i_usdc).transferFrom(
-            address(this),
-            data.bioBank,
-            data.escrowedPayment - (incentive + fee)
-        );
+        IERC20(i_usdc).transfer(data.bioBank, data.escrowedPayment - (incentive + fee));
         /// Protocol Fee Payment
-        IERC20(i_usdc).transferFrom(address(this), data.seller, fee);
+        IERC20(i_usdc).transfer(data.seller, fee);
         /// Donor Incentive Payment
-        IERC20(i_usdc).transferFrom(address(this), data.donor, incentive);
+        IERC20(i_usdc).transfer(data.donor, incentive);
 
         IERC721(tokenziedStemCells).safeTransferFrom(address(this), data.buyer, tokenId);
 
@@ -459,7 +417,7 @@ contract AminoChainMarketplace is
             "provided tokenId has not surpassed time limit"
         );
 
-        IERC20(i_usdc).transferFrom(address(this), data.buyer, data.escrowedPayment);
+        IERC20(i_usdc).transfer(data.buyer, data.escrowedPayment);
 
         IERC721(tokenziedStemCells).safeTransferFrom(address(this), data.seller, tokenId);
 
@@ -483,6 +441,44 @@ contract AminoChainMarketplace is
     }
 
     // === View Functions === //
+
+    /** @dev Called by Chainlink automation to determine if there are sales to complete or refund.
+     */
+    function checkUpkeep(
+        bytes calldata /* checkData */
+    ) external view override returns (bool upkeepNeeded, bytes memory performData) {
+        uint256 completedCounter;
+        uint256 refundedCounter;
+        for (uint256 i = 0; i < pendingSaleTokenIds.length; i++) {
+            PendingSale memory data = PendingSales[pendingSaleTokenIds[i]];
+            if (data.saleStatus == physicalStatus.DELIVERED) {
+                completedCounter++;
+            } else if (block.timestamp - data.date >= 30 days) {
+                refundedCounter++;
+            }
+        }
+
+        upkeepNeeded = false;
+        uint256[] memory completedSaleIds = new uint256[](completedCounter);
+        uint256[] memory refundSaleIds = new uint256[](refundedCounter);
+
+        uint256 completedIndexCounter = 0;
+        uint256 refundedIndexCounter = 0;
+        for (uint256 i = 0; i < pendingSaleTokenIds.length; i++) {
+            PendingSale memory data = PendingSales[pendingSaleTokenIds[i]];
+            if (data.saleStatus == physicalStatus.DELIVERED) {
+                upkeepNeeded = true;
+                completedSaleIds[completedIndexCounter] = pendingSaleTokenIds[i];
+                completedIndexCounter++;
+            } else if (block.timestamp - data.date >= 30 days) {
+                upkeepNeeded = true;
+                refundSaleIds[refundedIndexCounter] = pendingSaleTokenIds[i];
+                refundedIndexCounter++;
+            }
+        }
+        performData = abi.encode(completedSaleIds, refundSaleIds);
+        return (upkeepNeeded, performData);
+    }
 
     /** @dev Returns the listing data for a given tokenId
      */

@@ -60,6 +60,8 @@ export const amounts = [6, 3, 4, 1, 2]
 export const firstNftTokeId = 1
 export const DEFAULT_PRICE_PER_CC = 1400
 
+const delay = (s: number) => new Promise(res => setTimeout(res, s*1000));
+
 export const LAGEST_UINT = BigNumber.from(
     // This is uint256's max value (2^256 - 1) in hex
     // Fun Fact: There are 64 f's in here.

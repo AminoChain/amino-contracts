@@ -109,5 +109,5 @@ interface IAminoChainMarketplace {
     /**
      *
      */
-    function withdrawLink() external;
+//    function withdrawLink() external;
 }

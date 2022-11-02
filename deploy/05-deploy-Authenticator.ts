@@ -3,6 +3,7 @@ import { DeployFunction } from "hardhat-deploy/types"
 import { ethers } from "hardhat"
 import { developmentChains } from "../helper-hardhat-config"
 import verify from "../utils/verify"
+import {delay} from "@nomiclabs/hardhat-etherscan/dist/src/etherscan/EtherscanService";
 
 // 0x7d351a67CCA0955839D2e515d326125343D9780B
 
@@ -11,7 +12,7 @@ const deployAuthenticator: DeployFunction = async function (hre: HardhatRuntimeE
     const { deploy, log, get } = deployments
     const { deployer } = await getNamedAccounts()
 
-    let mockNftAddress
+    let nftAddress
     let marketplaceAddress
     let usdcAddress
 
@@ -23,7 +24,7 @@ const deployAuthenticator: DeployFunction = async function (hre: HardhatRuntimeE
             .getContract("MockNFT")
             .catch(() => ethers.getContract("AminoChainDonation"))
 
-        mockNftAddress = NFT.address
+        nftAddress = NFT.address
 
         const Marketplace = await ethers
             .getContract("MockAminoChainMarketplace")
@@ -32,28 +33,28 @@ const deployAuthenticator: DeployFunction = async function (hre: HardhatRuntimeE
         marketplaceAddress = Marketplace.address
     } else {
         usdcAddress = "0xb0eaca4246d134cfcd104df91f9cd87e6c7271a7" // todo lets create some registry for deployed contracts addresses
-        mockNftAddress = "0x6dfEb832F1902301703c48922B5821ABBA8f251B"
-        marketplaceAddress = "0xccdbcf18830ac135b711bd5a8912fcb09457a62c"
+        nftAddress = "0x2dA81f4520160f6a78660841C4E026d66eC49d6E"
+        marketplaceAddress = "0x28C3BD01C3beF94bCfB6dad5b19127AB6e0eB34f"
     }
 
-    const constructorArgs = [mockNftAddress, marketplaceAddress, usdcAddress]
+    const constructorArgs = [nftAddress, marketplaceAddress, usdcAddress]
 
-    const marketplace = await deploy("AminoChainAuthenticator", {
+    const contract = await deploy("AminoChainAuthenticator", {
         from: deployer,
         // gasLimit: 20000000,
         args: constructorArgs,
         log: true,
     })
 
+
     if (!developmentChains.includes(network.name) && process.env.POLYGONSCAN_API_KEY) {
         console.log("Verifying on polygonscan...")
-        setTimeout(async () => {
-            await verify(
-                marketplace.address,
-                "contracts/AminoChainAuthenticator.sol:AminoChainAuthenticator",
-                constructorArgs
-            ) /*.catch( () => {})*/
-        }, 5000)
+        await delay(20000)
+        await verify(
+            contract.address,
+            "contracts/AminoChainAuthenticator.sol:AminoChainAuthenticator",
+            constructorArgs
+        ) /*.catch( () => {})*/
     }
 }
 

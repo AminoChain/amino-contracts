@@ -28,6 +28,7 @@ import { Encryptor } from "../encryptor"
 
 const trueBoolInBytes = "0x0000000000000000000000000000000000000000000000000000000000000001"
 const hlaEncodingKey = "secret"
+const mockHlaEncoded = ethers.constants.HashZero
 
 describe("Full Tests", async function () {
     let authenticator: AminoChainAuthenticator
@@ -135,17 +136,17 @@ describe("Full Tests", async function () {
     describe("Multiply fractions", async () => {
         before(beforeEachDescribe)
 
-        const firstTokenId = firstNftTokeId
-        const secondTokenId = firstNftTokeId + 1
-        const biodataHash = await authenticator.getBioDataHash(
-            bioData.A.toString(),
-            bioData.B.toString(),
-            bioData.C.toString(),
-            bioData.DPB.toString(),
-            bioData.DRB.toString()
-        )
-
         it("Mint & List", async () => {
+            const firstTokenId = firstNftTokeId
+            const secondTokenId = firstNftTokeId + 1
+            const biodataHash = await authenticator.getBioDataHash(
+                bioData.A.toString(),
+                bioData.B.toString(),
+                bioData.C.toString(),
+                bioData.DPB.toString(),
+                bioData.DRB.toString()
+            )
+
             await expect(nft.ownerOf(firstTokenId)).revertedWith("ERC721: invalid token ID")
             await expect(nft.ownerOf(secondTokenId)).revertedWith("ERC721: invalid token ID")
 
@@ -154,7 +155,7 @@ describe("Full Tests", async function () {
             await authenticator.register(
                 bioDataHashed,
                 biodataHash,
-                "",
+                mockHlaEncoded,
                 [10, 20],
                 donor.address,
                 signature,
@@ -171,33 +172,33 @@ describe("Full Tests", async function () {
             )) as AminoChainMarketplace.ListingStruct
             expect(listing.donor).eq(donor.address)
             expect(listing.bioBank).eq(biobank.address)
-            expect(listing.sizeInCC).eq(20)
+            expect(listing.sizeInCC).eq(10)
 
             listing = (await marketplace.getListingData(
                 secondTokenId
             )) as AminoChainMarketplace.ListingStruct
             expect(listing.donor).eq(donor.address)
             expect(listing.bioBank).eq(biobank.address)
-            expect(listing.sizeInCC).eq(10)
+            expect(listing.sizeInCC).eq(20)
         })
     })
 
     describe("Mint & Cancel Procedure", async () => {
         before(beforeEachDescribe)
 
-        const biodataHash = await authenticator.getBioDataHash(
-            bioData.A.toString(),
-            bioData.B.toString(),
-            bioData.C.toString(),
-            bioData.DPB.toString(),
-            bioData.DRB.toString()
-        )
-
         it("Mint & Cancel", async () => {
+            const biodataHash = await authenticator.getBioDataHash(
+                bioData.A.toString(),
+                bioData.B.toString(),
+                bioData.C.toString(),
+                bioData.DPB.toString(),
+                bioData.DRB.toString()
+            )
+
             await authenticator.register(
                 bioDataHashed,
                 biodataHash,
-                "",
+                mockHlaEncoded,
                 [10, 20],
                 donor.address,
                 signature,

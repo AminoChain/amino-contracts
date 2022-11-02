@@ -3,6 +3,7 @@ import { getNamedAccounts, deployments, network, ethers } from "hardhat"
 import { BigNumber } from "ethers"
 import { developmentChains } from "../helper-hardhat-config"
 import verify from "../utils/verify"
+import {delay} from "@nomiclabs/hardhat-etherscan/dist/src/etherscan/EtherscanService";
 
 const deployFunction: DeployFunction = async () => {
     const { deploy, log } = deployments
@@ -19,6 +20,7 @@ const deployFunction: DeployFunction = async () => {
 
     if (!developmentChains.includes(network.name) && process.env.POLYGONSCAN_API_KEY) {
         console.log("Verifying on polygonscan...")
+        await delay(20000)
         await verify(
             nft.address,
             "contracts/AminoChainDonation.sol:AminoChainDonation",
@@ -28,4 +30,4 @@ const deployFunction: DeployFunction = async () => {
 }
 
 export default deployFunction
-deployFunction.tags = [`all`, `donation`, "all-without-mocks"]
+deployFunction.tags = [`all`, `nft`, `donation`, "all-without-mocks"]

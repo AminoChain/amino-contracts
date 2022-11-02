@@ -40,4 +40,6 @@ contract MockAminoChainMarketplace is IAminoChainMarketplace {
     function setAuthenticatorAddress(address _authenticator) external {}
 
     function setDonorIncentiveRate(uint256 newIncentiveRate) external {}
+
+    function updateDeliveryStatus(uint256 tokenId, uint256 status) external {}
 }

@@ -6,13 +6,15 @@ import { firstNftTokeId, bioDataHashed } from "../commons"
 const trueBoolInBytes = "0x0000000000000000000000000000000000000000000000000000000000000001"
 
 describe("AminoChainMarketplace Tests", async () => {
-    const { deployer } = await getNamedAccounts()
+    let deployer: string
     let marketplace: AminoChainMarketplace
     let erc20: MockERC20
     let nft: MockNFT
     let mockOracle: MockOracle
     let linkToken: LinkToken
+
     beforeEach(async () => {
+        deployer = (await getNamedAccounts()).deployer
         await deployments.fixture(["all"])
         marketplace = await ethers.getContract("AminoChainMarketplace", deployer)
         nft = await ethers.getContract("MockNFT", deployer)

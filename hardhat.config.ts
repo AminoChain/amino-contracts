@@ -28,6 +28,28 @@ const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "Your etherscan API k
 const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY || "Your polygonscan API key"
 
 const config: HardhatUserConfig = {
+    solidity: {
+        compilers: [
+            {
+                version: "0.8.17",
+                settings: {
+                    optimizer: {
+                        enabled: true,
+                        runs: 1000,
+                    },
+                },
+            },
+            {
+                version: "0.6.6",
+            },
+            {
+                version: "0.4.24",
+            },
+            {
+                version: "0.6.0",
+            },
+        ],
+    },
     defaultNetwork: "hardhat",
     paths: {
         // artifacts: '../amino-authenticator-ui/src/artifacts',
@@ -103,22 +125,6 @@ const config: HardhatUserConfig = {
         feeCollector: {
             default: 1,
         },
-    },
-    solidity: {
-        compilers: [
-            {
-                version: "0.8.17",
-            },
-            {
-                version: "0.6.6",
-            },
-            {
-                version: "0.4.24",
-            },
-            {
-                version: "0.6.0",
-            },
-        ],
     },
     mocha: {
         timeout: 200000, // 200 seconds max for running tests

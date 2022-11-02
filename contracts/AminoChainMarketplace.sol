@@ -5,6 +5,7 @@ pragma solidity ^0.8.17;
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
@@ -14,7 +15,12 @@ import "@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.s
  *  @notice Handles the sale of tokenized stem cells and distributing
  *  incentives to donors
  */
-contract AminoChainMarketplace is ReentrancyGuard, ChainlinkClient, AutomationCompatibleInterface {
+contract AminoChainMarketplace is
+    ReentrancyGuard,
+    IERC721Receiver,
+    ChainlinkClient,
+    AutomationCompatibleInterface
+{
     using Chainlink for Chainlink.Request;
 
     uint256 public constant DEFAULT_PRICE_PER_CC = 1400;
@@ -57,6 +63,7 @@ contract AminoChainMarketplace is ReentrancyGuard, ChainlinkClient, AutomationCo
 
     mapping(uint256 => Listing) ListingData;
     mapping(uint256 => PendingSale) PendingSales;
+    mapping(uint256 => uint256) PendingSaleIdsIndex;
     mapping(bytes32 => address) ApprovalRequest;
     mapping(address => bool) ApprovedToBuy;
 
@@ -127,8 +134,6 @@ contract AminoChainMarketplace is ReentrancyGuard, ChainlinkClient, AutomationCo
 
     event saleRefunded(uint256 tokenId, address buyer, address bioBank, uint256 refundTotal);
 
-    event approvalRequest(bytes32 requestId, address requester);
-
     event listingCanceled(uint256 tokenId);
 
     event ownershipTransferred(address oldOwner, address newOwner);
@@ -196,6 +201,7 @@ contract AminoChainMarketplace is ReentrancyGuard, ChainlinkClient, AutomationCo
         IERC721(tokenziedStemCells).safeTransferFrom(data.seller, address(this), tokenId);
 
         pendingSaleTokenIds.push(tokenId);
+        PendingSaleIdsIndex[tokenId] = pendingSaleTokenIds.length - 1;
         PendingSales[tokenId] = PendingSale(
             block.timestamp,
             physicalStatus.AT_ORIGIN,
@@ -237,7 +243,6 @@ contract AminoChainMarketplace is ReentrancyGuard, ChainlinkClient, AutomationCo
 
         bytes32 id = sendChainlinkRequest(req, (1 * LINK_DIVISIBILITY) / 10);
         ApprovalRequest[id] = msg.sender;
-        emit approvalRequest(id, msg.sender);
     }
 
     /** @dev Called by Chainlink automation to determine if there are sales to complete or refund.
@@ -245,10 +250,20 @@ contract AminoChainMarketplace is ReentrancyGuard, ChainlinkClient, AutomationCo
     function checkUpkeep(
         bytes calldata /* checkData */
     ) external view override returns (bool upkeepNeeded, bytes memory performData) {
-        upkeepNeeded = false;
+        uint256 completedCounter;
+        uint256 refundedCounter;
+        for (uint256 i = 0; i < pendingSaleTokenIds.length; i++) {
+            PendingSale memory data = PendingSales[pendingSaleTokenIds[i]];
+            if (data.saleStatus == physicalStatus.DELIVERED) {
+                completedCounter++;
+            } else if (block.timestamp - data.date >= 30 days) {
+                refundedCounter++;
+            }
+        }
 
-        uint256[] memory completedSaleIds = new uint256[](pendingSaleTokenIds.length);
-        uint256[] memory refundSaleIds = new uint256[](pendingSaleTokenIds.length);
+        upkeepNeeded = false;
+        uint256[] memory completedSaleIds = new uint256[](completedCounter);
+        uint256[] memory refundSaleIds = new uint256[](refundedCounter);
 
         uint256 completedIndexCounter = 0;
         uint256 refundedIndexCounter = 0;
@@ -297,6 +312,23 @@ contract AminoChainMarketplace is ReentrancyGuard, ChainlinkClient, AutomationCo
                 );
                 refundSale(refundSaleIds[i]);
             }
+        }
+    }
+
+    /** @dev Updates the delivery status of a pending sale for a given tokenId.
+     *  @notice 0 = At_Origin, 1 = In Transit, 2 = Delivered
+     */
+    function updateDeliveryStatus(uint256 tokenId, uint256 status) external onlyOwner {
+        PendingSale memory data = PendingSales[tokenId];
+        require(data.buyer != address(0), "Buyer cannot be null");
+        require(status < 3, "Invalid status input");
+
+        if (status == 0) {
+            PendingSales[tokenId].saleStatus = physicalStatus.AT_ORIGIN;
+        } else if (status == 1) {
+            PendingSales[tokenId].saleStatus = physicalStatus.IN_TRANSIT;
+        } else if (status == 2) {
+            PendingSales[tokenId].saleStatus = physicalStatus.DELIVERED;
         }
     }
 
@@ -382,6 +414,10 @@ contract AminoChainMarketplace is ReentrancyGuard, ChainlinkClient, AutomationCo
             data.saleStatus == physicalStatus.DELIVERED,
             "Physical item has not been delivered yet"
         );
+        require(
+            IERC20(i_usdc).balanceOf(address(this)) >= data.escrowedPayment,
+            "Contract USDC balance is too low"
+        );
 
         uint256 incentive = data.escrowedPayment / donorIncentiveRate;
         uint256 fee = data.escrowedPayment / 10;
@@ -400,6 +436,7 @@ contract AminoChainMarketplace is ReentrancyGuard, ChainlinkClient, AutomationCo
         IERC721(tokenziedStemCells).safeTransferFrom(address(this), data.buyer, tokenId);
 
         delete PendingSales[tokenId];
+        delete pendingSaleTokenIds[PendingSaleIdsIndex[tokenId]];
 
         emit saleCompleted(
             data.bioBank,
@@ -427,6 +464,7 @@ contract AminoChainMarketplace is ReentrancyGuard, ChainlinkClient, AutomationCo
         IERC721(tokenziedStemCells).safeTransferFrom(address(this), data.seller, tokenId);
 
         delete PendingSales[tokenId];
+        delete pendingSaleTokenIds[PendingSaleIdsIndex[tokenId]];
 
         emit saleRefunded(tokenId, data.buyer, data.bioBank, data.escrowedPayment);
     }
@@ -450,5 +488,16 @@ contract AminoChainMarketplace is ReentrancyGuard, ChainlinkClient, AutomationCo
      */
     function getListingData(uint256 tokenId) public view returns (Listing memory) {
         return ListingData[tokenId];
+    }
+
+    /** @dev IERC721 Reciever for tokenized stem cells
+     */
+    function onERC721Received(
+        address,
+        address,
+        uint256,
+        bytes calldata
+    ) external pure returns (bytes4) {
+        return IERC721Receiver.onERC721Received.selector;
     }
 }

@@ -68,6 +68,11 @@ interface IAminoChainMarketplace {
      */
     function requestBuyAccess() external;
 
+    /**
+     *
+     */
+    function updateDeliveryStatus(uint256 tokenId, uint256 status) external;
+
     /** @param tokenId The tokenId of the listing being canceled
      */
     function cancelListing(uint256 tokenId) external;
@@ -100,4 +105,9 @@ interface IAminoChainMarketplace {
      *  @param newIncentiveRate The new rate which determines incentive percentage
      */
     function setDonorIncentiveRate(uint256 newIncentiveRate) external;
+
+    /**
+     *
+     */
+    function withdrawLink() external;
 }

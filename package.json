@@ -8,7 +8,7 @@
     "test": "hardhat test ./test/*/*test.ts --network hardhat",
     "test-full": "hardhat test ./test/integration/Full.integration.test.ts --network hardhat",
     "test-marketplace": "hardhat test ./test/unit/Marketplace-unit-test.ts --network hardhat",
-    "test-authenticator": "hardhat test ./test/unit/Authenticator.unit.test.ts --network hardhat",
+    "test-authenticator": "hardhat test ./test/integration/Authenticator.integration.test.ts --network hardhat",
     "test-nft": "hardhat test ./test/unit/Nft.unit.test.ts --network hardhat",
 
     "deploy": "hardhat deploy --network polygon",

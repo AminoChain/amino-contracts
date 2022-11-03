@@ -63,7 +63,7 @@ contract AminoChainAuthenticator is IAminoChainAuthenticator, IERC721Receiver {
         return keccak256(abi.encodePacked(str));
     }
 
-    function getBioDataHash(
+    /*function getBioDataHash(
         string calldata A,
         string calldata B,
         string calldata C,
@@ -71,7 +71,7 @@ contract AminoChainAuthenticator is IAminoChainAuthenticator, IERC721Receiver {
         string calldata DRB
     ) public pure returns (bytes32) {
         return keccak256(abi.encodePacked(A, B, C, DPB, DRB));
-    }
+    }*/
 
     function getRegistrationHash(address donor, bytes32 biodataHash) public pure returns (bytes32) {
         return keccak256(abi.encodePacked(donor, biodataHash));

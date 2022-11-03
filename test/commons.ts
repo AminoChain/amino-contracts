@@ -93,10 +93,17 @@ chai.use(function (chai, util) {
         new chai.Assertion(actual.DPB).eql(expected.DPB)
         new chai.Assertion(actual.DRB).eql(expected.DRB)
     })
+
+    chai.Assertion.addMethod("correctHash", function () {
+        let actual = this._obj as string
+        new chai.Assertion(actual.startsWith('0x')).true
+        new chai.Assertion(actual).length(66)
+    })
 })
 
 declare module Chai {
     interface Assertion {
         bioDataEqual(bioData: any): Assertion
+        correctHash(): Assertion
     }
 }

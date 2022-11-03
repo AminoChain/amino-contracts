@@ -25,6 +25,7 @@ import {
     signature,
 } from "../commons"
 import { Encryptor } from "../encryptor"
+import {arrayify} from "ethers/lib/utils";
 
 const trueBoolInBytes = "0x0000000000000000000000000000000000000000000000000000000000000001"
 const hlaEncodingKey = "secret"
@@ -133,19 +134,43 @@ describe("Full Tests", async function () {
         })
     })
 
+    describe("Encoding", async () => {
+        before(beforeEachDescribe)
+
+        const encryptor = new Encryptor(hlaEncodingKey)
+        const bioDataEncodedBytes = encryptor.encrypt(JSON.stringify(bioData))
+
+        it("Registering", async () => {
+
+            const signature = await donor.signMessage(arrayify(messageHash))
+
+            await authenticator.register(
+                bioDataHashed,
+                bioDataHash,
+                bioDataEncodedBytes,
+                [30],
+                donor.address,
+                signature,
+                biobank.address
+            )
+
+            expect(await authenticator.connect(donor).isRegistered(donor.address)).eq(true)
+        })
+
+        it("Reading raw HLA", async () => {
+            const storedBioDataEncoded = await authenticator.bioDataEncoded(bioDataHash)
+            const storedBioData = encryptor.decrypt(arrayify(storedBioDataEncoded))
+
+            expect(storedBioData).eq(JSON.stringify(bioData))
+        })
+    })
+
     describe("Multiply fractions", async () => {
         before(beforeEachDescribe)
 
         it("Mint & List", async () => {
             const firstTokenId = firstNftTokeId
             const secondTokenId = firstNftTokeId + 1
-            const biodataHash = await authenticator.getBioDataHash(
-                bioData.A.toString(),
-                bioData.B.toString(),
-                bioData.C.toString(),
-                bioData.DPB.toString(),
-                bioData.DRB.toString()
-            )
 
             await expect(nft.ownerOf(firstTokenId)).revertedWith("ERC721: invalid token ID")
             await expect(nft.ownerOf(secondTokenId)).revertedWith("ERC721: invalid token ID")
@@ -154,7 +179,7 @@ describe("Full Tests", async function () {
 
             await authenticator.register(
                 bioDataHashed,
-                biodataHash,
+                bioDataHash,
                 mockHlaEncoded,
                 [10, 20],
                 donor.address,
@@ -183,35 +208,4 @@ describe("Full Tests", async function () {
         })
     })
 
-    describe("Mint & Cancel Procedure", async () => {
-        before(beforeEachDescribe)
-
-        it("Mint & Cancel", async () => {
-            const biodataHash = await authenticator.getBioDataHash(
-                bioData.A.toString(),
-                bioData.B.toString(),
-                bioData.C.toString(),
-                bioData.DPB.toString(),
-                bioData.DRB.toString()
-            )
-
-            await authenticator.register(
-                bioDataHashed,
-                biodataHash,
-                mockHlaEncoded,
-                [10, 20],
-                donor.address,
-                signature,
-                biobank.address
-            )
-
-            // fixme Should be canceled by Authenticator
-            /*await marketplace.cancelListing(tokenId)
-
-            const listing = await marketplace.getListingData(tokenId) as AminoChainMarketplace.ListingStruct
-            expect(listing.donor).eq(ethers.constants.AddressZero)
-            expect(listing.bioBank).eq(ethers.constants.AddressZero)
-            expect(listing.tokenId).eq(0)*/
-        })
-    })
 })

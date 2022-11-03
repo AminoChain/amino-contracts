@@ -1,10 +1,6 @@
-import {AES, ModeOfOperation, padding, utils} from "aes-js";
 import {expect} from "chai";
 import {ethers} from "hardhat";
-import {arrayify, hashMessage, recoverAddress, recoverPublicKey} from "ethers/lib/utils";
-
-const key = "Example128BitKey"
-const keyBytes = utils.utf8.toBytes(key)
+import {arrayify, hashMessage, recoverAddress} from "ethers/lib/utils";
 
 describe("Sign & recover test", async () => {
     it("Sign & recover", async () => {

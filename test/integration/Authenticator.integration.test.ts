@@ -13,7 +13,7 @@ import {Encryptor} from "../encryptor";
 
 const hlaEncodingKey = 'secret'
 
-describe("Authenticator Tests", async () => {
+describe("Authenticator Integration Tests", async () => {
     let authenticator: AminoChainAuthenticator
     let marketplace: MockAminoChainMarketplace
     let owner: SignerWithAddress
@@ -22,9 +22,9 @@ describe("Authenticator Tests", async () => {
     let biobank: SignerWithAddress
     let usdc: Token
     let nft: IAminoChainDonation
-    let bioDataHashed: HLAHashed
+    let hlaHashed: HLAHashed
 
-    beforeEach(async () => {
+    before(async () => {
         await deployments.fixture(["all"])
         ;[owner, donor, buyer, biobank] = await ethers.getSigners()
 
@@ -37,7 +37,7 @@ describe("Authenticator Tests", async () => {
         // await nft.setApprovalForAll(marketplace.address, true)
         await nft.transferOwnership(authenticator.address)
 
-        bioDataHashed = {
+        hlaHashed = {
             A: await authenticator.hash(bioData.A.toString()),
             B: await authenticator.hash(bioData.B.toString()),
             C: await authenticator.hash(bioData.C.toString()),
@@ -52,60 +52,70 @@ describe("Authenticator Tests", async () => {
 
     const amounts = [10, 5, 5, 2, 2, 2, 2, 2]
 
-    it("Register User", async () => {
-        expect(await authenticator.connect(donor).isRegistered(donor.address)).eq(false)
+    let hlaHash: string
 
-        const biodataHash = await authenticator.getBioDataHash(
+    it("Should create HLA hash", async () => {
+        hlaHash = ethers.utils.id(JSON.stringify(bioData))
+        /*hlaHash = await authenticator.getBioDataHash(
             bioData.A.toString(),
             bioData.B.toString(),
             bioData.C.toString(),
             bioData.DPB.toString(),
             bioData.DRB.toString()
-        )
+        )*/
+        // @ts-ignore
+        expect(hlaHash).correctHash()
+    })
 
-        // Donor scan QR with biodataHash
-        // On donor side, Authentication UI:
+    it("Should be no registration data", async () => {
+        expect(await authenticator.connect(donor).isRegistered(donor.address)).eq(false)
+    })
 
-        const messageHash = await authenticator.getRegistrationHash(
+    let signature: string
+
+    it("Donor side / Sign registration parameters hash", async () => {
+
+        const registrationParametersHash = await authenticator.getRegistrationHash(
             donor.address,
-            biodataHash
+            hlaHash
         )
+        // @ts-ignore
+        expect(hlaHash).correctHash()
 
-        // Donor connect wallet and sign messageHash
-        const signature = await donor.signMessage(arrayify(messageHash))
-        //
+        signature = await donor.signMessage(arrayify(registrationParametersHash))
 
-        // signature coming back to biobank
+        expect(signature.startsWith('0x')).true
+        expect(signature).have.length(132)
+    })
 
-        const encryptor = new Encryptor(hlaEncodingKey)
+    const encryptor = new Encryptor(hlaEncodingKey)
+
+    it("Backend / registration", async () => {
+
         const bioDataEncodedBytes = encryptor.encrypt(JSON.stringify(bioData))
+        expect(bioDataEncodedBytes).length(80)
 
         await authenticator.register(
-            bioDataHashed,
-            biodataHash,
+            hlaHashed,
+            hlaHash,
             bioDataEncodedBytes,
             amounts,
             donor.address,
             signature,
             biobank.address
         )
-
         expect(await authenticator.connect(donor).isRegistered(donor.address)).eq(true)
+    })
 
-        const storedBioDataEncoded = await authenticator.bioDataEncoded(biodataHash)
-        const storedBioData = encryptor.decrypt(ethers.utils.arrayify(storedBioDataEncoded))
+    it("Decrypt HLA data", async () => {
+        const storedBioDataEncoded = await authenticator.bioDataEncoded(hlaHash)
+        expect(storedBioDataEncoded).length(162)
+
+        const encryptedBytes = ethers.utils.arrayify(storedBioDataEncoded)
+        expect(encryptedBytes).length(80)
+
+        const storedBioData = encryptor.decrypt(encryptedBytes)
 
         expect(storedBioData).eq(JSON.stringify(bioData))
     })
-
-    /*it("Buy Item", async () => {
-        ///// before
-        await authenticator.registerUser(bioData, biobankAddress)
-        /////
-        await usdc.connect(buyer).approve(marketplace.address, ethers.utils.parseUnits("40000", 6))
-        expect(await nft.balanceOf(buyer.address)).eq(0)
-        await marketplace.connect(buyer).buyItem(1)
-        expect(await nft.balanceOf(buyer.address)).eq(1)
-        // expect(await nft.tokenOfOwnerByIndex(buyer.address)).eq(1)
-    })*/
 })

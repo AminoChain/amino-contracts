@@ -23,6 +23,7 @@ contract AminoChainMarketplace is
 {
     using Chainlink for Chainlink.Request;
 
+    // todo do we want to have option to update this price later?
     uint256 public constant DEFAULT_PRICE_PER_CC = 1400;
     address public owner;
     address public tokenziedStemCells;
@@ -162,14 +163,16 @@ contract AminoChainMarketplace is
         );
         require(ListingData[tokenId].seller == address(0), "Token is already listed");
         require(bioBank != address(0), "BioBank cannot be null");
+        require(donor != address(0), "Donor cannot be null");
         require(
             IERC721(tokenziedStemCells).isApprovedForAll(msg.sender, address(this)) == true,
             "Marketplace does not have approval from lister on NFT contract"
         );
+        // todo add checks for sizeInCC value
 
         uint256 price = (DEFAULT_PRICE_PER_CC * sizeInCC) * 10**IERC20Metadata(i_usdc).decimals();
 
-        ListingData[tokenId] = Listing(msg.sender, sizeInCC, price, donor, bioBank);
+        ListingData[tokenId] = Listing(msg.sender /* fixme it will be always Authenticator address */, sizeInCC, price, donor, bioBank);
 
         emit newListing(msg.sender, tokenId, sizeInCC, price, donor, bioBank);
     }
@@ -193,7 +196,7 @@ contract AminoChainMarketplace is
         );
         require(
             IERC20(i_usdc).allowance(msg.sender, address(this)) >= data.price,
-            "Marketplace allowance from buyer on USDC contract must be higher than listing price"
+            "Marketplace allowance from buyer on USDC contract must be higher than or equal to listing price"
         );
 
         IERC20(i_usdc).transferFrom(msg.sender, address(this), data.price);
@@ -228,7 +231,7 @@ contract AminoChainMarketplace is
      */
     function requestBuyAccess() external {
         Chainlink.Request memory req = buildChainlinkRequest(
-            "c1c5e92880894eb6b27d3cae19670aa3",
+            "c1c5e92880894eb6b27d3cae19670aa3", // todo maybe better to provide this in constructor to be able to deploy same code to mainnet
             address(this),
             this.fulfill.selector
         );
@@ -245,7 +248,7 @@ contract AminoChainMarketplace is
         ApprovalRequest[id] = msg.sender;
     }
 
-    /** @dev Called by Chainlink to complete sales if the phyisical stem cells have been delivered or
+    /** @dev Called by Chainlink to complete sales if the physical stem cells have been delivered or
      *  refund them if they have not been delivered in the acceptable time frame.
      */
     function performUpkeep(bytes calldata performData) external override {
@@ -279,8 +282,9 @@ contract AminoChainMarketplace is
 
     /** @dev Updates the delivery status of a pending sale for a given tokenId.
      *  @notice 0 = At_Origin, 1 = In Transit, 2 = Delivered
+     *  todo we can use directly physicalStatus as input argument, isn't it?
      */
-    function updateDeliveryStatus(uint256 tokenId, uint256 status) external onlyOwner {
+    function updateDeliveryStatus(uint256 tokenId, uint256 /* todo uint8 */ status) external onlyOwner {
         PendingSale memory data = PendingSales[tokenId];
         require(data.buyer != address(0), "Buyer cannot be null");
         require(status < 3, "Invalid status input");
@@ -323,6 +327,8 @@ contract AminoChainMarketplace is
      */
     function transferOwnership(address newOwner) external onlyOwner {
         require(newOwner != owner, "New address is already owner");
+        require(newOwner != address(0), "Invalid owner address");
+
         address oldOwner = owner;
         owner = newOwner;
         emit ownershipTransferred(oldOwner, newOwner);
@@ -333,6 +339,8 @@ contract AminoChainMarketplace is
      */
     function setTokenizedStemCells(address stemCells) external onlyOwner {
         require(stemCells != tokenziedStemCells, "New address is already set");
+        require(stemCells != address(0), "Invalid stemCells address");
+
         tokenziedStemCells = stemCells;
         emit stemCellsAddressSet(stemCells);
     }
@@ -342,6 +350,8 @@ contract AminoChainMarketplace is
      */
     function setAuthenticatorAddress(address _authenticator) external onlyOwner {
         require(authenticator != _authenticator, "New address is already set");
+        require(_authenticator != address(0), "Invalid authenticator address");
+
         authenticator = _authenticator;
         emit authenticatorAddressSet(_authenticator);
     }
@@ -358,7 +368,7 @@ contract AminoChainMarketplace is
         emit newDonorIncentiveRate(newIncentiveRate);
     }
 
-    /** @dev Allows the owner of this contract to withdrawl stored LINK.
+    /** @dev Allows the owner of this contract to withdraw stored LINK.
      */
     function withdrawLink() external onlyOwner {
         LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());
@@ -378,7 +388,7 @@ contract AminoChainMarketplace is
         );
         require(
             IERC20(i_usdc).balanceOf(address(this)) >= data.escrowedPayment,
-            "Contract USDC balance is too low"
+            "Contract USDC balance is too low" // fixme looks like backdoor, how to avoid this case?
         );
 
         uint256 incentive = data.escrowedPayment / donorIncentiveRate;

@@ -7,6 +7,12 @@ pragma solidity ^0.8.17;
  *  incentives to donors
  */
 interface IAminoChainMarketplace {
+    enum physicalStatus {
+        AT_ORIGIN,
+        IN_TRANSIT,
+        DELIVERED
+    }
+
     event newListing(
         address seller,
         uint256 tokenId,
@@ -52,6 +58,7 @@ interface IAminoChainMarketplace {
     function listItem(
         uint256 tokenId,
         uint256 sizeInCC,
+        uint256 price_per_cc,
         address donor,
         address bioBank
     ) external;
@@ -71,7 +78,7 @@ interface IAminoChainMarketplace {
     /**
      *
      */
-    function updateDeliveryStatus(uint256 tokenId, uint256 status) external;
+    function updateDeliveryStatus(uint256 tokenId, physicalStatus status) external;
 
     /** @param tokenId The tokenId of the listing being canceled
      */
@@ -109,5 +116,5 @@ interface IAminoChainMarketplace {
     /**
      *
      */
-//    function withdrawLink() external;
+    //    function withdrawLink() external;
 }

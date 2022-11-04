@@ -23,8 +23,6 @@ contract AminoChainMarketplace is
 {
     using Chainlink for Chainlink.Request;
 
-    // todo do we want to have option to update this price later?
-    uint256 public constant DEFAULT_PRICE_PER_CC = 1400;
     address public owner;
     address public tokenziedStemCells;
     address public authenticator;
@@ -154,6 +152,7 @@ contract AminoChainMarketplace is
     function listItem(
         uint256 tokenId,
         uint256 sizeInCC,
+        uint256 price_per_cc,
         address donor,
         address bioBank
     ) external onlyAuthenticator {
@@ -164,15 +163,15 @@ contract AminoChainMarketplace is
         require(ListingData[tokenId].seller == address(0), "Token is already listed");
         require(bioBank != address(0), "BioBank cannot be null");
         require(donor != address(0), "Donor cannot be null");
+        require(sizeInCC > 0, "CC size cannot be 0");
         require(
             IERC721(tokenziedStemCells).isApprovedForAll(msg.sender, address(this)) == true,
             "Marketplace does not have approval from lister on NFT contract"
         );
-        // todo add checks for sizeInCC value
 
-        uint256 price = (DEFAULT_PRICE_PER_CC * sizeInCC) * 10**IERC20Metadata(i_usdc).decimals();
+        uint256 price = (price_per_cc * sizeInCC) * 10**IERC20Metadata(i_usdc).decimals();
 
-        ListingData[tokenId] = Listing(msg.sender /* fixme it will be always Authenticator address */, sizeInCC, price, donor, bioBank);
+        ListingData[tokenId] = Listing(msg.sender, sizeInCC, price, donor, bioBank);
 
         emit newListing(msg.sender, tokenId, sizeInCC, price, donor, bioBank);
     }
@@ -231,7 +230,7 @@ contract AminoChainMarketplace is
      */
     function requestBuyAccess() external {
         Chainlink.Request memory req = buildChainlinkRequest(
-            "c1c5e92880894eb6b27d3cae19670aa3", // todo maybe better to provide this in constructor to be able to deploy same code to mainnet
+            "c1c5e92880894eb6b27d3cae19670aa3", // todo maybe better to provide this in constructor to be able to deploy same code to mainnet (after demo)
             address(this),
             this.fulfill.selector
         );
@@ -281,21 +280,12 @@ contract AminoChainMarketplace is
     }
 
     /** @dev Updates the delivery status of a pending sale for a given tokenId.
-     *  @notice 0 = At_Origin, 1 = In Transit, 2 = Delivered
-     *  todo we can use directly physicalStatus as input argument, isn't it?
      */
-    function updateDeliveryStatus(uint256 tokenId, uint256 /* todo uint8 */ status) external onlyOwner {
+    function updateDeliveryStatus(uint256 tokenId, physicalStatus status) external onlyOwner {
         PendingSale memory data = PendingSales[tokenId];
         require(data.buyer != address(0), "Buyer cannot be null");
-        require(status < 3, "Invalid status input");
 
-        if (status == 0) {
-            PendingSales[tokenId].saleStatus = physicalStatus.AT_ORIGIN;
-        } else if (status == 1) {
-            PendingSales[tokenId].saleStatus = physicalStatus.IN_TRANSIT;
-        } else if (status == 2) {
-            PendingSales[tokenId].saleStatus = physicalStatus.DELIVERED;
-        }
+        PendingSales[tokenId].saleStatus = status;
     }
 
     /** @dev Allows the owner of the contract to cancel a listing by deleting
@@ -385,10 +375,6 @@ contract AminoChainMarketplace is
         require(
             data.saleStatus == physicalStatus.DELIVERED,
             "Physical item has not been delivered yet"
-        );
-        require(
-            IERC20(i_usdc).balanceOf(address(this)) >= data.escrowedPayment,
-            "Contract USDC balance is too low" // fixme looks like backdoor, how to avoid this case?
         );
 
         uint256 incentive = data.escrowedPayment / donorIncentiveRate;

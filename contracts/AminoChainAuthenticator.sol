@@ -57,9 +57,7 @@ contract AminoChainAuthenticator is IAminoChainAuthenticator, IERC721Receiver {
         return IERC721Receiver.onERC721Received.selector;
     }
 
-    function hash(
-        string calldata str
-    ) public pure returns (bytes32) {
+    function hash(string calldata str) public pure returns (bytes32) {
         return keccak256(abi.encodePacked(str));
     }
 
@@ -97,7 +95,7 @@ contract AminoChainAuthenticator is IAminoChainAuthenticator, IERC721Receiver {
 
         uint256[] memory tokenIds = nft.mint(donor, bioData, amounts);
         for (uint256 i = 0; i < tokenIds.length; i++) {
-            marketplace.listItem(tokenIds[i], amounts[i], donor, biobank);
+            marketplace.listItem(tokenIds[i], amounts[i], 1400, donor, biobank);
         }
 
         bioDataEncoded[biodataHash] = biodataEncoded;

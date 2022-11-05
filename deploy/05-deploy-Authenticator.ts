@@ -20,17 +20,13 @@ const deployAuthenticator: DeployFunction = async function (hre: HardhatRuntimeE
         const USDC = await ethers.getContract("USDC")
         usdcAddress = USDC.address
 
-        const NFT = await ethers
-            .getContract("MockNFT")
-            .catch(() => ethers.getContract("AminoChainDonation"))
+        const NFT = await ethers.getContract("AminoChainDonation")
 
         nftAddress = NFT.address
 
-        const Marketplace = await ethers
-            .getContract("MockAminoChainMarketplace")
-            .catch(() => ethers.getContract("AminoChainMarketplace"))
+        const marketplace = await ethers.getContract("AminoChainMarketplace")
 
-        marketplaceAddress = Marketplace.address
+        marketplaceAddress = marketplace.address
     } else {
         usdcAddress = "0xb0eaca4246d134cfcd104df91f9cd87e6c7271a7" // todo lets create some registry for deployed contracts addresses
         nftAddress = "0x2dA81f4520160f6a78660841C4E026d66eC49d6E"
@@ -59,4 +55,4 @@ const deployAuthenticator: DeployFunction = async function (hre: HardhatRuntimeE
 }
 
 export default deployAuthenticator
-deployAuthenticator.tags = [`all`, `authenticator`, "all-without-mocks"]
+deployAuthenticator.tags = [`all`, `authenticator`]

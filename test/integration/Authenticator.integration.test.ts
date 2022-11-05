@@ -1,39 +1,42 @@
 import { network, deployments, ethers, run } from "hardhat"
 import {
-    AminoChainAuthenticator,
+    AminoChainAuthenticator, AminoChainDonation, AminoChainMarketplace,
     IAminoChainDonation,
-    MockAminoChainMarketplace,
     Token,
 } from "../../typechain"
 import { assert, expect } from "chai"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
-import {bioData, HLA, HLAHashed} from "../commons"
+import {bioData, HLA, hlaHash, hlaHashed, HLAHashed} from "../commons"
 import {arrayify} from "ethers/lib/utils";
 import {Encryptor} from "../encryptor";
+// @ts-ignore
+import {AminoChainLibrary, RegistrationDataStruct} from "../../typechain/contracts/AminoChainAuthenticator";
 
 const hlaEncodingKey = 'secret'
 
+
 describe("Authenticator Integration Tests", async () => {
     let authenticator: AminoChainAuthenticator
-    let marketplace: MockAminoChainMarketplace
+    let marketplace: AminoChainMarketplace
     let owner: SignerWithAddress
     let buyer: SignerWithAddress
     let donor: SignerWithAddress
     let biobank: SignerWithAddress
     let usdc: Token
-    let nft: IAminoChainDonation
+    let nft: AminoChainDonation
     let hlaHashed: HLAHashed
 
     before(async () => {
         await deployments.fixture(["all"])
         ;[owner, donor, buyer, biobank] = await ethers.getSigners()
 
-        marketplace = await ethers.getContract("MockAminoChainMarketplace")
-        nft = await ethers.getContract("MockNFT")
+        marketplace = await ethers.getContract("AminoChainMarketplace")
+        nft = await ethers.getContract("AminoChainDonation")
         usdc = await ethers.getContract("USDC")
         await usdc.transfer(buyer.address, ethers.utils.parseUnits("42000", 6))
 
         authenticator = await ethers.getContract("AminoChainAuthenticator")
+        await marketplace.setAuthenticatorAddress(authenticator.address)
         // await nft.setApprovalForAll(marketplace.address, true)
         await nft.transferOwnership(authenticator.address)
 
@@ -91,24 +94,24 @@ describe("Authenticator Integration Tests", async () => {
     const encryptor = new Encryptor(hlaEncodingKey)
 
     it("Backend / registration", async () => {
+        const hlaEncodedBytes = encryptor.encrypt(JSON.stringify(bioData))
+        expect(hlaEncodedBytes).length(80)
 
-        const bioDataEncodedBytes = encryptor.encrypt(JSON.stringify(bioData))
-        expect(bioDataEncodedBytes).length(80)
-
-        await authenticator.register(
+        await authenticator.register({
             hlaHashed,
             hlaHash,
-            bioDataEncodedBytes,
+            hlaEncoded: hlaEncodedBytes,
+            genomeEncodedUrl: '',
             amounts,
-            donor.address,
+            donor: donor.address,
             signature,
-            biobank.address
-        )
+            biobank: biobank.address
+        })
         expect(await authenticator.connect(donor).isRegistered(donor.address)).eq(true)
     })
 
     it("Decrypt HLA data", async () => {
-        const storedBioDataEncoded = await authenticator.bioDataEncoded(hlaHash)
+        const storedBioDataEncoded = await nft.hlaHashToHlaEncoded(hlaHash)
         expect(storedBioDataEncoded).length(162)
 
         const encryptedBytes = ethers.utils.arrayify(storedBioDataEncoded)

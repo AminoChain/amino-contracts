@@ -14,9 +14,7 @@ const deployMarketplace: DeployFunction = async function (hre: HardhatRuntimeEnv
     let args: any[]
     if (developmentChains.includes(network.name)) {
         const USDC = await ethers.getContract("MockERC20").catch(() => ethers.getContract("USDC"))
-        const NFT = await ethers
-            .getContract("MockNFT")
-            .catch(() => ethers.getContract("AminoChainDonation"))
+        const NFT = await ethers.getContract("AminoChainDonation")
         const LINK = await ethers
             .getContract("LinkToken")
             .catch(() => ethers.getContract("MockLinkToken"))
@@ -59,4 +57,4 @@ const deployMarketplace: DeployFunction = async function (hre: HardhatRuntimeEnv
 }
 
 export default deployMarketplace
-deployMarketplace.tags = [`all`, `marketplace`, "all-without-mocks"]
+deployMarketplace.tags = [`all`, `marketplace`]

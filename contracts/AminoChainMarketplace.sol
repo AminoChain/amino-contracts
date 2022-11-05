@@ -289,7 +289,7 @@ contract AminoChainMarketplace is
     }
 
     /** @dev Allows the owner of the contract to cancel a listing by deleting
-     *  the corrosponding listing data.
+     *  the corresponding listing data.
      */
     function cancelListing(uint256 tokenId) external onlyOwner {
         require(ListingData[tokenId].seller != address(0), "Token is not listed");
@@ -300,7 +300,7 @@ contract AminoChainMarketplace is
     }
 
     /** @dev Allows the owner of the contract to update the price of a listing by
-     *  modifing the corrosponding listing data.
+     *  modifying the corresponding listing data.
      */
     function updateListing(uint256 tokenId, uint256 newPrice) external onlyOwner {
         Listing memory data = ListingData[tokenId];

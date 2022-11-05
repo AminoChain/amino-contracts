@@ -13,7 +13,7 @@ const deployMarketplace: DeployFunction = async function (hre: HardhatRuntimeEnv
 
     let args: any[]
     if (developmentChains.includes(network.name)) {
-        const USDC = await ethers.getContract("MockERC20").catch(() => ethers.getContract("USDC"))
+        const USDC = await ethers.getContract("USDC").catch(() => ethers.getContract("MockERC20"))
         const NFT = await ethers.getContract("AminoChainDonation")
         const LINK = await ethers
             .getContract("LinkToken")

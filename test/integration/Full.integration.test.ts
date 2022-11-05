@@ -127,7 +127,10 @@ describe("Full Tests", async function () {
             console.log(price.toString())
             console.log((await usdc.balanceOf(doctor.address)).toString())
             expect(await usdc.balanceOf(doctor.address)).greaterThanOrEqual(price)
+            expect(await marketplace.i_usdc()).eq(usdc.address)
+
             await marketplace.connect(doctor).buyItem(tokenId)
+
             expect(await nft.ownerOf(tokenId)).eq(marketplace.address)
 
             const listing = (await marketplace.getListingData(

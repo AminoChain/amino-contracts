@@ -27,4 +27,4 @@ const deployFunction: DeployFunction = async () => {
 }
 
 export default deployFunction
-deployFunction.tags = [`all`, `usdc`, "all-without-mocks"]
+deployFunction.tags = [`all`, `usdc`]

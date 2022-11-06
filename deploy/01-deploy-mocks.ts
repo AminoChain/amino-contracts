@@ -6,13 +6,12 @@ import { BigNumber } from "ethers"
 const deployFunction: DeployFunction = async () => {
     const { deploy, log } = deployments
     const { deployer } = await getNamedAccounts()
-    const chainId: number | undefined = network.config.chainId
 
     // If we are on a local development network, we need to deploy mocks!
     if (developmentChains.includes(network.name)) {
         log(`Local network detected! Deploying mocks...`)
 
-        const USDC = await ethers.getContract("USDC")
+        // const USDC = await ethers.getContract("USDC")
 
         const erc20 = await deploy("MockERC20", {
             contract: `MockERC20`,
@@ -21,20 +20,20 @@ const deployFunction: DeployFunction = async () => {
             args: [],
         })
 
-        const nft = await deploy(`MockNFT`, {
+        /*const nft = await deploy(`MockNFT`, {
             contract: `MockNFT`,
             from: deployer,
             log: true,
             args: ["AMINO", "AMINO"],
-        })
+        })*/
 
-        const donorIncentiveRate = 8
+        /*const donorIncentiveRate = 8
         const marketplace = await deploy(`MockAminoChainMarketplace`, {
             contract: `MockAminoChainMarketplace`,
             from: deployer,
             log: true,
             args: [donorIncentiveRate, USDC.address, nft.address],
-        })
+        })*/
 
         /*const authenticator = await deploy(`AminoChainAuthenticator`, {
             contract: `AminoChainAuthenticator`,

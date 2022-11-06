@@ -3,7 +3,18 @@
 pragma solidity ^0.8.17;
 
 library AminoChainLibrary {
-    struct BioData {
+    struct RegistrationData {
+        AminoChainLibrary.HlaHashed hlaHashed;
+        bytes32 hlaHash;
+        bytes hlaEncoded;
+        string genomeEncodedUrl;
+        uint256[] amounts;
+        address donor;
+        bytes signature;
+        address biobank;
+    }
+
+    struct HlaHashed {
         bytes32 A;
         bytes32 B;
         bytes32 C;

@@ -3,9 +3,6 @@ import {
     AminoChainAuthenticator,
     AminoChainMarketplace,
     AminoChainDonation,
-    ERC20,
-    IAminoChainDonation,
-    MockAminoChainMarketplace,
     Token,
     LinkToken,
     MockOracle,
@@ -19,17 +16,16 @@ import {
     firstNftTokeId,
     amounts,
     DEFAULT_PRICE_PER_CC,
-    bioDataHashed,
-    bioDataHash,
+    hlaHashed,
+    hlaHash,
     messageHash,
-    signature,
+    signature, RegistrationData, mockHlaEncoded,
 } from "../commons"
 import { Encryptor } from "../encryptor"
 import {arrayify} from "ethers/lib/utils";
 
 const trueBoolInBytes = "0x0000000000000000000000000000000000000000000000000000000000000001"
 const hlaEncodingKey = "secret"
-const mockHlaEncoded = ethers.constants.HashZero
 
 describe("Full Tests", async function () {
     let authenticator: AminoChainAuthenticator
@@ -44,7 +40,7 @@ describe("Full Tests", async function () {
     let linkToken: LinkToken
 
     async function beforeEachDescribe() {
-        await deployments.fixture(["all-without-mocks"]) // no mocks (except oracle)
+        await deployments.fixture(["all"])
         ;[deployer, donor, doctor, biobank] = await ethers.getSigners()
         marketplace = (await ethers.getContract("AminoChainMarketplace")) as AminoChainMarketplace
         nft = (await ethers.getContract("AminoChainDonation")) as AminoChainDonation
@@ -58,6 +54,10 @@ describe("Full Tests", async function () {
         await nft.transferOwnership(authenticator.address)
         await marketplace.setAuthenticatorAddress(authenticator.address)
         await linkToken.transfer(marketplace.address, ethers.utils.parseEther("10"))
+
+        let usdcDecimals = await usdc.decimals()
+        let amount = BigNumber.from(10).pow(usdcDecimals).mul(100_000)
+        await usdc.transfer(doctor.address, amount)
     }
 
     describe("Buy happy path", async () => {
@@ -74,15 +74,16 @@ describe("Full Tests", async function () {
             // Donor scan QR with biodataHash
             // On donor side, Authentication UI:
 
-            await authenticator.register(
-                bioDataHashed,
-                bioDataHash,
-                bioDataEncodedBytes,
-                [30],
-                donor.address,
+            await authenticator.register({
+                hlaHashed,
+                hlaHash,
+                hlaEncoded: bioDataEncodedBytes,
+                genomeEncodedUrl: '',
+                amounts: [30],
+                donor: donor.address,
                 signature,
-                biobank.address
-            )
+                biobank: biobank.address
+            })
 
             expect(await authenticator.connect(donor).isRegistered(donor.address)).eq(true)
             expect(await nft.ownerOf(tokenId)).eq(authenticator.address)
@@ -102,15 +103,16 @@ describe("Full Tests", async function () {
         })
 
         it("Buy", async () => {
-            await authenticator.register(
-                bioDataHashed,
-                bioDataHash,
-                bioDataEncodedBytes,
-                amounts,
-                donor.address,
+            await authenticator.register({
+                hlaHashed,
+                hlaHash,
+                hlaEncoded: bioDataEncodedBytes,
+                genomeEncodedUrl: '',
+                amounts: [30],
+                donor: donor.address,
                 signature,
-                biobank.address
-            ) // Test fails unless listing has been posted before via registration of new user
+                biobank: biobank.address
+            }) // Test fails unless listing has been posted before via registration of new user
 
             const list = (await marketplace.getListingData(
                 tokenId
@@ -122,8 +124,13 @@ describe("Full Tests", async function () {
             const requestTransactionReceipt = await requestTx.wait()
             const requestId = requestTransactionReceipt.events![0].args?.id
             await mockOracle.fulfillOracleRequest(requestId, trueBoolInBytes)
+            console.log(price.toString())
+            console.log((await usdc.balanceOf(doctor.address)).toString())
+            expect(await usdc.balanceOf(doctor.address)).greaterThanOrEqual(price)
+            expect(await marketplace.i_usdc()).eq(usdc.address)
 
             await marketplace.connect(doctor).buyItem(tokenId)
+
             expect(await nft.ownerOf(tokenId)).eq(marketplace.address)
 
             const listing = (await marketplace.getListingData(
@@ -144,21 +151,22 @@ describe("Full Tests", async function () {
 
             const signature = await donor.signMessage(arrayify(messageHash))
 
-            await authenticator.register(
-                bioDataHashed,
-                bioDataHash,
-                bioDataEncodedBytes,
-                [30],
-                donor.address,
+            await authenticator.register({
+                hlaHashed,
+                hlaHash,
+                hlaEncoded: bioDataEncodedBytes,
+                genomeEncodedUrl: '',
+                amounts: [30],
+                donor: donor.address,
                 signature,
-                biobank.address
-            )
+                biobank: biobank.address
+            })
 
             expect(await authenticator.connect(donor).isRegistered(donor.address)).eq(true)
         })
 
         it("Reading raw HLA", async () => {
-            const storedBioDataEncoded = await authenticator.bioDataEncoded(bioDataHash)
+            const storedBioDataEncoded = await nft.hlaHashToHlaEncoded(hlaHash)
             const storedBioData = encryptor.decrypt(arrayify(storedBioDataEncoded))
 
             expect(storedBioData).eq(JSON.stringify(bioData))
@@ -177,15 +185,16 @@ describe("Full Tests", async function () {
 
             expect(await authenticator.connect(donor).isRegistered(donor.address)).eq(false)
 
-            await authenticator.register(
-                bioDataHashed,
-                bioDataHash,
-                mockHlaEncoded,
-                [10, 20],
-                donor.address,
+            await authenticator.register({
+                hlaHashed,
+                hlaHash,
+                hlaEncoded: mockHlaEncoded,
+                genomeEncodedUrl: '',
+                amounts: [10, 20],
+                donor: donor.address,
                 signature,
-                biobank.address
-            )
+                biobank: biobank.address
+            })
 
             expect(await authenticator.connect(donor).isRegistered(donor.address)).eq(true)
 

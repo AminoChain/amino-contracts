@@ -11,18 +11,10 @@ interface IAminoChainAuthenticator {
         uint256[] amounts
     );
 
-    /*function registerUser(AminoChainLibrary.BioData calldata bioData, address biobankAddress, uint256[] calldata amounts)
+    /*function registerUser(AminoChainLibrary.HlaHashed calldata bioData, address biobankAddress, uint256[] calldata amounts)
         external;*/
 
-    function register(
-        AminoChainLibrary.BioData calldata bioData,
-        bytes32 biodataHash,
-        bytes memory rawBiodataEncoded,
-        uint256[] calldata amounts,
-        address donor,
-        bytes memory signature,
-        address biobank
-    ) external;
+    function register(AminoChainLibrary.RegistrationData calldata data) external;
 
     function isRegistered(address donor) external view returns (bool);
 }

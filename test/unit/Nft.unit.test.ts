@@ -9,7 +9,7 @@ import { assert, expect } from "chai"
 import chai from "chai"
 import { BigNumber, constants } from "ethers"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
-import { bioData, bioDataHashed, firstNftTokeId, HLA } from "../commons"
+import { bioData, hlaHashed, firstNftTokeId, HLA } from "../commons"
 import { AminoChainLibrary } from "../../typechain/contracts/AminoChainDonation"
 
 describe("NFT Tests", async function () {
@@ -43,9 +43,9 @@ describe("NFT Tests", async function () {
 
     it("Mint", async () => {
         const expectedTokenIds = [...Array(amounts.length).keys()].map((i) => i + firstNftTokeId)
-        expect(await nft.mint(donor.address, bioDataHashed, amounts))
+        expect(await nft.mint(donor.address, hlaHashed, amounts))
             .emit(nft, "NFTMinted")
-            .withArgs(donor.address, bioDataHashed, amounts, expectedTokenIds)
+            .withArgs(donor.address, hlaHashed, amounts, expectedTokenIds)
 
         await Promise.all(
             expectedTokenIds.map(async (tokenId) => {
@@ -54,7 +54,7 @@ describe("NFT Tests", async function () {
                     tokenId
                 )) as AminoChainLibrary.BioDataStruct
                 // @ts-ignore
-                expect(actualBioData).bioDataEqual(bioDataHashed)
+                expect(actualBioData).bioDataEqual(hlaHashed)
             })
         )
 

@@ -26,4 +26,4 @@ const deployFunction: DeployFunction = async () => {
 }
 
 export default deployFunction
-deployFunction.tags = [`all`, `chainlink`, "all-without-mocks"]
+deployFunction.tags = [`all`, `chainlink`]

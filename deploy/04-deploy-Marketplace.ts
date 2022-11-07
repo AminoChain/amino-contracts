@@ -32,7 +32,7 @@ const deployMarketplace: DeployFunction = async function (hre: HardhatRuntimeEnv
         args = [
             8,
             "0xb0eaca4246d134cfcd104df91f9cd87e6c7271a7", // USDC
-            "0xb7De77FEb9D7BBC536EC15900E59Ce1978C56503", // NFT
+            "0xb67735F969F1b485054FA37fEa0660d8a44F7075", // NFT
             "0x326C977E6efc84E512bB9C30f76E30c160eD06FB", //LINK on mumbai
             "0x40193c8518BB267228Fc409a613bDbD8eC5a97b3", //Chainlink Oracle on mumbai
         ]
@@ -40,6 +40,7 @@ const deployMarketplace: DeployFunction = async function (hre: HardhatRuntimeEnv
 
     const marketplace = await deploy("AminoChainMarketplace", {
         from: deployer,
+        gasPrice: "2000000011",
         gasLimit: "19000000",
         args: args,
         log: true,

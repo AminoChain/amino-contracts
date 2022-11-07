@@ -17,6 +17,8 @@
     "deploy-authenticator": "hardhat deploy --network mumbai --tags authenticator",
     "deploy-mumbai": "hardhat deploy --network mumbai --tags usdc,nft,marketplace,authenticator",
 
+    "task-register": "hardhat --network mumbai register",
+
     "lint": "solhint 'contracts/*.sol'",
     "lint:fix": "solhint 'contracts/**/*.sol' --fix",
     "format": "prettier --write .",

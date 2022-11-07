@@ -19,18 +19,15 @@ const deployAuthenticator: DeployFunction = async function (hre: HardhatRuntimeE
     if (developmentChains.includes(network.name)) {
         const USDC = await ethers.getContract("USDC")
         usdcAddress = USDC.address
-
         const NFT = await ethers.getContract("AminoChainDonation")
-
         nftAddress = NFT.address
-
         const marketplace = await ethers.getContract("AminoChainMarketplace")
 
         marketplaceAddress = marketplace.address
     } else {
         usdcAddress = "0xb0eaca4246d134cfcd104df91f9cd87e6c7271a7" // todo lets create some registry for deployed contracts addresses
-        nftAddress = "0xb7De77FEb9D7BBC536EC15900E59Ce1978C56503"
-        marketplaceAddress = "0x350D2e60AEAbCc3a6515Dc4CAd92b8427c4C0232"
+        nftAddress = "0xa38E89a7516C764840fb6C7094Abd6EfFf58BdB0"
+        marketplaceAddress = "0x083019E82DC779Ff17802238c791CcAFFE2FF207"
     }
 
     const constructorArgs = [nftAddress, marketplaceAddress, usdcAddress]

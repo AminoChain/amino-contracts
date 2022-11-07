@@ -12,7 +12,7 @@ import {Encryptor} from "../encryptor";
 // @ts-ignore
 import {AminoChainLibrary, RegistrationDataStruct} from "../../typechain/contracts/AminoChainAuthenticator";
 
-const hlaEncodingKey = 'secret'
+export const hlaEncodingKey = 'secret'
 
 
 describe("Authenticator Integration Tests", async () => {
@@ -41,11 +41,11 @@ describe("Authenticator Integration Tests", async () => {
         await nft.transferOwnership(authenticator.address)
 
         hlaHashed = {
-            A: await authenticator.hash(bioData.A.toString()),
-            B: await authenticator.hash(bioData.B.toString()),
-            C: await authenticator.hash(bioData.C.toString()),
-            DPB: await authenticator.hash(bioData.DPB.toString()),
-            DRB: await authenticator.hash(bioData.DRB.toString()),
+            A: ethers.utils.id(bioData.A.toString()),
+            B: ethers.utils.id(bioData.B.toString()),
+            C: ethers.utils.id(bioData.C.toString()),
+            DPB: ethers.utils.id(bioData.DPB.toString()),
+            DRB: ethers.utils.id(bioData.DRB.toString()),
         }
     })
 
@@ -101,10 +101,9 @@ describe("Authenticator Integration Tests", async () => {
             hlaHashed,
             hlaHash,
             hlaEncoded: hlaEncodedBytes,
-            genomeEncodedUrl: '',
+            genomeEncodedIpfsId: '',
             amounts,
             donor: donor.address,
-            signature,
             biobank: biobank.address
         })
         expect(await authenticator.connect(donor).isRegistered(donor.address)).eq(true)

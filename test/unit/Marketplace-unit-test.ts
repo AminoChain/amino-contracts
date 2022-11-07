@@ -32,8 +32,7 @@ describe("AminoChainMarketplace Tests", async () => {
             hlaHashed,
             hlaHash,
             hlaEncoded: mockHlaEncoded,
-            genomeEncodedUrl: '',
-            signature: ethers.constants.HashZero,
+            genomeEncodedIpfsId: '',
             biobank: (await ethers.getSigners())[3].address,
             amounts: [5, 6, 3, 2, 1]
         })

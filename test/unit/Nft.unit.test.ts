@@ -1,29 +1,29 @@
 import { network, deployments, ethers, run } from "hardhat"
 import {
     AminoChainAuthenticator,
-    AminoChainDonation,
-    MockAminoChainMarketplace,
+    AminoChainDonation, AminoChainMarketplace,
     Token,
 } from "../../typechain"
 import { assert, expect } from "chai"
 import chai from "chai"
 import { BigNumber, constants } from "ethers"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
-import { bioData, hlaHashed, firstNftTokeId, HLA } from "../commons"
+import {bioData, hlaHashed, firstNftTokeId, HLA, hlaHash, mockHlaEncoded} from "../commons"
 import { AminoChainLibrary } from "../../typechain/contracts/AminoChainDonation"
 
 describe("NFT Tests", async function () {
     let authenticator: AminoChainAuthenticator
-    let marketplace: MockAminoChainMarketplace
+    let marketplace: AminoChainMarketplace
     let deployer: SignerWithAddress
     let doctor: SignerWithAddress
     let donor: SignerWithAddress
+    let biobank: SignerWithAddress
     let usdc: Token
     let nft: AminoChainDonation
 
     beforeEach(async () => {
         await deployments.fixture(["all"])
-        ;[deployer, donor, doctor] = await ethers.getSigners()
+        ;[deployer, donor, doctor, biobank] = await ethers.getSigners()
 
         // marketplace = await ethers.getContract("MockAminoChainMarketplace")
         nft = await ethers.getContract("AminoChainDonation")
@@ -43,23 +43,43 @@ describe("NFT Tests", async function () {
 
     it("Mint", async () => {
         const expectedTokenIds = [...Array(amounts.length).keys()].map((i) => i + firstNftTokeId)
-        expect(await nft.mint(donor.address, hlaHashed, amounts))
+
+        await nft.mint({
+            hlaHashed,
+            hlaHash,
+            hlaEncoded: mockHlaEncoded,
+            genomeEncodedIpfsId: '',
+            amounts,
+            donor: donor.address,
+            biobank: biobank.address
+        })
+
+        expect((await nft.getTokenIdsByDonor(donor.address)).map((t) => t.toNumber())).eql(
+            expectedTokenIds
+        )
+
+        /*expect(await nft.mint({
+            hlaHashed,
+            hlaHash,
+            hlaEncoded: mockHlaEncoded,
+            genomeEncodedIpfsId: '',
+            amounts: [20, 10],
+            donor: donor.address,
+            biobank: biobank.address
+        }))
             .emit(nft, "NFTMinted")
             .withArgs(donor.address, hlaHashed, amounts, expectedTokenIds)
+        */
 
         await Promise.all(
             expectedTokenIds.map(async (tokenId) => {
                 expect(await nft.ownerOf(tokenId)).eq(deployer.address)
-                const actualBioData = (await nft.getBioData(
+                const actualHlaHashed = (await nft.getHlaHashed(
                     tokenId
-                )) as AminoChainLibrary.BioDataStruct
+                ))
                 // @ts-ignore
-                expect(actualBioData).bioDataEqual(hlaHashed)
+                expect(actualHlaHashed).bioDataEqual(hlaHashed)
             })
-        )
-
-        expect((await nft.getTokenIdsByDonor(donor.address)).map((t) => t.toNumber())).eql(
-            expectedTokenIds
         )
     })
 })

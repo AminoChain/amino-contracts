@@ -72,11 +72,11 @@ contract AminoChainDonation is ERC721, Pausable, Ownable {
                 data.donor,
                 data.hlaHashed,
                 data.hlaHash,
-                data.genomeEncodedUrl,
+                data.genomeEncodedIpfsId,
                 data.amounts[i]
             );
             hlaHashToHlaEncoded[data.hlaHash] = data.hlaEncoded;
-            addressToTokenIds[data.donor].push(tokenId);
+//            addressToTokenIds[data.donor].push(tokenId); // fixme error on mumbai testnet
             tokenIds[i] = tokenId;
         }
         emit NFTMinted(data.donor, data.hlaHashed, data.amounts, tokenIds);

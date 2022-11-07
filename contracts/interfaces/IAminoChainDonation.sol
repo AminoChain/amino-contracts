@@ -13,7 +13,10 @@ interface IAminoChainDonation is IERC721 {
 
     function getTokenIdsByDonor(address donor) external view returns (uint256[] memory);
 
-    function getHlaHashed(uint256 tokenId) external view returns (AminoChainLibrary.HlaHashed memory);
+    function getHlaHashed(uint256 tokenId)
+        external
+        view
+        returns (AminoChainLibrary.HlaHashed memory);
 
     function getHlaEncoded(uint256 tokenId) external view returns (bytes memory);
 
@@ -23,5 +26,6 @@ interface IAminoChainDonation is IERC721 {
         address indexed donor,
         AminoChainLibrary.HlaHashed indexed hlaHashed,
         uint256[] indexed tokenIds,
-        uint256[] amounts);
+        uint256[] amounts
+    );
 }

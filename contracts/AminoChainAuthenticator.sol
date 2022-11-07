@@ -13,11 +13,18 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
  *  @notice Handles the minting of tokenized stem cells and listing
  *  them on the marketplace
  */
-contract AminoChainAuthenticator is IAminoChainAuthenticator, IERC721Receiver {
+contract AminoChainAuthenticator is IERC721Receiver {
     IAminoChainDonation immutable nft;
     IAminoChainMarketplace immutable marketplace;
     IERC20 immutable usdc;
     using ECDSA for bytes32;
+
+    event UserRegistered(
+        address indexed donor,
+        address indexed biobank,
+        uint256[] indexed tokenIds,
+        uint256[] amounts
+    );
 
     constructor(
         address nftAddress,

@@ -62,7 +62,7 @@ contract AminoChainDonation is ERC721, Pausable, Ownable {
     {
         // It would have been also possible ot return the ids stored in addressToTokenIds[donor],
         // new array is created here to account for the case that donor might give donation
-        // not for the first time
+        // not for the first time.
         uint256[] memory tokenIds = new uint256[](data.amounts.length);
         for (uint256 i = 0; i < data.amounts.length; i++) {
             uint256 tokenId = _tokenIdCounter.current();
@@ -76,11 +76,12 @@ contract AminoChainDonation is ERC721, Pausable, Ownable {
                 data.amounts[i]
             );
             hlaHashToHlaEncoded[data.hlaHash] = data.hlaEncoded;
-//            addressToTokenIds[data.donor].push(tokenId); // fixme error on mumbai testnet
+            addressToTokenIds[data.donor].push(tokenId);
             tokenIds[i] = tokenId;
         }
         emit NFTMinted(data.donor, data.hlaHashed, data.amounts, tokenIds);
         return tokenIds;
+        // .
     }
 
     function getTokenIdsByDonor(address donor) external view returns (uint256[] memory) {

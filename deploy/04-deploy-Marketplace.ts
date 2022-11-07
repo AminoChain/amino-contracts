@@ -32,7 +32,7 @@ const deployMarketplace: DeployFunction = async function (hre: HardhatRuntimeEnv
         args = [
             8,
             "0xb0eaca4246d134cfcd104df91f9cd87e6c7271a7", // USDC
-            "0xb67735F969F1b485054FA37fEa0660d8a44F7075", // NFT
+            "0xef1146394fdE16cCDD5fbeAE5f2eb6a85d794318", // NFT
             "0x326C977E6efc84E512bB9C30f76E30c160eD06FB", //LINK on mumbai
             "0x40193c8518BB267228Fc409a613bDbD8eC5a97b3", //Chainlink Oracle on mumbai
         ]

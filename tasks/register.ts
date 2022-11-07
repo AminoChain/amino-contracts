@@ -10,17 +10,18 @@ task("register", "").setAction(async (taskArgs, hre) => {
     const [ deployer] = await ethers.getSigners()
 
     const nftFactory = (await ethers.getContractFactory("AminoChainDonation")) as AminoChainDonation__factory
-    const nft = await nftFactory.attach('0xa38E89a7516C764840fb6C7094Abd6EfFf58BdB0')
+    const nft = await nftFactory.attach('0xdF20EDD683d4a5e14a7B37eC9fDc6884d07Ba92E')
 
     const marketplaceFactory = (await ethers.getContractFactory("AminoChainMarketplace")) as AminoChainMarketplace__factory
-    const marketplace = await marketplaceFactory.attach('0x083019E82DC779Ff17802238c791CcAFFE2FF207')
+    const marketplace = await marketplaceFactory.attach('0xaD4ef14479a1EA2F18449ff46D19707f6ab18642')
 
     const authenticatorFactory = (await ethers.getContractFactory("AminoChainAuthenticator")) as AminoChainAuthenticator__factory
-    const authenticator = await authenticatorFactory.attach('0xad6414d5209B667Cf24BFf21DBa25b56274759C5')
+    const authenticator = await authenticatorFactory.attach('0xe678C9BA5a9aE61fAc009a602b29ed869eD8156c')
 
-    // await nft.transferOwnership(authenticator.address)
-    // await marketplace.setAuthenticatorAddress(authenticator.address)
-    // await marketplace.setTokenizedStemCells(nft.address)
+    await authenticator.setNftAddress(nft.address)
+    await nft.transferOwnership(authenticator.address)
+    if (await marketplace.tokenziedStemCells() != nft.address) await marketplace.setTokenizedStemCells(nft.address)
+    if (await marketplace.authenticator() != authenticator.address) await marketplace.setAuthenticatorAddress(authenticator.address)
 
     // const encryptor = new Encryptor('secret')
     // const hlaEncodedBytes = encryptor.encrypt(JSON.stringify(bioData))
@@ -42,7 +43,7 @@ task("register", "").setAction(async (taskArgs, hre) => {
         amounts: [20, 10],
         donor,
         biobank: '0x35a5b80732eFe78D171327C39de408227C299AAc'
-    }, { gasLimit: 100_000 })
+    })
 
     await tx.wait()
 })
@@ -128,4 +129,4 @@ const hlaEncoded = new Uint8Array([
     143,
     145,
     156
-]);
+])

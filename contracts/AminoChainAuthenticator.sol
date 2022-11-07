@@ -14,9 +14,9 @@ import "@openzeppelin/contracts/access/Ownable.sol";
  *  them on the marketplace
  */
 contract AminoChainAuthenticator is IERC721Receiver, Ownable {
-    IAminoChainDonation immutable public nft;
-    IAminoChainMarketplace immutable public marketplace;
-    IERC20 immutable public usdc;
+    IAminoChainDonation public nft;
+    IAminoChainMarketplace public marketplace;
+    IERC20 public usdc;
 
     event UserRegistered(address donor, address biobank, uint256[] tokenIds, uint256[] amounts);
 
@@ -28,6 +28,19 @@ contract AminoChainAuthenticator is IERC721Receiver, Ownable {
         nft = IAminoChainDonation(nftAddress);
         nft.setApprovalForAll(marketplaceAddress, true);
         marketplace = IAminoChainMarketplace(marketplaceAddress);
+        usdc = IERC20(usdcAddress);
+    }
+
+    function setNftAddress(address nftAddress) external {
+        nft = IAminoChainDonation(nftAddress);
+        nft.setApprovalForAll(address(marketplace), true);
+    }
+
+    function setMarketplaceAddress(address marketplaceAddress) external {
+        marketplace = IAminoChainMarketplace(marketplaceAddress);
+    }
+
+    function setUsdcAddress(address usdcAddress) external {
         usdc = IERC20(usdcAddress);
     }
 
@@ -49,12 +62,12 @@ contract AminoChainAuthenticator is IERC721Receiver, Ownable {
     }
 
     function register(AminoChainLibrary.RegistrationData calldata data) public onlyOwner {
-//        uint256[] memory tokenIds = nft.mint(data);
+        uint256[] memory tokenIds = nft.mint(data);
 
-//        for (uint256 i = 0; i < tokenIds.length; i++) {
-//            marketplace.listItem(tokenIds[i], data.amounts[i], 1400, data.donor, data.biobank);
-//        }
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            marketplace.listItem(tokenIds[i], data.amounts[i], 1400, data.donor, data.biobank);
+        }
 
-//        emit UserRegistered(data.donor, data.biobank, tokenIds, data.amounts);
+        emit UserRegistered(data.donor, data.biobank, tokenIds, data.amounts);
     }
 }

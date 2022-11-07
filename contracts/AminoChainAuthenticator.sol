@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.7;
 
-import "./interfaces/IAminoChainAuthenticator.sol";
+import "./interfaces/IAminoChainDonation.sol";
 import "./AminoChainDonation.sol";
 import "./interfaces/IAminoChainMarketplace.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -19,12 +19,7 @@ contract AminoChainAuthenticator is IERC721Receiver {
     IERC20 immutable usdc;
     using ECDSA for bytes32;
 
-    event UserRegistered(
-        address indexed donor,
-        address indexed biobank,
-        uint256[] indexed tokenIds,
-        uint256[] amounts
-    );
+    event UserRegistered(address donor, address biobank, uint256[] tokenIds, uint256[] amounts);
 
     constructor(
         address nftAddress,

@@ -3,7 +3,7 @@ import { DeployFunction } from "hardhat-deploy/types"
 import { ethers } from "hardhat"
 import { developmentChains } from "../helper-hardhat-config"
 import verify from "../utils/verify"
-import {delay} from "@nomiclabs/hardhat-etherscan/dist/src/etherscan/EtherscanService";
+import { delay } from "@nomiclabs/hardhat-etherscan/dist/src/etherscan/EtherscanService"
 
 // 0x7d351a67CCA0955839D2e515d326125343D9780B
 
@@ -29,8 +29,8 @@ const deployAuthenticator: DeployFunction = async function (hre: HardhatRuntimeE
         marketplaceAddress = marketplace.address
     } else {
         usdcAddress = "0xb0eaca4246d134cfcd104df91f9cd87e6c7271a7" // todo lets create some registry for deployed contracts addresses
-        nftAddress = "0x2dA81f4520160f6a78660841C4E026d66eC49d6E"
-        marketplaceAddress = "0x28C3BD01C3beF94bCfB6dad5b19127AB6e0eB34f"
+        nftAddress = "0xb7De77FEb9D7BBC536EC15900E59Ce1978C56503"
+        marketplaceAddress = "0x350D2e60AEAbCc3a6515Dc4CAd92b8427c4C0232"
     }
 
     const constructorArgs = [nftAddress, marketplaceAddress, usdcAddress]
@@ -41,7 +41,6 @@ const deployAuthenticator: DeployFunction = async function (hre: HardhatRuntimeE
         args: constructorArgs,
         log: true,
     })
-
 
     if (!developmentChains.includes(network.name) && process.env.POLYGONSCAN_API_KEY) {
         console.log("Verifying on polygonscan...")

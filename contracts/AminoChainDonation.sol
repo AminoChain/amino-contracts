@@ -2,7 +2,6 @@
 
 pragma solidity ^0.8.4;
 
-import "./interfaces/IAminoChainDonation.sol";
 import "./libraries/AminoChainLibrary.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
@@ -37,9 +36,9 @@ contract AminoChainDonation is ERC721, Pausable, Ownable {
     mapping(address => uint256[]) public addressToTokenIds;
 
     event NFTMinted(
-        address indexed donor,
-        AminoChainLibrary.HlaHashed indexed hlaHashed,
-        uint256[] indexed tokenIds,
+        address donor,
+        AminoChainLibrary.HlaHashed hlaHashed,
+        uint256[] tokenIds,
         uint256[] amounts
     );
 

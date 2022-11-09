@@ -122,6 +122,7 @@ contract AminoChainMarketplace is
     );
 
     event saleCompleted(
+        uint256 date,
         address bioBank,
         address buyer,
         uint256 tokenId,
@@ -130,6 +131,8 @@ contract AminoChainMarketplace is
         uint256 donorIncentive,
         uint256 protocolFee
     );
+
+    event deliveryStatusChanged(uint256 tokenId, physicalStatus status);
 
     event saleRefunded(uint256 tokenId, address buyer, address bioBank, uint256 refundTotal);
 
@@ -264,6 +267,11 @@ contract AminoChainMarketplace is
                     data.saleStatus == physicalStatus.DELIVERED,
                     "provided tokenId has not been delivered"
                 );
+                require(data.escrowedPayment > 0, "No payment escrowed");
+                require(data.donor != address(0), "Donor cannot be null");
+                require(data.bioBank != address(0), "BioBank cannot be null");
+                require(data.buyer != address(0), "Buyer cannot be null");
+                require(data.seller != address(0), "Authenticator(seller) cannot be null");
                 completeItemSale(completedSaleIds[i]);
             }
         }
@@ -274,6 +282,9 @@ contract AminoChainMarketplace is
                     block.timestamp - data.date >= 30 days,
                     "provided tokenId has not surpassed time limit"
                 );
+                require(data.escrowedPayment > 0, "No payment escrowed");
+                require(data.buyer != address(0), "Buyer cannot be null");
+                require(authenticator != address(0), "Authenticator cannot be null");
                 refundSale(refundSaleIds[i]);
             }
         }
@@ -284,8 +295,11 @@ contract AminoChainMarketplace is
     function updateDeliveryStatus(uint256 tokenId, physicalStatus status) external onlyOwner {
         PendingSale memory data = PendingSales[tokenId];
         require(data.buyer != address(0), "Buyer cannot be null");
+        require(data.saleStatus != status, "Input status is the same as old");
 
         PendingSales[tokenId].saleStatus = status;
+
+        emit deliveryStatusChanged(tokenId, status);
     }
 
     /** @dev Allows the owner of the contract to cancel a listing by deleting
@@ -376,6 +390,11 @@ contract AminoChainMarketplace is
             data.saleStatus == physicalStatus.DELIVERED,
             "Physical item has not been delivered yet"
         );
+        require(data.escrowedPayment > 0, "No payment escrowed to transfer");
+        require(data.donor != address(0), "Donor cannot be null");
+        require(data.bioBank != address(0), "BioBank cannot be null");
+        require(data.buyer != address(0), "Buyer cannot be null");
+        require(data.seller != address(0), "Authenticator(seller) cannot be null");
 
         uint256 incentive = data.escrowedPayment / donorIncentiveRate;
         uint256 fee = data.escrowedPayment / 10;
@@ -393,6 +412,7 @@ contract AminoChainMarketplace is
         delete pendingSaleTokenIds[PendingSaleIdsIndex[tokenId]];
 
         emit saleCompleted(
+            block.timestamp,
             data.bioBank,
             data.buyer,
             tokenId,
@@ -412,6 +432,9 @@ contract AminoChainMarketplace is
             block.timestamp - data.date >= 30 days,
             "provided tokenId has not surpassed time limit"
         );
+        require(data.escrowedPayment > 0, "No escrowed payment to  transfer");
+        require(data.buyer != address(0), "Buyer cannot be null");
+        require(authenticator != address(0), "Authenticator cannot be null");
 
         IERC20(i_usdc).transfer(data.buyer, data.escrowedPayment);
 
@@ -447,9 +470,21 @@ contract AminoChainMarketplace is
         uint256 refundedCounter;
         for (uint256 i = 0; i < pendingSaleTokenIds.length; i++) {
             PendingSale memory data = PendingSales[pendingSaleTokenIds[i]];
-            if (data.saleStatus == physicalStatus.DELIVERED) {
+            if (
+                data.saleStatus == physicalStatus.DELIVERED &&
+                data.escrowedPayment > 0 &&
+                data.donor != address(0) &&
+                data.bioBank != address(0) &&
+                data.buyer != address(0) &&
+                data.seller != address(0)
+            ) {
                 completedCounter++;
-            } else if (block.timestamp - data.date >= 30 days) {
+            } else if (
+                block.timestamp - data.date >= 30 days &&
+                data.escrowedPayment > 0 &&
+                data.buyer != address(0) &&
+                authenticator != address(0)
+            ) {
                 refundedCounter++;
             }
         }
@@ -462,11 +497,23 @@ contract AminoChainMarketplace is
         uint256 refundedIndexCounter = 0;
         for (uint256 i = 0; i < pendingSaleTokenIds.length; i++) {
             PendingSale memory data = PendingSales[pendingSaleTokenIds[i]];
-            if (data.saleStatus == physicalStatus.DELIVERED) {
+            if (
+                data.saleStatus == physicalStatus.DELIVERED &&
+                data.escrowedPayment > 0 &&
+                data.donor != address(0) &&
+                data.bioBank != address(0) &&
+                data.buyer != address(0) &&
+                data.seller != address(0)
+            ) {
                 upkeepNeeded = true;
                 completedSaleIds[completedIndexCounter] = pendingSaleTokenIds[i];
                 completedIndexCounter++;
-            } else if (block.timestamp - data.date >= 30 days) {
+            } else if (
+                block.timestamp - data.date >= 30 days &&
+                data.escrowedPayment > 0 &&
+                data.buyer != address(0) &&
+                authenticator != address(0)
+            ) {
                 upkeepNeeded = true;
                 refundSaleIds[refundedIndexCounter] = pendingSaleTokenIds[i];
                 refundedIndexCounter++;
@@ -480,6 +527,18 @@ contract AminoChainMarketplace is
      */
     function getListingData(uint256 tokenId) public view returns (Listing memory) {
         return ListingData[tokenId];
+    }
+
+    /** @dev Returns bool of if a buyers address is whitelisted to buy or not
+     */
+    function isApprovedToBuy(address buyer) public view returns (bool) {
+        return ApprovedToBuy[buyer];
+    }
+
+    /** @dev Returns pending sale data for a given tokenId
+     */
+    function getPendingSaleData(uint256 tokenId) public view returns (PendingSale memory) {
+        return PendingSales[tokenId];
     }
 
     /** @dev IERC721 Reciever for tokenized stem cells

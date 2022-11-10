@@ -40,6 +40,7 @@ const deployMarketplace: DeployFunction = async function (hre: HardhatRuntimeEnv
 
     const marketplace = await deploy("AminoChainMarketplace", {
         from: deployer,
+        gasPrice: "2000000011",
         gasLimit: "19000000",
         args: args,
         log: true,

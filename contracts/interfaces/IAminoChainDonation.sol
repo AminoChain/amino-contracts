@@ -13,15 +13,19 @@ interface IAminoChainDonation is IERC721 {
 
     function getTokenIdsByDonor(address donor) external view returns (uint256[] memory);
 
-    function getHlaHashed(uint256 tokenId) external view returns (AminoChainLibrary.HlaHashed memory);
+    function getHlaHashed(uint256 tokenId)
+        external
+        view
+        returns (AminoChainLibrary.HlaHashed memory);
 
     function getHlaEncoded(uint256 tokenId) external view returns (bytes memory);
 
     function getGenomeEncodedUrl(uint256 tokenId) external view returns (string memory);
 
     event NFTMinted(
-        address indexed donor,
-        AminoChainLibrary.HlaHashed indexed hlaHashed,
-        uint256[] indexed tokenIds,
-        uint256[] amounts);
+        address donor,
+        AminoChainLibrary.HlaHashed hlaHashed,
+        uint256[] tokenIds,
+        uint256[] amounts
+    );
 }

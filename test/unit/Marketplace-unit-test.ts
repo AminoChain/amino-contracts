@@ -1,7 +1,13 @@
 import { deployments, ethers, getNamedAccounts } from "hardhat"
 import { expect, assert } from "chai"
-import {AminoChainMarketplace, MockERC20, LinkToken, MockOracle, AminoChainDonation} from "../../typechain"
-import {firstNftTokeId, hlaHash, hlaHashed, mockHlaEncoded} from "../commons"
+import {
+    AminoChainMarketplace,
+    MockERC20,
+    LinkToken,
+    MockOracle,
+    AminoChainDonation,
+} from "../../typechain"
+import { firstNftTokeId, hlaHash, hlaHashed, mockHlaEncoded } from "../commons"
 
 const trueBoolInBytes = "0x0000000000000000000000000000000000000000000000000000000000000001"
 const defaultPrice = 1400
@@ -32,10 +38,9 @@ describe("AminoChainMarketplace Tests", async () => {
             hlaHashed,
             hlaHash,
             hlaEncoded: mockHlaEncoded,
-            genomeEncodedUrl: '',
-            signature: ethers.constants.HashZero,
+            genomeEncodedIpfsId: "",
             biobank: (await ethers.getSigners())[3].address,
-            amounts: [5, 6, 3, 2, 1]
+            amounts: [5, 6, 3, 2, 1],
         })
         // await nft.mint(deployer, hlaHashed, [5, 6, 3, 2, 1])
     }
@@ -201,7 +206,7 @@ describe("AminoChainMarketplace Tests", async () => {
             await list()
             marketplace = await marketplace.connect(signers[1])
             erc20 = await erc20.connect(signers[1])
-            await erc20.deposit({ value: ethers.utils.parseEther("1") })
+            await erc20.deposit({ value: ethers.utils.parseEther("1000000") })
 
             const requestTx = await marketplace.requestBuyAccess()
             const requestTransactionReceipt = await requestTx.wait()
@@ -217,12 +222,18 @@ describe("AminoChainMarketplace Tests", async () => {
             const signers = await ethers.getSigners()
             await mint()
             await nft.setApprovalForAll(marketplace.address, true)
-            await marketplace.listItem(firstNftTokeId, "30", defaultPrice, signers[2].address, signers[3].address)
+            await marketplace.listItem(
+                firstNftTokeId,
+                "30",
+                defaultPrice,
+                signers[2].address,
+                signers[3].address
+            )
 
             marketplace = await marketplace.connect(signers[1])
             erc20 = await erc20.connect(signers[1])
-            await erc20.deposit({ value: ethers.utils.parseUnits("42000", 6) })
-            await erc20.approve(marketplace.address, ethers.utils.parseUnits("42000", 6))
+            await erc20.deposit({ value: ethers.utils.parseUnits("1000000", 6) })
+            await erc20.approve(marketplace.address, ethers.utils.parseUnits("1000000", 6))
 
             const preMarketBal = await erc20.balanceOf(marketplace.address)
 
@@ -247,12 +258,18 @@ describe("AminoChainMarketplace Tests", async () => {
             const signers = await ethers.getSigners()
             await mint()
             await nft.setApprovalForAll(marketplace.address, true)
-            await marketplace.listItem(firstNftTokeId, "30", defaultPrice, signers[2].address, deployer)
+            await marketplace.listItem(
+                firstNftTokeId,
+                "30",
+                defaultPrice,
+                signers[2].address,
+                deployer
+            )
 
             marketplace = await marketplace.connect(signers[1])
             erc20 = await erc20.connect(signers[1])
-            await erc20.deposit({ value: ethers.utils.parseUnits("42000", 6) })
-            await erc20.approve(marketplace.address, ethers.utils.parseUnits("42000", 6))
+            await erc20.deposit({ value: ethers.utils.parseUnits("1000000", 6) })
+            await erc20.approve(marketplace.address, ethers.utils.parseUnits("1000000", 6))
 
             const requestTx = await marketplace.requestBuyAccess()
             const requestTransactionReceipt = await requestTx.wait()
@@ -277,12 +294,18 @@ describe("AminoChainMarketplace Tests", async () => {
             const signers = await ethers.getSigners()
             await mint()
             await nft.setApprovalForAll(marketplace.address, true)
-            await marketplace.listItem(firstNftTokeId, "30", defaultPrice, signers[2].address, deployer)
+            await marketplace.listItem(
+                firstNftTokeId,
+                "30",
+                defaultPrice,
+                signers[2].address,
+                deployer
+            )
 
             marketplace = await marketplace.connect(signers[1])
             erc20 = await erc20.connect(signers[1])
-            await erc20.deposit({ value: ethers.utils.parseUnits("42000", 6) })
-            await erc20.approve(marketplace.address, ethers.utils.parseUnits("42000", 6))
+            await erc20.deposit({ value: ethers.utils.parseUnits("1000000", 6) })
+            await erc20.approve(marketplace.address, ethers.utils.parseUnits("1000000", 6))
 
             const requestTx = await marketplace.requestBuyAccess()
             const requestTransactionReceipt = await requestTx.wait()

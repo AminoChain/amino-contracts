@@ -32,7 +32,7 @@ export type RegistrationData = {
     hlaHashed: HLAHashed;
     hlaHash: PromiseOrValue<BytesLike>;
     hlaEncoded: PromiseOrValue<BytesLike>;
-    genomeEncodedUrl: PromiseOrValue<string>;
+    genomeEncodedIpfsId: PromiseOrValue<string>;
     amounts: PromiseOrValue<BigNumberish>[];
     donor: PromiseOrValue<string>;
     signature: PromiseOrValue<BytesLike>;

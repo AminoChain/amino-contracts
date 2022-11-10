@@ -7,10 +7,9 @@ library AminoChainLibrary {
         AminoChainLibrary.HlaHashed hlaHashed;
         bytes32 hlaHash;
         bytes hlaEncoded;
-        string genomeEncodedUrl;
+        string genomeEncodedIpfsId;
         uint256[] amounts;
         address donor;
-        bytes signature;
         address biobank;
     }
 

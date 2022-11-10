@@ -78,10 +78,9 @@ describe("Full Tests", async function () {
                 hlaHashed,
                 hlaHash,
                 hlaEncoded: bioDataEncodedBytes,
-                genomeEncodedUrl: '',
+                genomeEncodedIpfsId: '',
                 amounts: [30],
                 donor: donor.address,
-                signature,
                 biobank: biobank.address
             })
 
@@ -107,10 +106,9 @@ describe("Full Tests", async function () {
                 hlaHashed,
                 hlaHash,
                 hlaEncoded: bioDataEncodedBytes,
-                genomeEncodedUrl: '',
+                genomeEncodedIpfsId: '',
                 amounts: [30],
                 donor: donor.address,
-                signature,
                 biobank: biobank.address
             }) // Test fails unless listing has been posted before via registration of new user
 
@@ -155,10 +153,9 @@ describe("Full Tests", async function () {
                 hlaHashed,
                 hlaHash,
                 hlaEncoded: bioDataEncodedBytes,
-                genomeEncodedUrl: '',
+                genomeEncodedIpfsId: '',
                 amounts: [30],
                 donor: donor.address,
-                signature,
                 biobank: biobank.address
             })
 
@@ -189,10 +186,9 @@ describe("Full Tests", async function () {
                 hlaHashed,
                 hlaHash,
                 hlaEncoded: mockHlaEncoded,
-                genomeEncodedUrl: '',
+                genomeEncodedIpfsId: '',
                 amounts: [10, 20],
                 donor: donor.address,
-                signature,
                 biobank: biobank.address
             })
 

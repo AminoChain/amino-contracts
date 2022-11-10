@@ -2,22 +2,23 @@
 
 pragma solidity ^0.8.7;
 
-import "./interfaces/IAminoChainAuthenticator.sol";
+import "./interfaces/IAminoChainDonation.sol";
 import "./AminoChainDonation.sol";
 import "./interfaces/IAminoChainMarketplace.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
-import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 /** @title AminoChain Authenticator
  *  @notice Handles the minting of tokenized stem cells and listing
  *  them on the marketplace
  */
-contract AminoChainAuthenticator is IAminoChainAuthenticator, IERC721Receiver {
-    IAminoChainDonation immutable nft;
-    IAminoChainMarketplace immutable marketplace;
-    IERC20 immutable usdc;
-    using ECDSA for bytes32;
+contract AminoChainAuthenticator is IERC721Receiver, Ownable {
+    IAminoChainDonation public nft;
+    IAminoChainMarketplace public marketplace;
+    IERC20 public usdc;
+
+    event UserRegistered(address donor, address biobank, uint256[] tokenIds, uint256[] amounts);
 
     constructor(
         address nftAddress,
@@ -27,6 +28,19 @@ contract AminoChainAuthenticator is IAminoChainAuthenticator, IERC721Receiver {
         nft = IAminoChainDonation(nftAddress);
         nft.setApprovalForAll(marketplaceAddress, true);
         marketplace = IAminoChainMarketplace(marketplaceAddress);
+        usdc = IERC20(usdcAddress);
+    }
+
+    function setNftAddress(address nftAddress) external {
+        nft = IAminoChainDonation(nftAddress);
+        nft.setApprovalForAll(address(marketplace), true);
+    }
+
+    function setMarketplaceAddress(address marketplaceAddress) external {
+        marketplace = IAminoChainMarketplace(marketplaceAddress);
+    }
+
+    function setUsdcAddress(address usdcAddress) external {
         usdc = IERC20(usdcAddress);
     }
 
@@ -43,22 +57,11 @@ contract AminoChainAuthenticator is IAminoChainAuthenticator, IERC721Receiver {
         return IERC721Receiver.onERC721Received.selector;
     }
 
-    function hash(string calldata str) public pure returns (bytes32) {
-        return keccak256(abi.encodePacked(str));
-    }
-
     function getRegistrationHash(address donor, bytes32 biodataHash) public pure returns (bytes32) {
         return keccak256(abi.encodePacked(donor, biodataHash));
     }
 
-    function register(AminoChainLibrary.RegistrationData calldata data) public {
-        bytes32 registrationHash = getRegistrationHash(data.donor, data.hlaHash);
-        bytes32 signedMessageHash = registrationHash.toEthSignedMessageHash();
-        address signer = signedMessageHash.recover(data.signature);
-        require(signer == data.donor, "Signature does not come from donor");
-
-        // actual registration
-
+    function register(AminoChainLibrary.RegistrationData calldata data) public onlyOwner {
         uint256[] memory tokenIds = nft.mint(data);
 
         for (uint256 i = 0; i < tokenIds.length; i++) {

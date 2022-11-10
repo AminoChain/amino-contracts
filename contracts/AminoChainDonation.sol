@@ -2,7 +2,6 @@
 
 pragma solidity ^0.8.4;
 
-import "./interfaces/IAminoChainDonation.sol";
 import "./libraries/AminoChainLibrary.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
@@ -13,7 +12,7 @@ import "./libraries/AminoChainLibrary.sol";
 /** @title AminoChain Donation
  *  @notice Tokenizes donated stem cells
  */
-contract AminoChainDonation is IAminoChainDonation, ERC721, Pausable, Ownable {
+contract AminoChainDonation is ERC721, Pausable, Ownable {
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdCounter;
@@ -36,6 +35,13 @@ contract AminoChainDonation is IAminoChainDonation, ERC721, Pausable, Ownable {
     mapping(bytes32 => bytes) public hlaHashToHlaEncoded;
     mapping(address => uint256[]) public addressToTokenIds;
 
+    event NFTMinted(
+        address donor,
+        AminoChainLibrary.HlaHashed hlaHashed,
+        uint256[] tokenIds,
+        uint256[] amounts
+    );
+
     constructor(string memory name, string memory symbol) ERC721(name, symbol) {
         _tokenIdCounter.increment();
     }
@@ -56,26 +62,37 @@ contract AminoChainDonation is IAminoChainDonation, ERC721, Pausable, Ownable {
     {
         // It would have been also possible ot return the ids stored in addressToTokenIds[donor],
         // new array is created here to account for the case that donor might give donation
-        // not for the first time
+        // not for the first time.
         uint256[] memory tokenIds = new uint256[](data.amounts.length);
-        for (uint i = 0; i < data.amounts.length; i++) {
+        for (uint256 i = 0; i < data.amounts.length; i++) {
             uint256 tokenId = _tokenIdCounter.current();
             _tokenIdCounter.increment();
             _safeMint(msg.sender, tokenId);
-            tokenIdToDonationData[tokenId] = DonationData(data.donor, data.hlaHashed, data.hlaHash, data.genomeEncodedUrl, data.amounts[i]);
+            tokenIdToDonationData[tokenId] = DonationData(
+                data.donor,
+                data.hlaHashed,
+                data.hlaHash,
+                data.genomeEncodedIpfsId,
+                data.amounts[i]
+            );
             hlaHashToHlaEncoded[data.hlaHash] = data.hlaEncoded;
             addressToTokenIds[data.donor].push(tokenId);
             tokenIds[i] = tokenId;
         }
         emit NFTMinted(data.donor, data.hlaHashed, data.amounts, tokenIds);
         return tokenIds;
+        // .
     }
 
     function getTokenIdsByDonor(address donor) external view returns (uint256[] memory) {
         return addressToTokenIds[donor];
     }
 
-    function getHlaHashed(uint256 tokenId) public view returns (AminoChainLibrary.HlaHashed memory) {
+    function getHlaHashed(uint256 tokenId)
+        public
+        view
+        returns (AminoChainLibrary.HlaHashed memory)
+    {
         return tokenIdToDonationData[tokenId].hlaHashed;
     }
 
@@ -87,7 +104,7 @@ contract AminoChainDonation is IAminoChainDonation, ERC721, Pausable, Ownable {
         return tokenIdToDonationData[tokenId].genomeEncodedUrl;
     }
 
-    function transferOwnership(address newOwner) public override(IAminoChainDonation, Ownable) onlyOwner{
+    function transferOwnership(address newOwner) public override(Ownable) onlyOwner {
         Ownable.transferOwnership(newOwner);
     }
 

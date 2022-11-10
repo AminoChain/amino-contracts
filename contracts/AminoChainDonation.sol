@@ -24,7 +24,7 @@ contract AminoChainDonation is ERC721, Pausable, Ownable {
         address donorAddress;
         AminoChainLibrary.HlaHashed hlaHashed;
         bytes32 hlaHash;
-        string genomeEncodedUrl;
+        string genomeEncodedUrl; // todo rename to genomeEncodedIpfsId
         uint256 amount;
     }
 
@@ -100,8 +100,8 @@ contract AminoChainDonation is ERC721, Pausable, Ownable {
         return hlaHashToHlaEncoded[tokenIdToDonationData[tokenId].hlaHash];
     }
 
-    function getGenomeEncodedUrl(uint256 tokenId) public view returns (string memory) {
-        return tokenIdToDonationData[tokenId].genomeEncodedUrl;
+    function getGenomeEncodedUrl(uint256 tokenId) public view returns (string memory) { // todo rename to getGenomeEncodedIpfsId
+        return tokenIdToDonationData[tokenId].genomeEncodedUrl; // todo rename to genomeEncodedIpfsId
     }
 
     function transferOwnership(address newOwner) public override(Ownable) onlyOwner {

@@ -20,7 +20,7 @@ export interface HLAHashed {
     DRB: string
 }
 
-export const bioData: HLA = {
+export const hla: HLA = {
     A: [1, 2, 3],
     B: [1, 2, 3],
     C: [1, 2, 3],

@@ -6,7 +6,7 @@ import {
 } from "../../typechain"
 import { assert, expect } from "chai"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
-import {bioData, HLA, hlaHash, hlaHashed, HLAHashed} from "../commons"
+import {hla, HLA, hlaHash, hlaHashed, HLAHashed} from "../commons"
 import {arrayify} from "ethers/lib/utils";
 import {Encryptor} from "../encryptor";
 // @ts-ignore
@@ -41,11 +41,11 @@ describe("Authenticator Integration Tests", async () => {
         await nft.transferOwnership(authenticator.address)
 
         hlaHashed = {
-            A: ethers.utils.id(bioData.A.toString()),
-            B: ethers.utils.id(bioData.B.toString()),
-            C: ethers.utils.id(bioData.C.toString()),
-            DPB: ethers.utils.id(bioData.DPB.toString()),
-            DRB: ethers.utils.id(bioData.DRB.toString()),
+            A: ethers.utils.id(hla.A.toString()),
+            B: ethers.utils.id(hla.B.toString()),
+            C: ethers.utils.id(hla.C.toString()),
+            DPB: ethers.utils.id(hla.DPB.toString()),
+            DRB: ethers.utils.id(hla.DRB.toString()),
         }
     })
 
@@ -58,7 +58,7 @@ describe("Authenticator Integration Tests", async () => {
     let hlaHash: string
 
     it("Should create HLA hash", async () => {
-        hlaHash = ethers.utils.id(JSON.stringify(bioData))
+        hlaHash = ethers.utils.id(JSON.stringify(hla))
         /*hlaHash = await authenticator.getBioDataHash(
             bioData.A.toString(),
             bioData.B.toString(),
@@ -94,7 +94,7 @@ describe("Authenticator Integration Tests", async () => {
     const encryptor = new Encryptor(hlaEncodingKey)
 
     it("Backend / registration", async () => {
-        const hlaEncodedBytes = encryptor.encrypt(JSON.stringify(bioData))
+        const hlaEncodedBytes = encryptor.encrypt(JSON.stringify(hla))
         expect(hlaEncodedBytes).length(80)
 
         await authenticator.register({
@@ -118,6 +118,6 @@ describe("Authenticator Integration Tests", async () => {
 
         const storedBioData = encryptor.decrypt(encryptedBytes)
 
-        expect(storedBioData).eq(JSON.stringify(bioData))
+        expect(storedBioData).eq(JSON.stringify(hla))
     })
 })

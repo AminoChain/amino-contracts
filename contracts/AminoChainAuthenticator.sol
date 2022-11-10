@@ -18,7 +18,8 @@ contract AminoChainAuthenticator is IERC721Receiver, Ownable {
     IAminoChainMarketplace public marketplace;
     IERC20 public usdc;
 
-    event UserRegistered(address donor, address biobank, uint256[] tokenIds, uint256[] amounts);
+    event UserRegistered(address indexed donor, address indexed biobank, uint256[] indexed tokenIds, uint256[] amounts);
+    event Withdrawn(address indexed to, uint amount);
 
     constructor(
         address nftAddress,
@@ -69,5 +70,14 @@ contract AminoChainAuthenticator is IERC721Receiver, Ownable {
         }
 
         emit UserRegistered(data.donor, data.biobank, tokenIds, data.amounts);
+    }
+
+    function withdraw(address to, uint amount) external {
+        require(to != address(0), "Invalid to address");
+        require(amount <= usdc.balanceOf(address(this)), "Not enough balance");
+
+        usdc.transfer(to, amount);
+
+        emit Withdrawn(to, amount);
     }
 }

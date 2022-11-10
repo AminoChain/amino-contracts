@@ -10,16 +10,16 @@ task("register", "").setAction(async (taskArgs, hre) => {
     const [ deployer] = await ethers.getSigners()
 
     const nftFactory = (await ethers.getContractFactory("AminoChainDonation")) as AminoChainDonation__factory
-    const nft = await nftFactory.attach('0xdF20EDD683d4a5e14a7B37eC9fDc6884d07Ba92E')
+    const nft = await nftFactory.attach('0x3dfF52834c6f242437Fc4bB960823b1a97Ab0aBC')
 
     const marketplaceFactory = (await ethers.getContractFactory("AminoChainMarketplace")) as AminoChainMarketplace__factory
-    const marketplace = await marketplaceFactory.attach('0xaD4ef14479a1EA2F18449ff46D19707f6ab18642')
+    const marketplace = await marketplaceFactory.attach('0x2ed5fa6A174B7009476e17f11A3db20cBD3Ed726')
 
     const authenticatorFactory = (await ethers.getContractFactory("AminoChainAuthenticator")) as AminoChainAuthenticator__factory
     const authenticator = await authenticatorFactory.attach('0xe678C9BA5a9aE61fAc009a602b29ed869eD8156c')
 
-    await authenticator.setNftAddress(nft.address)
     await nft.transferOwnership(authenticator.address)
+    await authenticator.setNftAddress(nft.address)
     if (await marketplace.tokenziedStemCells() != nft.address) await marketplace.setTokenizedStemCells(nft.address)
     if (await marketplace.authenticator() != authenticator.address) await marketplace.setAuthenticatorAddress(authenticator.address)
 
@@ -29,7 +29,7 @@ task("register", "").setAction(async (taskArgs, hre) => {
     const hlaHash = '0xc69e9253e09dbcc132a1703674d67c398910241873892aafa3b1989931396a59'
     const donor = '0x3ef68eca339af002520a1ec0af7e940c7f0e0a9c'
 
-    const tx = await authenticator.register({
+    const registrationData = {
         hlaHashed: {
             "A": "0xb4ff4867cc79126826f7a227459583daf153a4c06ebe46aa70d02b5edf79bf90",
             "B": "0x4f78dcb8885880abdd79a0ee42acd93e663070f9f26bc0fc0c5f286292ed80b8",
@@ -39,11 +39,13 @@ task("register", "").setAction(async (taskArgs, hre) => {
         },
         hlaHash,
         hlaEncoded,
-        genomeEncodedIpfsId: '',
+        genomeEncodedIpfsId: 'test',
         amounts: [20, 10],
         donor,
         biobank: '0x35a5b80732eFe78D171327C39de408227C299AAc'
-    })
+    }
+
+    const tx = await authenticator.register(registrationData, { gasLimit: 1_000_000})
 
     await tx.wait()
 })

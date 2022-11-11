@@ -39,7 +39,7 @@ task("register", "").setAction(async (taskArgs, hre) => {
         },
         hlaHash,
         hlaEncoded,
-        genomeEncodedIpfsId: 'test',
+        genomeEncodedIpfsId: 'bafybeihfkmtsraiwkdkb7pc7ltmmsiqawoozzbjtcanilbykpv6trj5m7y',
         amounts: [20, 10],
         donor,
         biobank: '0x35a5b80732eFe78D171327C39de408227C299AAc'

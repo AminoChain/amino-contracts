@@ -11,11 +11,11 @@
 Main Marketplace contract. Handles the sale of tokenized stem cells, delivery tracking and distributing incentives 
 to biobanks and donors
 
-# AminoChainDonation
+# [AminoChainDonation](contracts/AminoChainDonation.sol)
 
 NFT ERC-721 contract responsible for holding all donor/donation info
 
-# AminoChainAuthenticator
+# [AminoChainAuthenticator](contracts/AminoChainAuthenticator.sol)
 
 Responsible for the minting of tokenized stem cells and listing them on the marketplace. 
 Also, for hold and withdraw protocol fees

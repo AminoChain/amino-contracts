@@ -12,6 +12,7 @@
     "test-nft": "hardhat test ./test/unit/Nft.unit.test.ts --network hardhat",
 
     "deploy": "hardhat deploy --network polygon",
+    "deploy-usdc": "hardhat deploy --network mumbai --tags usdc",
     "deploy-nft": "hardhat deploy --network mumbai --tags nft",
     "deploy-marketplace": "hardhat deploy --network mumbai --tags marketplace",
     "deploy-authenticator": "hardhat deploy --network mumbai --tags authenticator",

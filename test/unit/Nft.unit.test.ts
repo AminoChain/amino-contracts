@@ -8,7 +8,7 @@ import { assert, expect } from "chai"
 import chai from "chai"
 import { BigNumber, constants } from "ethers"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
-import {bioData, hlaHashed, firstNftTokeId, HLA, hlaHash, mockHlaEncoded} from "../commons"
+import {hla, hlaHashed, firstNftTokeId, HLA, hlaHash, mockHlaEncoded} from "../commons"
 import { AminoChainLibrary } from "../../typechain/contracts/AminoChainDonation"
 
 describe("NFT Tests", async function () {

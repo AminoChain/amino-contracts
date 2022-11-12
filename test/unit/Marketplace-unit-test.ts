@@ -22,7 +22,7 @@ describe("AminoChainMarketplace Tests", async () => {
 
     beforeEach(async () => {
         deployer = (await getNamedAccounts()).deployer
-        await deployments.fixture(["all"])
+        await deployments.fixture(["mocks", "nft", "chainlink", "marketplace"])
         marketplace = await ethers.getContract("AminoChainMarketplace", deployer)
         nft = await ethers.getContract("AminoChainDonation", deployer)
         erc20 = await ethers.getContract("MockERC20", deployer)

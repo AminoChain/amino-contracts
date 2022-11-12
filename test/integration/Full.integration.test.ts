@@ -8,10 +8,10 @@ import {
     MockOracle,
 } from "../../typechain"
 import { assert, expect } from "chai"
-import { BigNumber, constants } from "ethers"
+import {BigNumber, BigNumberish, constants} from "ethers"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import {
-    bioData,
+    hla,
     HLAHashed,
     firstNftTokeId,
     amounts,
@@ -23,6 +23,8 @@ import {
 } from "../commons"
 import { Encryptor } from "../encryptor"
 import {arrayify} from "ethers/lib/utils";
+// @ts-ignore
+import PendingSaleStruct = AminoChainMarketplace.PendingSaleStruct;
 
 const trueBoolInBytes = "0x0000000000000000000000000000000000000000000000000000000000000001"
 const hlaEncodingKey = "secret"
@@ -34,6 +36,7 @@ describe("Full Tests", async function () {
     let doctor: SignerWithAddress
     let donor: SignerWithAddress
     let biobank: SignerWithAddress
+    let test: SignerWithAddress
     let usdc: Token
     let nft: AminoChainDonation
     let mockOracle: MockOracle
@@ -41,7 +44,7 @@ describe("Full Tests", async function () {
 
     async function beforeEachDescribe() {
         await deployments.fixture(["all"])
-        ;[deployer, donor, doctor, biobank] = await ethers.getSigners()
+        ;[deployer, donor, doctor, biobank, test] = await ethers.getSigners()
         marketplace = (await ethers.getContract("AminoChainMarketplace")) as AminoChainMarketplace
         nft = (await ethers.getContract("AminoChainDonation")) as AminoChainDonation
         usdc = (await ethers.getContract("USDC")) as Token
@@ -65,7 +68,7 @@ describe("Full Tests", async function () {
 
         const tokenId = firstNftTokeId
         const encryptor = new Encryptor(hlaEncodingKey)
-        const bioDataEncodedBytes = encryptor.encrypt(JSON.stringify(bioData))
+        const bioDataEncodedBytes = encryptor.encrypt(JSON.stringify(hla))
 
         it("Mint & List", async () => {
             await expect(nft.ownerOf(tokenId)).revertedWith("ERC721: invalid token ID")
@@ -101,41 +104,89 @@ describe("Full Tests", async function () {
             )
         })
 
-        it("Buy", async () => {
-            await authenticator.register({
-                hlaHashed,
-                hlaHash,
-                hlaEncoded: bioDataEncodedBytes,
-                genomeEncodedIpfsId: '',
-                amounts: [30],
-                donor: donor.address,
-                biobank: biobank.address
-            }) // Test fails unless listing has been posted before via registration of new user
+        let prevDoctorUsdcBalance: BigNumber
+        let price: BigNumberish
 
-            const list = (await marketplace.getListingData(
-                tokenId
-            )) as AminoChainMarketplace.ListingStruct
-            const price = await list.price
+        it("Request Buy Access", async () => {
+            const list = (await marketplace.getListingData(tokenId)) as AminoChainMarketplace.ListingStruct
+            price = await list.price
             await usdc.connect(doctor).approve(marketplace.address, price)
 
             const requestTx = await marketplace.connect(doctor).requestBuyAccess()
             const requestTransactionReceipt = await requestTx.wait()
             const requestId = requestTransactionReceipt.events![0].args?.id
             await mockOracle.fulfillOracleRequest(requestId, trueBoolInBytes)
-            console.log(price.toString())
-            console.log((await usdc.balanceOf(doctor.address)).toString())
-            expect(await usdc.balanceOf(doctor.address)).greaterThanOrEqual(price)
+
+            prevDoctorUsdcBalance = await usdc.balanceOf(doctor.address)
+
+            expect(prevDoctorUsdcBalance).greaterThanOrEqual(price)
             expect(await marketplace.i_usdc()).eq(usdc.address)
+        })
 
+        it("Start Buy process", async () => {
             await marketplace.connect(doctor).buyItem(tokenId)
-
             expect(await nft.ownerOf(tokenId)).eq(marketplace.address)
+            expect(await usdc.balanceOf(doctor.address)).eq(prevDoctorUsdcBalance.sub(price))
+        })
 
-            const listing = (await marketplace.getListingData(
-                tokenId
-            )) as AminoChainMarketplace.ListingStruct
+        it("Listing should be canceled", async () => {
+            const listing = (await marketplace.getListingData(tokenId)) as AminoChainMarketplace.ListingStruct
             expect(listing.donor).eq(ethers.constants.AddressZero)
             expect(listing.bioBank).eq(ethers.constants.AddressZero)
+        })
+
+        it("Sale in pending", async () => {
+            const pending: PendingSaleStruct = await marketplace.getPendingSaleData(tokenId)
+            expect(pending.saleStatus).eq(0) // AT_ORIGIN
+            expect(pending.seller).eq(authenticator.address)
+            expect(pending.buyer).eq(doctor.address)
+            expect(pending.escrowedPayment).eq(price)
+        })
+
+        it("Tracking Service / Sale status update to IN_TRANSIT", async () => {
+            await marketplace.updateDeliveryStatus(tokenId, 1) // IN_TRANSIT
+
+            const pending: PendingSaleStruct = await marketplace.getPendingSaleData(tokenId)
+            expect(pending.saleStatus).eq(1) // IN_TRANSIT
+
+            // add some checks here
+        })
+
+        it("Tracking Service / Sale status update to DELIVERED", async () => {
+            await marketplace.updateDeliveryStatus(tokenId, 2) // DELIVERED
+
+            const pending: PendingSaleStruct = await marketplace.getPendingSaleData(tokenId)
+            expect(pending.saleStatus).eq(2) // DELIVERED
+        })
+
+        it("ChaiLink Automation agent / Call performUpkeep", async () => {
+            const { upkeepNeeded, performData} = await marketplace.checkUpkeep(ethers.constants.HashZero)
+            expect(upkeepNeeded).true
+            expect(performData).not.empty
+
+            expect(await marketplace.performUpkeep(performData))
+                .with.emit(marketplace, "saleCompleted")
+        })
+
+        it("Sale should be completed", async () => {
+            const pending: PendingSaleStruct = await marketplace.getPendingSaleData(tokenId)
+            expect(pending.saleStatus).eq(0) // empty
+            expect(pending.seller).eq(ethers.constants.AddressZero)
+            expect(pending.buyer).eq(ethers.constants.AddressZero)
+            expect(pending.escrowedPayment).eq(ethers.constants.AddressZero)
+
+            expect(await usdc.balanceOf(donor.address)).eq(5_250_000_000)
+            expect(await usdc.balanceOf(authenticator.address)).eq(4_200_000_000)
+        })
+
+        it("Withdraw", async () => {
+            const prevReceiverBalance = await usdc.balanceOf(test.address)
+            const amount = await usdc.balanceOf(authenticator.address)
+
+            await authenticator.withdraw(test.address, amount)
+
+            expect(await usdc.balanceOf(test.address)).eq(prevReceiverBalance.add(amount))
+            expect(await usdc.balanceOf(authenticator.address)).eq(0)
         })
     })
 
@@ -143,7 +194,7 @@ describe("Full Tests", async function () {
         before(beforeEachDescribe)
 
         const encryptor = new Encryptor(hlaEncodingKey)
-        const bioDataEncodedBytes = encryptor.encrypt(JSON.stringify(bioData))
+        const bioDataEncodedBytes = encryptor.encrypt(JSON.stringify(hla))
 
         it("Registering", async () => {
 
@@ -166,7 +217,7 @@ describe("Full Tests", async function () {
             const storedBioDataEncoded = await nft.hlaHashToHlaEncoded(hlaHash)
             const storedBioData = encryptor.decrypt(arrayify(storedBioDataEncoded))
 
-            expect(storedBioData).eq(JSON.stringify(bioData))
+            expect(storedBioData).eq(JSON.stringify(hla))
         })
     })
 

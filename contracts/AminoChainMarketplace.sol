@@ -240,7 +240,7 @@ contract AminoChainMarketplace is
         req.add(
             "get",
             string.concat(
-                "https://amino-chain-doctors-registry.herokuapp.com/is-it-doctor-wallet/",
+                "https://amino-chain-backend.herokuapp.com/is-it-doctor-or-researcher-address/",
                 Strings.toHexString(msg.sender)
             )
         );

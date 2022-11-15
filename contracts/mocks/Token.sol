@@ -19,4 +19,8 @@ contract Token is ERC20 {
     function decimals() public view virtual override returns (uint8) {
         return decimal;
     }
+
+    function mint(uint256 quantity) public {
+        _mint(msg.sender, quantity);
+    }
 }

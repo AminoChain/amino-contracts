@@ -99,7 +99,7 @@ export function web3StringToBytes32(text: string) {
 
 
 chai.use(function (chai, util) {
-    chai.Assertion.addMethod("bioDataEqual", function (expected: HLA) {
+    chai.Assertion.addMethod("hlaEqual", function (expected: HLA) {
         let actual = this._obj as HLA
         new chai.Assertion(actual.A).eql(expected.A)
         new chai.Assertion(actual.B).eql(expected.B)
@@ -117,7 +117,7 @@ chai.use(function (chai, util) {
 
 declare module Chai {
     interface Assertion {
-        bioDataEqual(bioData: any): Assertion
+        hlaEqual(bioData: any): Assertion
         correctHash(): Assertion
     }
 }

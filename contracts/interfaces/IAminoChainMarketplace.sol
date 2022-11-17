@@ -22,21 +22,31 @@ interface IAminoChainMarketplace {
         address bioBank
     );
 
-    event sale(
-        address seller,
+    event saleInitiated(
+        address bioBank,
+        address buyer,
         uint256 tokenId,
         uint256 sizeInCC,
-        address buyer,
-        uint256 salePrice,
-        uint256 protocolFee,
         address donor,
-        uint256 donorIncentive,
-        address bioBank
+        uint256 escrowedPrice
     );
 
-    event approvalRequest(bytes32 requestId, address requester);
+    event saleCompleted(
+        uint256 date,
+        address bioBank,
+        address buyer,
+        uint256 tokenId,
+        address donor,
+        uint256 salePrice,
+        uint256 donorIncentive,
+        uint256 protocolFee
+    );
 
-    event listingCanceled(address seller, uint256 tokenId);
+    event deliveryStatusChanged(uint256 tokenId, physicalStatus status);
+
+    event saleRefunded(uint256 tokenId, address buyer, address bioBank, uint256 refundTotal);
+
+    event listingCanceled(uint256 tokenId);
 
     event ownershipTransferred(address oldOwner, address newOwner);
 
@@ -112,9 +122,4 @@ interface IAminoChainMarketplace {
      *  @param newIncentiveRate The new rate which determines incentive percentage
      */
     function setDonorIncentiveRate(uint256 newIncentiveRate) external;
-
-    /**
-     *
-     */
-    //    function withdrawLink() external;
 }

@@ -25,9 +25,9 @@ const deployAuthenticator: DeployFunction = async function (hre: HardhatRuntimeE
 
         marketplaceAddress = marketplace.address
     } else {
-        usdcAddress = "0x3F7a078C98EB0d0E58EEaC1a2C94183300B345ac" // todo lets create some registry for deployed contracts addresses
-        nftAddress = "0xE6C8610d8C6638fa7088186f29dceC474f1518C2"
-        marketplaceAddress = "0x2ed5fa6A174B7009476e17f11A3db20cBD3Ed726"
+        usdcAddress = "0xC203D5b1356cc1C71791185Cc51aDbd2226221B6" // todo lets create some registry for deployed contracts addresses
+        nftAddress = "0x61048058C2ac5BcCD10aeF9BaBDC56250DC5753B"
+        marketplaceAddress = "0x66d37c30B6fFAC63F47658432a33ee5012C34188"
     }
 
     const constructorArgs = [nftAddress, marketplaceAddress, usdcAddress]

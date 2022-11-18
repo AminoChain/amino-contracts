@@ -2,6 +2,9 @@ import {ModeOfOperation, padding, utils} from "aes-js";
 
 const iv = utils.utf8.toBytes("IVMustBe16Bytes.")
 
+/**
+ * Encryption/decryption tool. Based on AES-JS https://github.com/ricmoo/aes-js
+ */
 export class Encryptor {
     private readonly keyBytes: Uint8Array;
 

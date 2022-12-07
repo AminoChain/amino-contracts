@@ -9,18 +9,12 @@ import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
-import "@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.sol";
 
 /** @title AminoChain Marketplace V0.2.0
  *  @notice Handles the sale of tokenized stem cells and distributing
  *  incentives to donors
  */
-contract AminoChainMarketplace is
-    ReentrancyGuard,
-    IERC721Receiver,
-    ChainlinkClient,
-    AutomationCompatibleInterface
-{
+contract AminoChainMarketplace is ReentrancyGuard, IERC721Receiver, ChainlinkClient {
     using Chainlink for Chainlink.Request;
 
     address public owner;
@@ -58,11 +52,8 @@ contract AminoChainMarketplace is
         uint256 escrowedPayment;
     }
 
-    uint256[] pendingSaleTokenIds;
-
     mapping(uint256 => Listing) ListingData;
     mapping(uint256 => PendingSale) PendingSales;
-    mapping(uint256 => uint256) PendingSaleIdsIndex;
     mapping(bytes32 => address) ApprovalRequest;
     mapping(address => bool) ApprovedToBuy;
 
@@ -172,7 +163,7 @@ contract AminoChainMarketplace is
             "Marketplace does not have approval from lister on NFT contract"
         );
 
-        uint256 price = (price_per_cc * sizeInCC) * 10**IERC20Metadata(i_usdc).decimals();
+        uint256 price = (price_per_cc * sizeInCC) * 10 ** IERC20Metadata(i_usdc).decimals();
 
         ListingData[tokenId] = Listing(msg.sender, sizeInCC, price, donor, bioBank);
 
@@ -205,8 +196,6 @@ contract AminoChainMarketplace is
 
         IERC721(tokenziedStemCells).safeTransferFrom(data.seller, address(this), tokenId);
 
-        pendingSaleTokenIds.push(tokenId);
-        PendingSaleIdsIndex[tokenId] = pendingSaleTokenIds.length - 1;
         PendingSales[tokenId] = PendingSale(
             block.timestamp,
             physicalStatus.AT_ORIGIN,
@@ -250,46 +239,6 @@ contract AminoChainMarketplace is
         ApprovalRequest[id] = msg.sender;
     }
 
-    /** @dev Called by Chainlink to complete sales if the physical stem cells have been delivered or
-     *  refund them if they have not been delivered in the acceptable time frame.
-     */
-    function performUpkeep(bytes calldata performData) external override {
-        (uint256[] memory completedSaleIds, uint256[] memory refundSaleIds) = abi.decode(
-            performData,
-            (uint256[], uint256[])
-        );
-        require(completedSaleIds.length >= 0 || refundSaleIds.length >= 0, "no upkeep to preform");
-
-        if (completedSaleIds.length >= 0) {
-            for (uint256 i = 0; i < completedSaleIds.length; i++) {
-                PendingSale memory data = PendingSales[completedSaleIds[i]];
-                require(
-                    data.saleStatus == physicalStatus.DELIVERED,
-                    "provided tokenId has not been delivered"
-                );
-                require(data.escrowedPayment > 0, "No payment escrowed");
-                require(data.donor != address(0), "Donor cannot be null");
-                require(data.bioBank != address(0), "BioBank cannot be null");
-                require(data.buyer != address(0), "Buyer cannot be null");
-                require(data.seller != address(0), "Authenticator(seller) cannot be null");
-                completeItemSale(completedSaleIds[i]);
-            }
-        }
-        if (refundSaleIds.length >= 0) {
-            for (uint256 i = 0; i < refundSaleIds.length; i++) {
-                PendingSale memory data = PendingSales[refundSaleIds[i]];
-                require(
-                    block.timestamp - data.date >= 30 days,
-                    "provided tokenId has not surpassed time limit"
-                );
-                require(data.escrowedPayment > 0, "No payment escrowed");
-                require(data.buyer != address(0), "Buyer cannot be null");
-                require(authenticator != address(0), "Authenticator cannot be null");
-                refundSale(refundSaleIds[i]);
-            }
-        }
-    }
-
     /** @dev Updates the delivery status of a pending sale for a given tokenId.
      */
     function updateDeliveryStatus(uint256 tokenId, physicalStatus status) external onlyOwner {
@@ -298,6 +247,9 @@ contract AminoChainMarketplace is
         require(data.saleStatus != status, "Input status is the same as old");
 
         PendingSales[tokenId].saleStatus = status;
+        if (status == physicalStatus.DELIVERED) {
+            completeItemSale(tokenId);
+        }
 
         emit deliveryStatusChanged(tokenId, status);
     }
@@ -409,7 +361,6 @@ contract AminoChainMarketplace is
         IERC721(tokenziedStemCells).safeTransferFrom(address(this), data.buyer, tokenId);
 
         delete PendingSales[tokenId];
-        delete pendingSaleTokenIds[PendingSaleIdsIndex[tokenId]];
 
         emit saleCompleted(
             block.timestamp,
@@ -423,15 +374,12 @@ contract AminoChainMarketplace is
         );
     }
 
-    /** @dev Called by Chainlink automation if the physical stem cells have not been delivered
-     *  in the acceptable time frame. Transfers escrowed payment back to buyer and tokenId to authenticator.
+    /** @dev Called by buyer if the physical stem cells have not been delivered.
+     *  Transfers escrowed payment back to buyer and tokenId to authenticator.
      */
-    function refundSale(uint256 tokenId) internal {
+    function refundSale(uint256 tokenId) external {
         PendingSale memory data = PendingSales[tokenId];
-        require(
-            block.timestamp - data.date >= 30 days,
-            "provided tokenId has not surpassed time limit"
-        );
+        require(data.buyer == msg.sender, "Only buyer can refund their sale");
         require(data.escrowedPayment > 0, "No escrowed payment to  transfer");
         require(data.buyer != address(0), "Buyer cannot be null");
         require(authenticator != address(0), "Authenticator cannot be null");
@@ -441,7 +389,6 @@ contract AminoChainMarketplace is
         IERC721(tokenziedStemCells).safeTransferFrom(address(this), data.seller, tokenId);
 
         delete PendingSales[tokenId];
-        delete pendingSaleTokenIds[PendingSaleIdsIndex[tokenId]];
 
         emit saleRefunded(tokenId, data.buyer, data.bioBank, data.escrowedPayment);
     }
@@ -451,77 +398,15 @@ contract AminoChainMarketplace is
     /** @dev Allows or prevents a buyer from buying tokenized stem cells. Based on a
      *  Chainlink API call to the doctor/researcher registry.
      */
-    function fulfill(bytes32 _requestId, bool isDoctorOrResearcher)
-        public
-        recordChainlinkFulfillment(_requestId)
-    {
+    function fulfill(
+        bytes32 _requestId,
+        bool isDoctorOrResearcher
+    ) public recordChainlinkFulfillment(_requestId) {
         address requester = ApprovalRequest[_requestId];
         ApprovedToBuy[requester] = isDoctorOrResearcher;
     }
 
     // === View Functions === //
-
-    /** @dev Called by Chainlink automation to determine if there are sales to complete or refund.
-     */
-    function checkUpkeep(
-        bytes calldata /* checkData */
-    ) external view override returns (bool upkeepNeeded, bytes memory performData) {
-        uint256 completedCounter;
-        uint256 refundedCounter;
-        for (uint256 i = 0; i < pendingSaleTokenIds.length; i++) {
-            PendingSale memory data = PendingSales[pendingSaleTokenIds[i]];
-            if (
-                data.saleStatus == physicalStatus.DELIVERED &&
-                data.escrowedPayment > 0 &&
-                data.donor != address(0) &&
-                data.bioBank != address(0) &&
-                data.buyer != address(0) &&
-                data.seller != address(0)
-            ) {
-                completedCounter++;
-            } else if (
-                block.timestamp - data.date >= 30 days &&
-                data.escrowedPayment > 0 &&
-                data.buyer != address(0) &&
-                authenticator != address(0)
-            ) {
-                refundedCounter++;
-            }
-        }
-
-        upkeepNeeded = false;
-        uint256[] memory completedSaleIds = new uint256[](completedCounter);
-        uint256[] memory refundSaleIds = new uint256[](refundedCounter);
-
-        uint256 completedIndexCounter = 0;
-        uint256 refundedIndexCounter = 0;
-        for (uint256 i = 0; i < pendingSaleTokenIds.length; i++) {
-            PendingSale memory data = PendingSales[pendingSaleTokenIds[i]];
-            if (
-                data.saleStatus == physicalStatus.DELIVERED &&
-                data.escrowedPayment > 0 &&
-                data.donor != address(0) &&
-                data.bioBank != address(0) &&
-                data.buyer != address(0) &&
-                data.seller != address(0)
-            ) {
-                upkeepNeeded = true;
-                completedSaleIds[completedIndexCounter] = pendingSaleTokenIds[i];
-                completedIndexCounter++;
-            } else if (
-                block.timestamp - data.date >= 30 days &&
-                data.escrowedPayment > 0 &&
-                data.buyer != address(0) &&
-                authenticator != address(0)
-            ) {
-                upkeepNeeded = true;
-                refundSaleIds[refundedIndexCounter] = pendingSaleTokenIds[i];
-                refundedIndexCounter++;
-            }
-        }
-        performData = abi.encode(completedSaleIds, refundSaleIds);
-        return (upkeepNeeded, performData);
-    }
 
     /** @dev Returns the listing data for a given tokenId
      */

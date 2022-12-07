@@ -8,7 +8,7 @@ import {
     MockOracle,
 } from "../../typechain"
 import { assert, expect } from "chai"
-import {BigNumber, BigNumberish, constants} from "ethers"
+import { BigNumber, BigNumberish, constants } from "ethers"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import {
     hla,
@@ -19,12 +19,14 @@ import {
     hlaHashed,
     hlaHash,
     messageHash,
-    signature, RegistrationData, mockHlaEncoded,
+    signature,
+    RegistrationData,
+    mockHlaEncoded,
 } from "../commons"
 import { Encryptor } from "../encryptor"
-import {arrayify} from "ethers/lib/utils";
+import { arrayify } from "ethers/lib/utils"
 // @ts-ignore
-import PendingSaleStruct = AminoChainMarketplace.PendingSaleStruct;
+import PendingSaleStruct = AminoChainMarketplace.PendingSaleStruct
 
 const trueBoolInBytes = "0x0000000000000000000000000000000000000000000000000000000000000001"
 const hlaEncodingKey = "secret"
@@ -81,10 +83,10 @@ describe("Full Tests", async function () {
                 hlaHashed,
                 hlaHash,
                 hlaEncoded: bioDataEncodedBytes,
-                genomeEncodedIpfsId: '',
+                genomeEncodedIpfsId: "",
                 amounts: [30],
                 donor: donor.address,
-                biobank: biobank.address
+                biobank: biobank.address,
             })
 
             expect(await authenticator.connect(donor).isRegistered(donor.address)).eq(true)
@@ -108,7 +110,9 @@ describe("Full Tests", async function () {
         let price: BigNumberish
 
         it("Request Buy Access", async () => {
-            const list = (await marketplace.getListingData(tokenId)) as AminoChainMarketplace.ListingStruct
+            const list = (await marketplace.getListingData(
+                tokenId
+            )) as AminoChainMarketplace.ListingStruct
             price = await list.price
             await usdc.connect(doctor).approve(marketplace.address, price)
 
@@ -130,7 +134,9 @@ describe("Full Tests", async function () {
         })
 
         it("Listing should be canceled", async () => {
-            const listing = (await marketplace.getListingData(tokenId)) as AminoChainMarketplace.ListingStruct
+            const listing = (await marketplace.getListingData(
+                tokenId
+            )) as AminoChainMarketplace.ListingStruct
             expect(listing.donor).eq(ethers.constants.AddressZero)
             expect(listing.bioBank).eq(ethers.constants.AddressZero)
         })
@@ -156,16 +162,7 @@ describe("Full Tests", async function () {
             await marketplace.updateDeliveryStatus(tokenId, 2) // DELIVERED
 
             const pending: PendingSaleStruct = await marketplace.getPendingSaleData(tokenId)
-            expect(pending.saleStatus).eq(2) // DELIVERED
-        })
-
-        it("ChaiLink Automation agent / Call performUpkeep", async () => {
-            const { upkeepNeeded, performData} = await marketplace.checkUpkeep(ethers.constants.HashZero)
-            expect(upkeepNeeded).true
-            expect(performData).not.empty
-
-            expect(await marketplace.performUpkeep(performData))
-                .with.emit(marketplace, "saleCompleted")
+            expect(pending.saleStatus).eq(0) // SALE is completed and struct is deleted
         })
 
         it("Sale should be completed", async () => {
@@ -197,17 +194,16 @@ describe("Full Tests", async function () {
         const bioDataEncodedBytes = encryptor.encrypt(JSON.stringify(hla))
 
         it("Registering", async () => {
-
             const signature = await donor.signMessage(arrayify(messageHash))
 
             await authenticator.register({
                 hlaHashed,
                 hlaHash,
                 hlaEncoded: bioDataEncodedBytes,
-                genomeEncodedIpfsId: '',
+                genomeEncodedIpfsId: "",
                 amounts: [30],
                 donor: donor.address,
-                biobank: biobank.address
+                biobank: biobank.address,
             })
 
             expect(await authenticator.connect(donor).isRegistered(donor.address)).eq(true)
@@ -237,10 +233,10 @@ describe("Full Tests", async function () {
                 hlaHashed,
                 hlaHash,
                 hlaEncoded: mockHlaEncoded,
-                genomeEncodedIpfsId: '',
+                genomeEncodedIpfsId: "",
                 amounts: [10, 20],
                 donor: donor.address,
-                biobank: biobank.address
+                biobank: biobank.address,
             })
 
             expect(await authenticator.connect(donor).isRegistered(donor.address)).eq(true)
@@ -263,5 +259,4 @@ describe("Full Tests", async function () {
             expect(listing.sizeInCC).eq(20)
         })
     })
-
 })

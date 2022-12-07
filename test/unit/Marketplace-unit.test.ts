@@ -206,7 +206,7 @@ describe("AminoChainMarketplace Tests", async () => {
             await list()
             marketplace = await marketplace.connect(signers[1])
             erc20 = await erc20.connect(signers[1])
-            await erc20.deposit({ value: ethers.utils.parseEther("1000000") })
+            await erc20.deposit({ value: ethers.utils.parseEther("1000") })
 
             const requestTx = await marketplace.requestBuyAccess()
             const requestTransactionReceipt = await requestTx.wait()

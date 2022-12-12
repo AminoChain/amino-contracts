@@ -2,28 +2,44 @@
 
 pragma solidity ^0.8.17;
 
-import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
-/** @title AminoChain Cell Line V0.1.0
+/** @title AminoChain Cell Lines V0.1.0
  *  @notice Tokenizes donated cell lines
  */
-contract AminoCellLine is ERC1155 {
+contract AminoCellLine is ERC721 {
     address public owner;
     address public authenticator;
     uint internal lastId = 0;
-    mapping(address => mapping(uint => uint)) public cellLineId;
-    mapping(uint => DonationData) public cellLineData;
-    uint[] public cellLineIds;
+    uint internal lastBatchId = 0;
+
+    //data for a batch of tokens
+    mapping(uint => DonationData) public batchData;
+    //data for a tokenId
+    mapping(uint => SampleData) public sampleData;
+
+    mapping(uint => uint) public batchId;
+    mapping(address => mapping(uint => uint)) internal batchBalance;
+
+    enum Consent {
+        UNDETERMINED,
+        CONSENTS,
+        NO_CONSENT
+    }
 
     struct DonationData {
-        address donorAddress;
-        string donorConsentStatus;
-        address biobankOriginAddress;
+        address donor;
+        address biobank;
+    }
+
+    struct SampleData {
+        string caseId;
+        Consent donorConsent;
     }
 
     // === Constructor === //
 
-    constructor(string memory uri) ERC1155(uri) {
+    constructor() ERC721("Amino", "AMCL") {
         owner = msg.sender;
     }
 
@@ -41,36 +57,70 @@ contract AminoCellLine is ERC1155 {
 
     // === Events === //
 
-    event registeredDonation(uint cellLineId, address donor);
-    event clonedAndTransferred(uint cellLineId, address from, address to);
+    event registeredDonation(uint batchId, uint tokenId, address donor, address biobank);
+    event clonedAndTransferred(uint batchId, uint tokenId, address from, address to);
     event ownershipTransferred(address newOwner);
     event authenticatorAddressSet(address newAuthenticator);
 
     // === External Functions === //
 
-    function registerCancerLine(
-        address donor,
-        address biobank
-    ) external onlyAuthenticator returns (uint) {
+    function registerCellLine(address donor, address biobank) external onlyAuthenticator {
         require(biobank != address(0), "Biobank cannot be null");
         require(donor != address(0), "Donor cannot be null");
         uint id = lastId + 1;
         lastId = id;
-        cellLineIds.push(id);
-        cellLineId[donor][block.timestamp] = id;
-        cellLineData[id] = DonationData(donor, "full", biobank);
 
-        _mint(biobank, id, 1, "");
+        _safeMint(biobank, id);
 
-        emit registeredDonation(id, donor);
-        return (id);
+        uint currentBatchId = lastBatchId + 1;
+        batchData[currentBatchId] = DonationData(donor, biobank);
+        batchId[id] = currentBatchId;
+        lastBatchId = currentBatchId;
+
+        emit registeredDonation(currentBatchId, id, donor, biobank);
     }
 
-    function cloneAndTransfer(uint id, address from, address to) external onlyAuthenticator {
-        require(balanceOf(from, id) != 0, "From balance for id cannot be zero");
-        _mint(from, id, 1, "");
-        safeTransferFrom(from, to, id, 1, "");
-        emit clonedAndTransferred(id, from, to);
+    function cloneAndTransfer(
+        uint cloneBatchId,
+        address from,
+        address to
+    ) external onlyAuthenticator {
+        require(batchBalance[from][cloneBatchId] > 0, "From balance for batch cannot be zero");
+        require(from != to, "Cannot clone to cloner");
+        uint id = lastId + 1;
+        lastId = id;
+
+        _safeMint(from, id);
+        batchId[id] = cloneBatchId;
+        safeTransferFrom(from, to, id);
+        emit clonedAndTransferred(cloneBatchId, id, from, to);
+    }
+
+    function setStudyCaseId(uint tokenId, string memory caseId) external {
+        require(ownerOf(tokenId) == msg.sender, "Only owner can set case id");
+        sampleData[tokenId] = SampleData(caseId, Consent.UNDETERMINED);
+    }
+
+    function updateConsent(uint tokenId, Consent consentStatus) external {
+        require(
+            batchData[batchId[tokenId]].donor == msg.sender,
+            "Only donor can update their consent"
+        );
+        sampleData[tokenId].donorConsent = consentStatus;
+    }
+
+    function _afterTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal virtual override {
+        super._afterTokenTransfer(from, to, tokenId);
+
+        uint tokenBatchId = batchId[tokenId];
+        if (batchBalance[to][tokenBatchId] != 0) {
+            batchBalance[from][tokenBatchId]--;
+        }
+        batchBalance[to][tokenBatchId]++;
     }
 
     function transferOwnership(address newOwner) external onlyOwner {
@@ -89,9 +139,15 @@ contract AminoCellLine is ERC1155 {
         emit authenticatorAddressSet(_authenticator);
     }
 
-    // === View Functions === //
+    // === VIEW FUNCTIONS === //
 
-    function getCellLineData(uint id) public view returns (DonationData memory) {
-        return cellLineData[id];
+    function getBatchId(uint tokenId) public view returns (uint) {
+        return batchId[tokenId];
+    }
+
+    function getTokenData(
+        uint tokenId
+    ) public view returns (DonationData memory, SampleData memory) {
+        return (batchData[tokenId], sampleData[tokenId]);
     }
 }

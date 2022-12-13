@@ -19,7 +19,7 @@ contract AminoCellLine is ERC721 {
     mapping(uint => SampleData) public sampleData;
 
     mapping(uint => uint) public batchId;
-    mapping(address => mapping(uint => uint)) internal batchBalance;
+    mapping(address => mapping(uint => uint)) private batchBalance;
 
     enum Consent {
         UNDETERMINED,
@@ -27,9 +27,15 @@ contract AminoCellLine is ERC721 {
         NO_CONSENT
     }
 
+    enum Sample_Type {
+        STEM_CELL,
+        CELL_LINE
+    }
+
     struct DonationData {
         address donor;
         address biobank;
+        Sample_Type sampleType;
     }
 
     struct SampleData {
@@ -39,7 +45,7 @@ contract AminoCellLine is ERC721 {
 
     // === Constructor === //
 
-    constructor() ERC721("Amino", "AMCL") {
+    constructor(string memory name, string memory symbol) ERC721(name, symbol) {
         owner = msg.sender;
     }
 
@@ -57,7 +63,7 @@ contract AminoCellLine is ERC721 {
 
     // === Events === //
 
-    event registeredDonation(uint batchId, uint tokenId, address donor, address biobank);
+    event cellLineRegistered(uint batchId, uint tokenId, address donor, address biobank);
     event clonedAndTransferred(uint batchId, uint tokenId, address from, address to);
     event ownershipTransferred(address newOwner);
     event authenticatorAddressSet(address newAuthenticator);
@@ -73,11 +79,11 @@ contract AminoCellLine is ERC721 {
         _safeMint(biobank, id);
 
         uint currentBatchId = lastBatchId + 1;
-        batchData[currentBatchId] = DonationData(donor, biobank);
+        batchData[currentBatchId] = DonationData(donor, biobank, Sample_Type.CELL_LINE);
         batchId[id] = currentBatchId;
         lastBatchId = currentBatchId;
 
-        emit registeredDonation(currentBatchId, id, donor, biobank);
+        emit cellLineRegistered(currentBatchId, id, donor, biobank);
     }
 
     function cloneAndTransfer(
@@ -87,6 +93,10 @@ contract AminoCellLine is ERC721 {
     ) external onlyAuthenticator {
         require(batchBalance[from][cloneBatchId] > 0, "From balance for batch cannot be zero");
         require(from != to, "Cannot clone to cloner");
+        require(
+            batchData[cloneBatchId].sampleType == Sample_Type.CELL_LINE,
+            "Sample must be a cell line to clone"
+        );
         uint id = lastId + 1;
         lastId = id;
 
@@ -139,7 +149,7 @@ contract AminoCellLine is ERC721 {
         emit authenticatorAddressSet(_authenticator);
     }
 
-    // === VIEW FUNCTIONS === //
+    // === View Functions === //
 
     function getBatchId(uint tokenId) public view returns (uint) {
         return batchId[tokenId];

@@ -150,7 +150,7 @@ describe("Full Tests", async function () {
         })
 
         it("Tracking Service / Sale status update to IN_TRANSIT", async () => {
-            await marketplace.updateDeliveryStatus(tokenId, 1) // IN_TRANSIT
+            await marketplace.updateDeliveryStatus(tokenId, 1, donor.address) // IN_TRANSIT
 
             const pending: PendingSaleStruct = await marketplace.getPendingSaleData(tokenId)
             expect(pending.saleStatus).eq(1) // IN_TRANSIT
@@ -159,7 +159,7 @@ describe("Full Tests", async function () {
         })
 
         it("Tracking Service / Sale status update to DELIVERED", async () => {
-            await marketplace.updateDeliveryStatus(tokenId, 2) // DELIVERED
+            await marketplace.updateDeliveryStatus(tokenId, 2, donor.address) // DELIVERED
 
             const pending: PendingSaleStruct = await marketplace.getPendingSaleData(tokenId)
             expect(pending.saleStatus).eq(0) // SALE is completed and struct is deleted

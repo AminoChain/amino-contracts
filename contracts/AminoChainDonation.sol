@@ -7,7 +7,6 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-import "./libraries/AminoChainLibrary.sol";
 
 /** @title AminoChain Donation
  *  @notice Tokenizes donated stem cells
@@ -54,12 +53,9 @@ contract AminoChainDonation is ERC721, Pausable, Ownable {
         _unpause();
     }
 
-    function mint(AminoChainLibrary.RegistrationData calldata data)
-        public
-        onlyOwner
-        whenNotPaused
-        returns (uint256[] memory)
-    {
+    function mint(
+        AminoChainLibrary.RegistrationData calldata data
+    ) public onlyOwner whenNotPaused returns (uint256[] memory) {
         // It would have been also possible ot return the ids stored in addressToTokenIds[donor],
         // new array is created here to account for the case that donor might give donation
         // not for the first time.
@@ -87,11 +83,9 @@ contract AminoChainDonation is ERC721, Pausable, Ownable {
         return addressToTokenIds[donor];
     }
 
-    function getHlaHashed(uint256 tokenId)
-        public
-        view
-        returns (AminoChainLibrary.HlaHashed memory)
-    {
+    function getHlaHashed(
+        uint256 tokenId
+    ) public view returns (AminoChainLibrary.HlaHashed memory) {
         return tokenIdToDonationData[tokenId].hlaHashed;
     }
 

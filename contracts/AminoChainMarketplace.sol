@@ -49,6 +49,7 @@ contract AminoChainMarketplace is ReentrancyGuard, IERC721Receiver, ChainlinkCli
         address buyer;
         address bioBank;
         address donor;
+        address incentiveReciever;
         uint256 escrowedPayment;
     }
 
@@ -203,6 +204,7 @@ contract AminoChainMarketplace is ReentrancyGuard, IERC721Receiver, ChainlinkCli
             msg.sender,
             data.bioBank,
             data.donor,
+            data.donor,
             data.price
         );
         delete ListingData[tokenId];
@@ -241,12 +243,20 @@ contract AminoChainMarketplace is ReentrancyGuard, IERC721Receiver, ChainlinkCli
 
     /** @dev Updates the delivery status of a pending sale for a given tokenId.
      */
-    function updateDeliveryStatus(uint256 tokenId, physicalStatus status) external onlyOwner {
+    function updateDeliveryStatus(
+        uint256 tokenId,
+        physicalStatus status,
+        address incentiveReciever
+    ) external onlyOwner {
         PendingSale memory data = PendingSales[tokenId];
         require(data.buyer != address(0), "Buyer cannot be null");
         require(data.saleStatus != status, "Input status is the same as old");
+        require(incentiveReciever != address(0), "Incentive Receiver cannot be null");
 
         PendingSales[tokenId].saleStatus = status;
+        if (data.incentiveReciever != incentiveReciever) {
+            PendingSales[tokenId].incentiveReciever = incentiveReciever;
+        }
         if (status == physicalStatus.DELIVERED) {
             completeItemSale(tokenId);
         }
@@ -347,6 +357,7 @@ contract AminoChainMarketplace is ReentrancyGuard, IERC721Receiver, ChainlinkCli
         require(data.bioBank != address(0), "BioBank cannot be null");
         require(data.buyer != address(0), "Buyer cannot be null");
         require(data.seller != address(0), "Authenticator(seller) cannot be null");
+        require(data.incentiveReciever != address(0), "Incentive Reciever cannot be null");
 
         uint256 incentive = data.escrowedPayment / donorIncentiveRate;
         uint256 fee = data.escrowedPayment / 10;
@@ -355,8 +366,8 @@ contract AminoChainMarketplace is ReentrancyGuard, IERC721Receiver, ChainlinkCli
         IERC20(i_usdc).transfer(data.bioBank, data.escrowedPayment - (incentive + fee));
         /// Protocol Fee Payment
         IERC20(i_usdc).transfer(data.seller, fee);
-        /// Donor Incentive Payment
-        IERC20(i_usdc).transfer(data.donor, incentive);
+        /// Incentive Payment
+        IERC20(i_usdc).transfer(data.incentiveReciever, incentive);
 
         IERC721(tokenziedStemCells).safeTransferFrom(address(this), data.buyer, tokenId);
 

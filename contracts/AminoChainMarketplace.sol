@@ -114,13 +114,13 @@ contract AminoChainMarketplace is ReentrancyGuard, IERC721Receiver, ChainlinkCli
     );
 
     event saleCompleted(
-        uint256 date,
         address bioBank,
         address buyer,
         uint256 tokenId,
         address donor,
+        address incentiveReciever,
         uint256 salePrice,
-        uint256 donorIncentive,
+        uint256 paidIncentive,
         uint256 protocolFee
     );
 
@@ -374,11 +374,11 @@ contract AminoChainMarketplace is ReentrancyGuard, IERC721Receiver, ChainlinkCli
         delete PendingSales[tokenId];
 
         emit saleCompleted(
-            block.timestamp,
             data.bioBank,
             data.buyer,
             tokenId,
             data.donor,
+            data.incentiveReciever,
             data.escrowedPayment,
             incentive,
             fee

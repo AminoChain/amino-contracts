@@ -346,7 +346,7 @@ contract AminoChainMarketplace is ReentrancyGuard, IERC721Receiver, ChainlinkCli
     /** @dev Finishes sale on delivery of physical stem cells. Tranfers escrowed payment to Bio Bank,
      *  escrowed incentive to donor, and escrowed fee to authenticator. Transfers NFT to buyer.
      */
-    function completeItemSale(uint256 tokenId) internal {
+    function completeItemSale(uint256 tokenId) internal nonReentrant {
         PendingSale memory data = PendingSales[tokenId];
         require(
             data.saleStatus == physicalStatus.DELIVERED,
@@ -388,7 +388,7 @@ contract AminoChainMarketplace is ReentrancyGuard, IERC721Receiver, ChainlinkCli
     /** @dev Called by buyer if the physical stem cells have not been delivered.
      *  Transfers escrowed payment back to buyer and tokenId to authenticator.
      */
-    function refundSale(uint256 tokenId) external {
+    function refundSale(uint256 tokenId) external nonReentrant {
         PendingSale memory data = PendingSales[tokenId];
         require(data.buyer == msg.sender, "Only buyer can refund their sale");
         require(data.escrowedPayment > 0, "No escrowed payment to  transfer");

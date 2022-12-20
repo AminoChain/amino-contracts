@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 /** @title AminoChain Cell Lines V0.1.0
  *  @notice Tokenizes donated cell lines
  */
-contract AminoCellLine is ERC721 {
+contract AminoChainCellLine is ERC721 {
     address public owner;
     address public authenticator;
     uint internal lastId = 0;
@@ -19,7 +19,7 @@ contract AminoCellLine is ERC721 {
     mapping(uint => SampleData) public sampleData;
 
     mapping(uint => uint) public batchId;
-    mapping(address => mapping(uint => uint)) private batchBalance;
+    mapping(address => mapping(uint => uint)) public batchBalance;
 
     enum Consent {
         UNDETERMINED,
@@ -27,15 +27,9 @@ contract AminoCellLine is ERC721 {
         NO_CONSENT
     }
 
-    enum Sample_Type {
-        STEM_CELL,
-        CELL_LINE
-    }
-
     struct DonationData {
         address donor;
         address biobank;
-        Sample_Type sampleType;
     }
 
     struct SampleData {
@@ -76,12 +70,12 @@ contract AminoCellLine is ERC721 {
         uint id = lastId + 1;
         lastId = id;
 
-        _safeMint(biobank, id);
-
         uint currentBatchId = lastBatchId + 1;
-        batchData[currentBatchId] = DonationData(donor, biobank, Sample_Type.CELL_LINE);
+        batchData[currentBatchId] = DonationData(donor, biobank);
         batchId[id] = currentBatchId;
         lastBatchId = currentBatchId;
+
+        _safeMint(biobank, id);
 
         emit cellLineRegistered(currentBatchId, id, donor, biobank);
     }
@@ -93,15 +87,12 @@ contract AminoCellLine is ERC721 {
     ) external onlyAuthenticator {
         require(batchBalance[from][cloneBatchId] > 0, "From balance for batch cannot be zero");
         require(from != to, "Cannot clone to cloner");
-        require(
-            batchData[cloneBatchId].sampleType == Sample_Type.CELL_LINE,
-            "Sample must be a cell line to clone"
-        );
         uint id = lastId + 1;
         lastId = id;
 
-        _safeMint(from, id);
         batchId[id] = cloneBatchId;
+
+        _safeMint(from, id);
         safeTransferFrom(from, to, id);
         emit clonedAndTransferred(cloneBatchId, id, from, to);
     }
@@ -159,5 +150,9 @@ contract AminoCellLine is ERC721 {
         uint tokenId
     ) public view returns (DonationData memory, SampleData memory) {
         return (batchData[tokenId], sampleData[tokenId]);
+    }
+
+    function getBatchBalance(address addy, uint batch) public view returns (uint) {
+        return batchBalance[addy][batch];
     }
 }

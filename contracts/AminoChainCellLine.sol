@@ -28,6 +28,7 @@ contract AminoChainCellLine is ERC721 {
     }
 
     struct DonationData {
+        bool isImmortalized;
         address donor;
         address biobank;
     }
@@ -35,6 +36,7 @@ contract AminoChainCellLine is ERC721 {
     struct SampleData {
         string caseId;
         Consent donorConsent;
+        uint sizeInCC;
     }
 
     // === Constructor === //
@@ -57,49 +59,81 @@ contract AminoChainCellLine is ERC721 {
 
     // === Events === //
 
-    event cellLineRegistered(uint batchId, uint tokenId, address donor, address biobank);
-    event clonedAndTransferred(uint batchId, uint tokenId, address from, address to);
+    event cellLineRegistered(
+        uint batchId,
+        uint tokenId,
+        bool isImmortalized,
+        address donor,
+        address biobank
+    );
+    event clonedAndTransferred(uint batchId, address from, address to);
+    event splitAndTransferred(uint batchId, uint amount, address from, address to);
     event ownershipTransferred(address newOwner);
     event authenticatorAddressSet(address newAuthenticator);
 
     // === External Functions === //
 
-    function registerCellLine(address donor, address biobank) external onlyAuthenticator {
+    function registerCellLine(
+        address donor,
+        address biobank,
+        uint size /* 0 if immortalized */
+    ) external onlyAuthenticator {
         require(biobank != address(0), "Biobank cannot be null");
         require(donor != address(0), "Donor cannot be null");
         uint id = lastId + 1;
         lastId = id;
 
         uint currentBatchId = lastBatchId + 1;
-        batchData[currentBatchId] = DonationData(donor, biobank);
+        if (size == 0) {
+            batchData[currentBatchId] = DonationData(true, donor, biobank);
+        } else {
+            batchData[currentBatchId] = DonationData(false, donor, biobank);
+            sampleData[id].sizeInCC = size;
+        }
         batchId[id] = currentBatchId;
         lastBatchId = currentBatchId;
 
         _safeMint(biobank, id);
 
-        emit cellLineRegistered(currentBatchId, id, donor, biobank);
+        emit cellLineRegistered(currentBatchId, id, batchData[id].isImmortalized, donor, biobank);
     }
 
     function cloneAndTransfer(
-        uint cloneBatchId,
+        uint tokenId,
+        uint amount /* 0 if immortalized */,
         address from,
         address to
     ) external onlyAuthenticator {
-        require(batchBalance[from][cloneBatchId] > 0, "From balance for batch cannot be zero");
-        require(from != to, "Cannot clone to cloner");
+        require(ownerOf(tokenId) == from, "From balance for batch cannot be zero");
+        require(from != to, "Cannot clone to from");
+
         uint id = lastId + 1;
         lastId = id;
 
-        batchId[id] = cloneBatchId;
+        bool split = false;
+        if (batchData[batchId[tokenId]].isImmortalized == false) {
+            require(amount > 0, "Split amount must be above 0");
+            require(sampleData[tokenId].sizeInCC > amount, "Cannot split more than amount");
+            split = true;
+            sampleData[tokenId].sizeInCC = sampleData[tokenId].sizeInCC - amount;
+            sampleData[id].sizeInCC = amount;
+        }
+
+        batchId[id] = batchId[tokenId];
 
         _safeMint(from, id);
         safeTransferFrom(from, to, id);
-        emit clonedAndTransferred(cloneBatchId, id, from, to);
+
+        if (!split) {
+            emit clonedAndTransferred(batchId[tokenId], from, to);
+        } else {
+            emit splitAndTransferred(batchId[tokenId], amount, from, to);
+        }
     }
 
     function setStudyCaseId(uint tokenId, string memory caseId) external {
         require(ownerOf(tokenId) == msg.sender, "Only owner can set case id");
-        sampleData[tokenId] = SampleData(caseId, Consent.UNDETERMINED);
+        sampleData[tokenId].caseId = caseId;
     }
 
     function updateConsent(uint tokenId, Consent consentStatus) external {

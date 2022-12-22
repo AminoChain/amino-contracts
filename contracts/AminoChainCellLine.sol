@@ -13,12 +13,16 @@ contract AminoChainCellLine is ERC721 {
     uint internal lastId = 0;
     uint internal lastBatchId = 0;
 
+    uint256 private tokensInCirculation;
+
     //data for a batch of tokens
     mapping(uint => DonationData) public batchData;
     //data for a tokenId
     mapping(uint => SampleData) public sampleData;
 
+    //batch id for a token id
     mapping(uint => uint) public batchId;
+    //address balance for tokens in a batch id
     mapping(address => mapping(uint => uint)) public batchBalance;
 
     enum Consent {
@@ -151,8 +155,8 @@ contract AminoChainCellLine is ERC721 {
                 "ERC721: caller is not token owner nor approved"
             );
 
-            delete sampleData[_tokenIds[i]];
             newSampleSize = newSampleSize + sampleData[_tokenIds[i]].sizeInCC;
+            delete sampleData[_tokenIds[i]];
             _burn(_tokenIds[i]);
         }
         sampleData[_tokenIds[0]].sizeInCC = newSampleSize;
@@ -181,10 +185,16 @@ contract AminoChainCellLine is ERC721 {
         super._afterTokenTransfer(from, to, tokenId);
 
         uint tokenBatchId = batchId[tokenId];
-        if (batchBalance[to][tokenBatchId] != 0) {
+        if (from != address(0)) {
             batchBalance[from][tokenBatchId]--;
+        } else {
+            tokensInCirculation++;
         }
-        batchBalance[to][tokenBatchId]++;
+        if (to != address(0)) {
+            batchBalance[to][tokenBatchId]++;
+        } else {
+            tokensInCirculation--;
+        }
     }
 
     function transferOwnership(address newOwner) external onlyOwner {
@@ -205,17 +215,24 @@ contract AminoChainCellLine is ERC721 {
 
     // === View Functions === //
 
-    function getBatchId(uint tokenId) public view returns (uint) {
-        return batchId[tokenId];
-    }
-
     function getTokenData(
-        uint tokenId
-    ) public view returns (DonationData memory, SampleData memory) {
-        return (batchData[tokenId], sampleData[tokenId]);
+        uint256 tokenId
+    )
+        public
+        view
+        returns (uint256 _batchId, DonationData memory _batchData, SampleData memory _tokenData)
+    {
+        return (batchId[tokenId], batchData[batchId[tokenId]], sampleData[tokenId]);
     }
 
-    function getBatchBalance(address addy, uint batch) public view returns (uint) {
+    function getBatchBalance(
+        address addy,
+        uint256 batch
+    ) public view returns (uint256 _batchBalance) {
         return batchBalance[addy][batch];
+    }
+
+    function totalSupply() public view returns (uint256) {
+        return tokensInCirculation;
     }
 }

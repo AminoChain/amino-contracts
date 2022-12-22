@@ -36,7 +36,7 @@ contract AminoChainCellLine is ERC721 {
     struct SampleData {
         string caseId;
         Consent donorConsent;
-        uint sizeInCC;
+        uint sizeInCC; // 0 for immortilized
     }
 
     // === Constructor === //
@@ -68,6 +68,7 @@ contract AminoChainCellLine is ERC721 {
     );
     event clonedAndTransferred(uint batchId, address from, address to);
     event splitAndTransferred(uint batchId, uint amount, address from, address to);
+    event mergedAndBurned(uint[] tokenIds, uint sizeMerged, address merger);
     event ownershipTransferred(address newOwner);
     event authenticatorAddressSet(address newAuthenticator);
 
@@ -104,6 +105,10 @@ contract AminoChainCellLine is ERC721 {
         address from,
         address to
     ) external onlyAuthenticator {
+        require(
+            _isApprovedOrOwner(msg.sender, tokenId),
+            "ERC721: caller is not token owner nor approved"
+        );
         require(ownerOf(tokenId) == from, "From balance for batch cannot be zero");
         require(from != to, "Cannot clone to from");
 
@@ -129,6 +134,30 @@ contract AminoChainCellLine is ERC721 {
         } else {
             emit splitAndTransferred(batchId[tokenId], amount, from, to);
         }
+    }
+
+    function burnAndMerge(uint[] memory _tokenIds) external {
+        uint firstBatchId = batchId[_tokenIds[0]];
+        require(
+            _isApprovedOrOwner(msg.sender, _tokenIds[0]),
+            "ERC721: caller is not token owner nor approved"
+        );
+
+        uint newSampleSize = sampleData[_tokenIds[0]].sizeInCC;
+        for (uint i = 1; i < _tokenIds.length; i++) {
+            require(batchId[_tokenIds[i]] == firstBatchId, "Batch Ids do not match");
+            require(
+                _isApprovedOrOwner(msg.sender, _tokenIds[i]),
+                "ERC721: caller is not token owner nor approved"
+            );
+
+            delete sampleData[_tokenIds[i]];
+            newSampleSize = newSampleSize + sampleData[_tokenIds[i]].sizeInCC;
+            _burn(_tokenIds[i]);
+        }
+        sampleData[_tokenIds[0]].sizeInCC = newSampleSize;
+
+        emit mergedAndBurned(_tokenIds, newSampleSize, msg.sender);
     }
 
     function setStudyCaseId(uint tokenId, string memory caseId) external {

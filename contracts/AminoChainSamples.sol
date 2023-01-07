@@ -4,8 +4,8 @@ pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
-/** @title AminoChain Cell Lines V0.1.0
- *  @notice Tokenizes donated cell lines
+/** @title AminoChain Samples V0.1.0
+ *  @notice Tokenizes donated samples
  */
 contract AminoChainSamples is ERC721 {
     address public owner;
@@ -78,7 +78,12 @@ contract AminoChainSamples is ERC721 {
 
     // === External Functions === //
 
-    function registerCellLine(
+    /** @notice Mints a new token and creates a new batch (a group of tokens that have a common origin/data).
+     *  @param size is measured in cubic centimeters and refers to the finite amount of a physical sample.
+     *
+     *  To mint an immortalized cell line (infinite sized batch) input 0 in size.
+     */
+    function registerSample(
         address donor,
         address biobank,
         uint size /* 0 if immortalized */
@@ -103,6 +108,12 @@ contract AminoChainSamples is ERC721 {
         emit cellLineRegistered(currentBatchId, id, batchData[id].isImmortalized, donor, biobank);
     }
 
+    /** @notice Mints a new token withen a batch and transferrs token.
+     *  @param amount is measured in cubic centimeters and determines the "sizeInCC" of the new token.
+     *
+     *  If the sample is not immortalized then it represents a split of finite supply between two owners.
+     *  If it is immortalized then it represents a cloning of a sample to a new owner.
+     */
     function cloneAndTransfer(
         uint tokenId,
         uint amount /* 0 if immortalized */,
@@ -140,6 +151,9 @@ contract AminoChainSamples is ERC721 {
         }
     }
 
+    /** @notice Burns one or more tokens that are owned by the same wallet address and withen the same batch.
+     *  Then it combines the samples' "sizeInCC" thus allowing for more fractionalization control.
+     */
     function burnAndMerge(uint[] memory _tokenIds) external {
         uint firstBatchId = batchId[_tokenIds[0]];
         require(

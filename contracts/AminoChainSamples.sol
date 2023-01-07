@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 /** @title AminoChain Cell Lines V0.1.0
  *  @notice Tokenizes donated cell lines
  */
-contract AminoChainCellLine is ERC721 {
+contract AminoChainSamples is ERC721 {
     address public owner;
     address public authenticator;
     uint internal lastId = 0;

@@ -4,14 +4,14 @@ import { developmentChains } from "../helper-hardhat-config"
 import verify from "../utils/verify"
 import { delay } from "@nomiclabs/hardhat-etherscan/dist/src/etherscan/EtherscanService"
 
-const deployCellLine: DeployFunction = async () => {
+const deploySamples: DeployFunction = async () => {
     const { deploy, log } = deployments
     const { deployer } = await getNamedAccounts()
 
-    const constructorArgs = ["AminoCellLines", "AMCL"]
+    const constructorArgs = ["AminoChainSamples", "AMCL"]
 
-    const nft = await deploy(`AminoChainCellLine`, {
-        contract: `AminoChainCellLine`,
+    const nft = await deploy(`AminoChainSamples`, {
+        contract: `AminoChainSamples`,
         from: deployer,
         log: true,
         args: constructorArgs,
@@ -22,11 +22,11 @@ const deployCellLine: DeployFunction = async () => {
         await delay(20000)
         await verify(
             nft.address,
-            "contracts/AminoChainCellLine.sol:AminoChainCellLine",
+            "contracts/AminoChainSamples.sol:AminoChainSamples",
             constructorArgs
         ) /*.catch( () => {})*/
     }
 }
 
-export default deployCellLine
-deployCellLine.tags = [`all`, `nft`, `cLine`]
+export default deploySamples
+deploySamples.tags = [`all`, `nft`, `donation`]

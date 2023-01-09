@@ -140,7 +140,7 @@ contract AminoChainMarketplace is ReentrancyGuard, IERC721Receiver, ChainlinkCli
 
     /** === External Functions === **/
 
-    /** @dev Allows the owner (AminoChain) of the contract to list tokenized stem cells.
+    /** @notice Allows the owner (AminoChain) of the contract to list tokenized stem cells.
      *  The BioBank is the physcial holder of the stem cells. Before calling this function, the
      *  lister must set isApprovedForAll on the ERC-721 contract to true for this contract address.
      */
@@ -171,7 +171,7 @@ contract AminoChainMarketplace is ReentrancyGuard, IERC721Receiver, ChainlinkCli
         emit newListing(msg.sender, tokenId, sizeInCC, price, donor, bioBank);
     }
 
-    /** @dev Allows a user to buy tokenized stem cells for a given tokenId, then transfers the incentive
+    /** @notice Allows a user to buy tokenized stem cells for a given tokenId, then transfers the incentive
      *  (based on donorIncentiveRate) to the donor's wallet, a fee to the authenticator contract,
      *  and the rest of the payment to the bioBanks's wallet. Buyer must have the price amount approved for marketplace address
      *  on the USDC contract.
@@ -219,7 +219,7 @@ contract AminoChainMarketplace is ReentrancyGuard, IERC721Receiver, ChainlinkCli
         );
     }
 
-    /** @dev Requests a Chainlink Any-Api call to determine if the caller is a registered
+    /** @notice Requests a Chainlink Any-Api call to determine if the caller is a registered
      *  doctor or researcher. Which then determines if they are allowed to buy stem cells.
      */
     function requestBuyAccess() external {
@@ -241,7 +241,7 @@ contract AminoChainMarketplace is ReentrancyGuard, IERC721Receiver, ChainlinkCli
         ApprovalRequest[id] = msg.sender;
     }
 
-    /** @dev Updates the delivery status of a pending sale for a given tokenId.
+    /** @notice Updates the delivery status of a pending sale for a given tokenId.
      */
     function updateDeliveryStatus(
         uint256 tokenId,
@@ -264,7 +264,7 @@ contract AminoChainMarketplace is ReentrancyGuard, IERC721Receiver, ChainlinkCli
         emit deliveryStatusChanged(tokenId, status);
     }
 
-    /** @dev Allows the owner of the contract to cancel a listing by deleting
+    /** @notice Allows the owner of the contract to cancel a listing by deleting
      *  the corresponding listing data.
      */
     function cancelListing(uint256 tokenId) external onlyOwner {
@@ -275,7 +275,7 @@ contract AminoChainMarketplace is ReentrancyGuard, IERC721Receiver, ChainlinkCli
         emit listingCanceled(tokenId);
     }
 
-    /** @dev Allows the owner of the contract to update the price of a listing by
+    /** @notice Allows the owner of the contract to update the price of a listing by
      *  modifying the corresponding listing data.
      */
     function updateListing(uint256 tokenId, uint256 newPrice) external onlyOwner {
@@ -288,7 +288,7 @@ contract AminoChainMarketplace is ReentrancyGuard, IERC721Receiver, ChainlinkCli
         emit newListing(msg.sender, tokenId, data.sizeInCC, newPrice, data.donor, data.bioBank);
     }
 
-    /** @dev Transfers contract ownership to another wallet address. Many functions
+    /** @notice Transfers contract ownership to another wallet address. Many functions
      *  (with onlyOwner modifier) can only be called by the owner address.
      */
     function transferOwnership(address newOwner) external onlyOwner {
@@ -300,7 +300,7 @@ contract AminoChainMarketplace is ReentrancyGuard, IERC721Receiver, ChainlinkCli
         emit ownershipTransferred(oldOwner, newOwner);
     }
 
-    /** @dev Sets the address of the tokenized stem cells (ERC-721). Only NFTs from
+    /** @notice Sets the address of the tokenized stem cells (ERC-721). Only NFTs from
      *  the address can be listed and sold on this markeplace.
      */
     function setTokenizedStemCells(address stemCells) external onlyOwner {
@@ -311,7 +311,7 @@ contract AminoChainMarketplace is ReentrancyGuard, IERC721Receiver, ChainlinkCli
         emit stemCellsAddressSet(stemCells);
     }
 
-    /** @dev Sets the address of the authenticator contract. Authenticator mints tokenized
+    /** @notice Sets the address of the authenticator contract. Authenticator mints tokenized
      *  stem cells and lists them on the marketplace.
      */
     function setAuthenticatorAddress(address _authenticator) external onlyOwner {
@@ -322,7 +322,7 @@ contract AminoChainMarketplace is ReentrancyGuard, IERC721Receiver, ChainlinkCli
         emit authenticatorAddressSet(_authenticator);
     }
 
-    /** @dev Sets a new donor incentive rate. Which determines the percentage of
+    /** @notice Sets a new donor incentive rate. Which determines the percentage of
      *  each sale that goes to the stem cell donor.
      */
     function setDonorIncentiveRate(uint256 newIncentiveRate) external onlyOwner {
@@ -334,7 +334,7 @@ contract AminoChainMarketplace is ReentrancyGuard, IERC721Receiver, ChainlinkCli
         emit newDonorIncentiveRate(newIncentiveRate);
     }
 
-    /** @dev Allows the owner of this contract to withdraw stored LINK.
+    /** @notice Allows the owner of this contract to withdraw stored LINK.
      */
     function withdrawLink() external onlyOwner {
         LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());
@@ -343,7 +343,7 @@ contract AminoChainMarketplace is ReentrancyGuard, IERC721Receiver, ChainlinkCli
 
     // === Internal Functions === //
 
-    /** @dev Finishes sale on delivery of physical stem cells. Tranfers escrowed payment to Bio Bank,
+    /** @notice Finishes sale on delivery of physical stem cells. Tranfers escrowed payment to Bio Bank,
      *  escrowed incentive to donor, and escrowed fee to authenticator. Transfers NFT to buyer.
      */
     function completeItemSale(uint256 tokenId) internal nonReentrant {
@@ -385,7 +385,7 @@ contract AminoChainMarketplace is ReentrancyGuard, IERC721Receiver, ChainlinkCli
         );
     }
 
-    /** @dev Called by buyer if the physical stem cells have not been delivered.
+    /** @notice Called by buyer if the physical stem cells have not been delivered.
      *  Transfers escrowed payment back to buyer and tokenId to authenticator.
      */
     function refundSale(uint256 tokenId) external nonReentrant {
@@ -406,7 +406,7 @@ contract AminoChainMarketplace is ReentrancyGuard, IERC721Receiver, ChainlinkCli
 
     // === Public Functions === //
 
-    /** @dev Allows or prevents a buyer from buying tokenized stem cells. Based on a
+    /** @notice Allows or prevents a buyer from buying tokenized stem cells. Based on a
      *  Chainlink API call to the doctor/researcher registry.
      */
     function fulfill(
@@ -419,25 +419,25 @@ contract AminoChainMarketplace is ReentrancyGuard, IERC721Receiver, ChainlinkCli
 
     // === View Functions === //
 
-    /** @dev Returns the listing data for a given tokenId
+    /** @notice Returns the listing data for a given tokenId
      */
     function getListingData(uint256 tokenId) public view returns (Listing memory) {
         return ListingData[tokenId];
     }
 
-    /** @dev Returns bool of if a buyers address is whitelisted to buy or not
+    /** @notice Returns bool of if a buyers address is whitelisted to buy or not
      */
     function isApprovedToBuy(address buyer) public view returns (bool) {
         return ApprovedToBuy[buyer];
     }
 
-    /** @dev Returns pending sale data for a given tokenId
+    /** @notice Returns pending sale data for a given tokenId
      */
     function getPendingSaleData(uint256 tokenId) public view returns (PendingSale memory) {
         return PendingSales[tokenId];
     }
 
-    /** @dev IERC721 Reciever for tokenized stem cells
+    /** @notice IERC721 Reciever for tokenized stem cells
      */
     function onERC721Received(
         address,

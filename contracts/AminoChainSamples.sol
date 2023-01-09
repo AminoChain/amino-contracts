@@ -63,10 +63,10 @@ contract AminoChainSamples is ERC721 {
 
     // === Events === //
 
-    event cellLineRegistered(
+    event sampleRegistered(
         uint batchId,
         uint tokenId,
-        bool isImmortalized,
+        uint sizeInCC,
         address donor,
         address biobank
     );
@@ -105,7 +105,7 @@ contract AminoChainSamples is ERC721 {
 
         _safeMint(biobank, id);
 
-        emit cellLineRegistered(currentBatchId, id, batchData[id].isImmortalized, donor, biobank);
+        emit sampleRegistered(currentBatchId, id, size, donor, biobank);
     }
 
     /** @notice Mints a new token withen a batch and transferrs token.
@@ -119,7 +119,7 @@ contract AminoChainSamples is ERC721 {
         uint amount /* 0 if immortalized */,
         address from,
         address to
-    ) external onlyAuthenticator {
+    ) external {
         require(
             _isApprovedOrOwner(msg.sender, tokenId),
             "ERC721: caller is not token owner nor approved"
@@ -211,6 +211,8 @@ contract AminoChainSamples is ERC721 {
         }
     }
 
+    /** @notice Transfers contract ownership to another wallet address.
+     */
     function transferOwnership(address newOwner) external onlyOwner {
         require(newOwner != owner, "New address is already owner");
         require(newOwner != address(0), "Invalid owner address");
@@ -219,6 +221,8 @@ contract AminoChainSamples is ERC721 {
         emit ownershipTransferred(newOwner);
     }
 
+    /** @notice Sets the address of the authenticator contract.
+     */
     function setAuthenticatorAddress(address _authenticator) external onlyOwner {
         require(authenticator != _authenticator, "New address is already set");
         require(_authenticator != address(0), "Invalid authenticator address");
@@ -240,10 +244,10 @@ contract AminoChainSamples is ERC721 {
     }
 
     function getBatchBalance(
-        address addy,
+        address _address,
         uint256 batch
     ) public view returns (uint256 _batchBalance) {
-        return batchBalance[addy][batch];
+        return batchBalance[_address][batch];
     }
 
     function totalSupply() public view returns (uint256) {
